@@ -56,6 +56,7 @@ function NeoLogo({ compact = false }: { compact?: boolean }) {
 function NeoCashless() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const sectionsRef = useRef<Array<HTMLElement | null>>([]);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [active, setActive] = useState(0);
   const [language, setLanguage] = useState<Language>("en");
   const copy = content[language];
@@ -89,6 +90,24 @@ function NeoCashless() {
   }, []);
 
   const goTo = (index: number) => sectionsRef.current[index]?.scrollIntoView({ behavior: "smooth" });
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    const touch = event.changedTouches[0];
+    touchStartRef.current = null;
+    if (!start || !touch) return;
+
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+    if (Math.abs(deltaX) < 45 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+    goTo(deltaX < 0 ? 1 : 0);
+  };
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -124,7 +143,13 @@ function NeoCashless() {
         </nav>
       </header>
 
-      <div className="neo-scroll" ref={viewportRef}>
+      <div
+        className="neo-scroll"
+        ref={viewportRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={() => { touchStartRef.current = null; }}
+      >
         <HeroSection
           sectionRef={(node) => { sectionsRef.current[0] = node; }}
           theme="purple"
