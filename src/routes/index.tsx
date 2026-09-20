@@ -78,6 +78,23 @@ function NeoCashless() {
 
   const goTo = (index: number) => sectionsRef.current[index]?.scrollIntoView({ behavior: "smooth" });
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("button, a, input, select, textarea")) return;
+      if (["ArrowDown", "PageDown", "End"].includes(event.key)) {
+        event.preventDefault();
+        goTo(1);
+      }
+      if (["ArrowUp", "PageUp", "Home"].includes(event.key)) {
+        event.preventDefault();
+        goTo(0);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   return (
     <main className={`neo-page neo-page--${active === 0 ? "purple" : "green"}`}>
       <header className="neo-header">
