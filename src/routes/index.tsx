@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
+import { HomeSections } from "@/components/home-sections";
 import purpleIllustration from "../assets/purple-finance-illustration.png";
 import greenIllustration from "../assets/green-finance-illustration.png";
 
@@ -82,6 +83,8 @@ function NeoCashless() {
     if (!root) return;
     const onWheel = (event: WheelEvent) => {
       if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const atLastSlide = root.scrollLeft >= root.scrollWidth - root.clientWidth - 2;
+      if (event.deltaY > 0 && atLastSlide) return;
       event.preventDefault();
       root.scrollLeft += event.deltaY;
     };
@@ -128,7 +131,8 @@ function NeoCashless() {
 
   return (
     <main className={`neo-page neo-page--${active === 0 ? "purple" : "green"}`}>
-      <header className="neo-header">
+      <div className="neo-hero-shell" id="top">
+        <header className="neo-header">
         <button className="neo-brand-button" onClick={() => goTo(0)} aria-label="Neo Cashless home">
           <NeoLogo compact />
         </button>
@@ -141,15 +145,15 @@ function NeoCashless() {
           </div>
           <button onClick={() => window.alert("Login is coming soon.")}>{copy.login}</button>
         </nav>
-      </header>
+        </header>
 
-      <div
-        className="neo-scroll"
-        ref={viewportRef}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={() => { touchStartRef.current = null; }}
-      >
+        <div
+          className="neo-scroll"
+          ref={viewportRef}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={() => { touchStartRef.current = null; }}
+        >
         <HeroSection
           sectionRef={(node) => { sectionsRef.current[0] = node; }}
           theme="purple"
@@ -164,9 +168,9 @@ function NeoCashless() {
           illustrationAlt="Person using a laptop surrounded by digital finance tools"
           copy={copy}
         />
-      </div>
+        </div>
 
-      <div className="slide-indicators" aria-label="Choose landing section">
+        <div className="slide-indicators" aria-label="Choose landing section">
         {[0, 1].map((index) => (
           <button
             key={index}
@@ -176,7 +180,9 @@ function NeoCashless() {
             aria-current={active === index ? "true" : undefined}
           />
         ))}
+        </div>
       </div>
+      <HomeSections />
     </main>
   );
 }
