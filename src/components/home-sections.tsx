@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import {
   BarChart3,
-  ChevronDown,
   CreditCard,
   Facebook,
   Instagram,
