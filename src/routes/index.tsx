@@ -68,7 +68,7 @@ function NeoCashless() {
         const visible = entries
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible) setActive(Number((visible.target as HTMLElement).dataset.slide));
+        if (visible) setActive(Number((visible.target as HTMLElement).dataset["slide"]));
       },
       { root, threshold: [0.45, 0.6, 0.8] },
     );
@@ -79,7 +79,7 @@ function NeoCashless() {
   const goTo = (index: number) => sectionsRef.current[index]?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <main className="neo-page">
+    <main className={`neo-page neo-page--${active === 0 ? "purple" : "green"}`}>
       <header className="neo-header">
         <button className="neo-brand-button" onClick={() => goTo(0)} aria-label="Neo Cashless home">
           <NeoLogo compact />

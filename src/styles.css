@@ -182,7 +182,8 @@ button { font: inherit; }
 .neo-logo::after { content: ""; position: absolute; z-index: -1; bottom: 0; left: 47%; border-left: 1rem solid transparent; border-right: 1rem solid transparent; border-top: 2.2rem solid color-mix(in oklab, var(--purple-shape) 88%, var(--purple-deep)); }
 .neo-logo span { font-size: 6.4rem; line-height: .95; font-weight: 700; font-style: italic; letter-spacing: 0; transform: rotate(-2deg); }
 .neo-logo--compact { transition: filter .3s ease; }
-.hero--green ~ * .neo-logo::before { background: var(--green-mark); }
+.neo-page--green .neo-logo::before { background: var(--green-mark); }
+.neo-page--green .neo-logo::after { border-top-color: var(--green-mark); }
 
 .neo-nav { pointer-events: auto; display: flex; align-items: center; gap: clamp(2.8rem, 6vw, 6rem); padding-top: 4.15rem; color: var(--ink); font-size: 1.25rem; font-weight: 700; font-style: italic; white-space: nowrap; }
 .neo-nav button { border: 0; padding: .3rem; color: inherit; background: transparent; cursor: pointer; }
