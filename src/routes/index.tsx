@@ -76,17 +76,29 @@ function NeoCashless() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const root = viewportRef.current;
+    if (!root) return;
+    const onWheel = (event: WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      event.preventDefault();
+      root.scrollLeft += event.deltaY;
+    };
+    root.addEventListener("wheel", onWheel, { passive: false });
+    return () => root.removeEventListener("wheel", onWheel);
+  }, []);
+
   const goTo = (index: number) => sectionsRef.current[index]?.scrollIntoView({ behavior: "smooth" });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
       if (target?.closest("button, a, input, select, textarea")) return;
-      if (["ArrowDown", "PageDown", "End"].includes(event.key)) {
+      if (["ArrowRight", "ArrowDown", "PageDown", "End"].includes(event.key)) {
         event.preventDefault();
         goTo(1);
       }
-      if (["ArrowUp", "PageUp", "Home"].includes(event.key)) {
+      if (["ArrowLeft", "ArrowUp", "PageUp", "Home"].includes(event.key)) {
         event.preventDefault();
         goTo(0);
       }
