@@ -180,13 +180,12 @@ button { font: inherit; }
 
 .neo-header { position: absolute; z-index: 30; top: 0; left: 50%; width: min(100% - 7rem, 85rem); height: 12.5rem; transform: translateX(-50%); display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: start; pointer-events: none; }
 .neo-brand-button { pointer-events: auto; border: 0; background: transparent; width: fit-content; padding: 2.1rem 0 0; cursor: pointer; }
-.neo-logo { position: relative; display: grid; place-items: center; width: 15.8rem; height: 9.4rem; color: var(--paper); isolation: isolate; }
-.neo-logo::before { content: ""; position: absolute; z-index: -1; inset: 0.7rem 0.2rem 1rem; background: color-mix(in oklab, var(--purple-shape) 88%, var(--purple-deep)); border-radius: 43% 43% 39% 37% / 49% 48% 42% 41%; }
-.neo-logo::after { content: ""; position: absolute; z-index: -1; bottom: 0; left: 47%; border-left: 1rem solid transparent; border-right: 1rem solid transparent; border-top: 2.2rem solid color-mix(in oklab, var(--purple-shape) 88%, var(--purple-deep)); }
-.neo-logo span { font-size: 6.4rem; line-height: .95; font-weight: 700; font-style: italic; letter-spacing: 0; transform: rotate(-2deg); }
+.neo-logo { position: relative; width: 15.8rem; height: 9.4rem; }
+.neo-logo img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; transition: opacity .3s ease; }
+.neo-logo__green { opacity: 0; }
 .neo-logo--compact { transition: filter .3s ease; }
-.neo-page--green .neo-logo::before { background: var(--green-mark); }
-.neo-page--green .neo-logo::after { border-top-color: var(--green-mark); }
+.neo-page--green .neo-logo__purple { opacity: 0; }
+.neo-page--green .neo-logo__green { opacity: 1; }
 
 .neo-nav { pointer-events: auto; display: flex; align-items: center; gap: clamp(2.8rem, 6vw, 6rem); padding-top: 4.15rem; color: var(--ink); font-size: 1.25rem; font-weight: 700; font-style: italic; white-space: nowrap; }
 .neo-nav button { border: 0; padding: .3rem; color: inherit; background: transparent; cursor: pointer; }
@@ -220,8 +219,6 @@ button { font: inherit; }
   .neo-header { width: min(100% - 2.5rem, 50rem); height: 8rem; }
   .neo-brand-button { padding-top: 1rem; }
   .neo-logo { width: 9.5rem; height: 5.9rem; }
-  .neo-logo span { font-size: 4rem; }
-  .neo-logo::after { border-left-width: .65rem; border-right-width: .65rem; border-top-width: 1.3rem; }
   .neo-nav { gap: 1.2rem; padding-top: 2.25rem; font-size: 1rem; }
   .hero-inner { width: min(100% - 3rem, 46rem); grid-template-columns: 45% 55%; padding-top: 6rem; }
   .hero h1 { font-size: clamp(2rem, 4.7vw, 2.7rem); }
@@ -234,8 +231,6 @@ button { font: inherit; }
   .neo-header { width: calc(100% - 1.5rem); height: 5.5rem; align-items: start; }
   .neo-brand-button { padding-top: .45rem; }
   .neo-logo { width: 6.2rem; height: 4.2rem; }
-  .neo-logo span { font-size: 2.65rem; }
-  .neo-logo::after { border-left-width: .45rem; border-right-width: .45rem; border-top-width: .85rem; }
   .neo-nav { min-width: 0; gap: .25rem; padding-top: 1.15rem; font-size: .83rem; justify-self: end; }
   .neo-nav button { padding: .25rem; }
   .language-selector { gap: .05rem; }
@@ -315,7 +310,8 @@ button { font: inherit; }
 .site-footer { background: var(--footer-surface); color: var(--paper); }
 .footer-shell { width: min(100% - 3rem, var(--content-width)); min-height: 31rem; margin: 0 auto; display: grid; grid-template-columns: 1.15fr 1fr; grid-template-rows: 1fr auto; gap: 3rem 6rem; padding: 4.5rem 0 2rem; }
 .footer-brand { min-width: 0; }
-.footer-logo { display: inline-block; color: oklch(0.85 0.17 313); font-family: var(--font-display); font-size: 5.4rem; font-weight: 700; font-style: italic; line-height: .8; text-decoration: none; text-shadow: 3px 3px 0 var(--paper); transform: rotate(-3deg); }
+.footer-logo { display: inline-block; width: 10.5rem; text-decoration: none; }
+.footer-logo img { display: block; width: 100%; height: auto; }
 .footer-brand > p { margin: 1.5rem 0 2rem; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; font-style: italic; line-height: 1.25; }
 .footer-brand h2, .footer-columns h2 { margin: 0 0 .8rem; color: var(--paper); font-family: var(--font-body); font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .footer-brand address { display: grid; gap: .65rem; font-style: normal; }
@@ -361,7 +357,7 @@ button { font: inherit; }
   .contact-actions { grid-template-columns: 1fr; }
   .send-button { justify-self: end; }
   .footer-shell { grid-template-columns: 1fr; grid-template-rows: auto; min-height: auto; gap: 3.5rem; padding-block: 4rem 2rem; }
-  .footer-logo { font-size: 4.8rem; }
+  .footer-logo { width: 9.5rem; }
   .footer-nav-wrap { align-self: start; }
   .copyright { grid-column: auto; padding-top: 1rem; }
 }
