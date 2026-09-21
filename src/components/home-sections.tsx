@@ -91,8 +91,8 @@ const footerColumns = [
   },
 ];
 
-function SectionHeading({ children }: { children: string }) {
-  return <h2 className="content-heading">{children}</h2>;
+function SectionHeading({ children, id }: { children: string; id?: string }) {
+  return <h2 className="content-heading" id={id}>{children}</h2>;
 }
 
 function WhyChooseUs() {
@@ -172,7 +172,7 @@ function Contact() {
   return (
     <section className="content-section contact-section" aria-labelledby="contact-heading">
       <div className="content-shell">
-        <SectionHeading>Contact Us</SectionHeading>
+        <SectionHeading id="contact-heading">Contact Us</SectionHeading>
         <form className="contact-panel" onSubmit={submitMessage}>
           <label className="sr-only" htmlFor="neo-message">Message</label>
           <textarea
