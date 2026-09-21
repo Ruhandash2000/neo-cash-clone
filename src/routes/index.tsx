@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { HomeSections } from "@/components/home-sections";
 import purpleIllustration from "../assets/purple-finance-illustration.png";
 import greenIllustration from "../assets/green-finance-illustration.png";
+import purpleLogo from "../assets/neo-purple-logo.png.asset.json";
+import greenLogo from "../assets/neo-green-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,7 +51,8 @@ type Language = keyof typeof content;
 function NeoLogo({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? "neo-logo neo-logo--compact" : "neo-logo"} aria-label="Neo">
-      <span>Neo</span>
+      <img className="neo-logo__purple" src={purpleLogo.url} alt="" />
+      <img className="neo-logo__green" src={greenLogo.url} alt="" />
     </div>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import faqIllustration from "../assets/faq-financial-planning.png";
+import purpleLogo from "../assets/neo-purple-logo.png.asset.json";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
@@ -203,7 +204,9 @@ function Footer() {
     <footer className="site-footer">
       <div className="footer-shell">
         <div className="footer-brand">
-          <a href="#top" className="footer-logo" aria-label="Neo home">Neo</a>
+          <a href="#top" className="footer-logo" aria-label="Neo home">
+            <img src={purpleLogo.url} alt="Neo" />
+          </a>
           <p>No paperwork. No queues. No cash.<br />Only fast, secure, AI-powered automation.</p>
           <h2>Contact</h2>
           <address>
