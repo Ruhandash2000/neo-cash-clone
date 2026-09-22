@@ -102,7 +102,7 @@ export const getRegistrationOptions = createServerFn({ method: "POST" })
       userId: context.userId,
     });
 
-    return options;
+    return JSON.parse(JSON.stringify(options)) as Record<string, unknown>;
   });
 
 export const verifyRegistration = createServerFn({ method: "POST" })
@@ -162,7 +162,7 @@ export const getAuthenticationOptions = createServerFn({ method: "POST" }).handl
   });
 
   await storeChallenge({ challenge: options.challenge, purpose: "authentication" });
-  return options;
+  return JSON.parse(JSON.stringify(options)) as Record<string, unknown>;
 });
 
 export const verifyAuthentication = createServerFn({ method: "POST" })
