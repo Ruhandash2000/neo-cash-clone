@@ -38,9 +38,8 @@ export async function enrollBiometric(): Promise<BiometricResult> {
     return { ok: false, error: "This browser does not support device authentication." };
   }
   try {
-    const options = (await getRegistrationOptions()) as unknown as Parameters<
-      typeof startRegistration
-    >[0]["optionsJSON"];
+    const { optionsJSON } = await getRegistrationOptions();
+    const options = JSON.parse(optionsJSON) as Parameters<typeof startRegistration>[0]["optionsJSON"];
     const attestation = await startRegistration({ optionsJSON: options });
     const result = await verifyRegistration({
       data: { response: attestation, challenge: options.challenge },
@@ -57,9 +56,8 @@ export async function signInWithBiometric(): Promise<BiometricResult> {
     return { ok: false, error: "This browser does not support device authentication." };
   }
   try {
-    const options = (await getAuthenticationOptions()) as unknown as Parameters<
-      typeof startAuthentication
-    >[0]["optionsJSON"];
+    const { optionsJSON } = await getAuthenticationOptions();
+    const options = JSON.parse(optionsJSON) as Parameters<typeof startAuthentication>[0]["optionsJSON"];
     const assertion = await startAuthentication({ optionsJSON: options });
     const result = await verifyAuthentication({
       data: { response: assertion, challenge: options.challenge },
