@@ -2,12 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { HomeSections } from "@/components/home-sections";
+import { LoginModal } from "@/components/auth/login-modal";
 import purpleIllustration from "../assets/purple-finance-illustration.png";
 import greenIllustration from "../assets/green-finance-illustration.png";
 import purpleLogo from "../assets/neo-purple-logo.png.asset.json";
 import greenLogo from "../assets/neo-green-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
+  validateSearch: (search: Record<string, unknown>): { login?: boolean } =>
+    search["login"] === true || search["login"] === "true" ? { login: true } : {},
   head: () => ({
     meta: [
       { title: "Neo Cashless — Intelligent Financial Ecosystem" },
@@ -63,6 +66,8 @@ function NeoCashless() {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [active, setActive] = useState(0);
   const [language, setLanguage] = useState<Language>("en");
+  const { login: loginParam } = Route.useSearch();
+  const [loginOpen, setLoginOpen] = useState(Boolean(loginParam));
   const copy = content[language];
 
   useEffect(() => {
@@ -147,7 +152,7 @@ function NeoCashless() {
             <span aria-hidden="true">|</span>
             <button className={language === "bn" ? "is-selected" : ""} onClick={() => setLanguage("bn")}>বাংলা</button>
           </div>
-          <button onClick={() => window.alert("Login is coming soon.")}>{copy.login}</button>
+          <button onClick={() => setLoginOpen(true)}>{copy.login}</button>
         </nav>
         </header>
 
@@ -187,6 +192,7 @@ function NeoCashless() {
         </div>
       </div>
       <HomeSections />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </main>
   );
 }
