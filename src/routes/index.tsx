@@ -9,9 +9,8 @@ import purpleLogo from "../assets/neo-purple-logo.png.asset.json";
 import greenLogo from "../assets/neo-green-logo.png.asset.json";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    login: search["login"] === true || search["login"] === "true",
-  }),
+  validateSearch: (search: Record<string, unknown>): { login?: boolean } =>
+    search["login"] === true || search["login"] === "true" ? { login: true } : {},
   head: () => ({
     meta: [
       { title: "Neo Cashless — Intelligent Financial Ecosystem" },
@@ -68,7 +67,7 @@ function NeoCashless() {
   const [active, setActive] = useState(0);
   const [language, setLanguage] = useState<Language>("en");
   const { login: loginParam } = Route.useSearch();
-  const [loginOpen, setLoginOpen] = useState(loginParam);
+  const [loginOpen, setLoginOpen] = useState(Boolean(loginParam));
   const copy = content[language];
 
   useEffect(() => {
