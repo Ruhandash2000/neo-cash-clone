@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { enrollBiometric } from "@/lib/biometrics";
 import { listMyCredentials } from "@/lib/webauthn.functions";
 import purpleLogo from "@/assets/neo-purple-logo.png.asset.json";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -47,9 +48,12 @@ function Dashboard() {
     <main className="dash">
       <header className="dash-header">
         <img src={purpleLogo.url} alt="Neo" className="dash-logo" />
-        <button type="button" className="dash-signout" onClick={handleSignOut}>
-          Logout
-        </button>
+        <div className="dash-actions">
+          <ThemeToggle />
+          <button type="button" className="dash-signout" onClick={handleSignOut}>
+            Logout
+          </button>
+        </div>
       </header>
 
       <section className="dash-body">

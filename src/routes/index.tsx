@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { HomeSections } from "@/components/home-sections";
 import { LoginModal } from "@/components/auth/login-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import purpleIllustration from "../assets/purple-finance-illustration.png";
 import greenIllustration from "../assets/green-finance-illustration.png";
 import purpleLogo from "../assets/neo-purple-logo.png.asset.json";
@@ -153,6 +154,7 @@ function NeoCashless() {
             <button className={language === "bn" ? "is-selected" : ""} onClick={() => setLanguage("bn")}>বাংলা</button>
           </div>
           <button onClick={() => setLoginOpen(true)}>{copy.login}</button>
+          <ThemeToggle />
         </nav>
         </header>
 
