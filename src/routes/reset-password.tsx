@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -45,7 +44,6 @@ function ResetPassword() {
 
   return (
     <main className="auth-page">
-      <ThemeToggle className="standalone-theme-toggle" />
       <div className="auth-modal auth-modal--single">
         <form className="auth-form" onSubmit={handleSubmit}>
           <h1 className="auth-heading">Choose a new password</h1>

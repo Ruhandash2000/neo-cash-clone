@@ -4,7 +4,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { enrollBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "@/components/auth/biometric-panel";
-import { ThemeToggle } from "@/components/theme-toggle";
 import authArt from "@/assets/auth-side-illustration.jpg";
 
 export const Route = createFileRoute("/signup")({
@@ -115,7 +114,6 @@ function SignUpPage() {
 
   return (
     <main className="auth-page">
-      <ThemeToggle className="standalone-theme-toggle" />
       <div className="auth-modal auth-modal--page">
         <aside className="auth-art">
           <img src={authArt} alt="" loading="lazy" width={1024} height={1024} />
