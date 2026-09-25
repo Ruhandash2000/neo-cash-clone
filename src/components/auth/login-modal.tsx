@@ -83,10 +83,10 @@ export function LoginModal({
 
   if (!open) return null;
 
-  /** Complete login process and redirect user to application dashboard */
+  /** Complete login process and stay on landing page */
   const finishLogin = async () => {
     onClose();
-    await navigate({ to: "/dashboard" });
+    await navigate({ to: "/", search: {}, replace: true });
   };
 
   /** Update signup form fields */
@@ -205,7 +205,7 @@ export function LoginModal({
       setStatus({ tone: "error", message: result.error });
       return;
     }
-    setStatus({ tone: "success", message: "Verified. Opening your dashboard…" });
+    setStatus({ tone: "success", message: "Verified. Welcome to Neo Cashless!" });
     await finishLogin();
   };
 
