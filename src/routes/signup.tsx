@@ -11,7 +11,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { enrollBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "@/components/auth/biometric-panel";
-import authArt from "@/assets/auth-side-illustration.jpg";
+import signupArt from "@/assets/signup-skeleton-illustration.png";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -128,8 +128,7 @@ function SignUpPage() {
     <main className="auth-page">
       <div className="auth-modal auth-modal--page">
         <aside className="auth-art">
-          <img src={authArt} alt="" loading="lazy" width={1024} height={1024} />
-          <p>Eliminate delays. Eliminate errors. Eliminate cash.</p>
+          <img src={signupArt} alt="Black skeleton illustration" loading="lazy" width={1024} height={1024} />
         </aside>
 
         <div className="auth-form-side">
