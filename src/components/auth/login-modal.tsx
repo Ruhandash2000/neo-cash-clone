@@ -185,16 +185,41 @@ export function LoginModal({
     setBusy(true);
     try {
       const redirectUrl = window.location.origin + window.location.pathname;
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
         },
       });
-      if (error) {
+
+      if (error || !data?.url) {
         setBusy(false);
-        setStatus({ tone: "error", message: error.message ?? "Google sign-in failed." });
+        setStatus({ tone: "error", message: error?.message ?? "Google sign-in initialization failed." });
+        return;
       }
+
+      // Pre-flight check to prevent navigating browser to raw JSON 400 error page if OAuth provider secret is missing in Supabase console
+      const res = await fetch(data.url, { method: "GET", redirect: "manual" });
+      if (!res.ok && ![301, 302, 303, 307, 308].includes(res.status)) {
+        const body = (await res.json().catch(() => ({}))) as { msg?: string; error_code?: string };
+        setBusy(false);
+        if (body?.msg?.includes("missing OAuth secret") || body?.error_code === "validation_failed") {
+          setStatus({
+            tone: "error",
+            message: "Google Sign-In is not enabled on this Supabase project (missing Client ID / Secret in Supabase Auth settings).",
+          });
+        } else {
+          setStatus({
+            tone: "error",
+            message: body?.msg ?? `Google sign-in server error (HTTP ${res.status}).`,
+          });
+        }
+        return;
+      }
+
+      // Pre-flight passed — redirect to Google OAuth consent screen
+      window.location.href = data.url;
     } catch (err: unknown) {
       setBusy(false);
       const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
