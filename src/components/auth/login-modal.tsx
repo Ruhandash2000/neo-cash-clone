@@ -140,7 +140,6 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
 
         <aside className="auth-art">
           <img src={skeletonArt} alt="Skeleton working on laptop" loading="lazy" width={1024} height={1024} />
-          <p>Eliminate delays. Eliminate errors. Eliminate cash.</p>
         </aside>
 
         <div className="auth-form-side">

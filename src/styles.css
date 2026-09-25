@@ -438,24 +438,17 @@ button { font: inherit; }
 .auth-art {
   position: relative;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  background: linear-gradient(140deg, #dfd0f2 0%, #a4e5ee 60%, #b2e4f0 100%);
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
   padding: 0;
+  overflow: hidden;
 }
-.auth-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.auth-art p {
-  position: absolute;
-  bottom: 22px;
-  left: 20px;
-  right: 20px;
-  margin: 0;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #641d42;
-  text-align: center;
+.auth-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .auth-form-side { padding: 42px 48px; display: flex; align-items: center; }
 .auth-form { width: 100%; display: flex; flex-direction: column; gap: 10px; }
