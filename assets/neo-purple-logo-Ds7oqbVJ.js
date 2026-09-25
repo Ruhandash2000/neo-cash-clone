@@ -1,0 +1,1 @@
+var e=`/assets/neo-purple-logo-Ce3rT81p.png`;export{e as t};

@@ -1,0 +1,1 @@
+import{r as e}from"./useRouter-BOAPZDg1.js";import{y as t}from"./index-CrlfnOia.js";var n=e(),r=()=>(0,n.jsx)(t,{});export{r as component};
