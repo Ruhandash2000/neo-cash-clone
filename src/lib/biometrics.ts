@@ -39,6 +39,9 @@ export async function enrollBiometric(): Promise<BiometricResult> {
   }
   try {
     const { optionsJSON } = await getRegistrationOptions();
+    if (!optionsJSON) {
+      return { ok: false, error: "Biometric sign-in is temporarily unavailable. Please use your email and password." };
+    }
     const options = JSON.parse(optionsJSON) as Parameters<typeof startRegistration>[0]["optionsJSON"];
     const attestation = await startRegistration({ optionsJSON: options });
     const result = await verifyRegistration({
@@ -57,6 +60,9 @@ export async function signInWithBiometric(): Promise<BiometricResult> {
   }
   try {
     const { optionsJSON } = await getAuthenticationOptions();
+    if (!optionsJSON) {
+      return { ok: false, error: "Biometric sign-in is temporarily unavailable. Please use your email and password." };
+    }
     const options = JSON.parse(optionsJSON) as Parameters<typeof startAuthentication>[0]["optionsJSON"];
     const assertion = await startAuthentication({ optionsJSON: options });
     const result = await verifyAuthentication({
