@@ -11,6 +11,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  */
 
 const RP_NAME = "Neo Cashless";
+const BIOMETRIC_UNAVAILABLE =
+  "Biometric sign-in is temporarily unavailable. Please use your email and password.";
 
 function getRelyingParty() {
   const request = getRequest();
@@ -68,41 +70,46 @@ async function consumeChallenge(challenge: string, purpose: string) {
 export const getRegistrationOptions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { generateRegistrationOptions } = await import("@simplewebauthn/server");
-    const { rpID } = getRelyingParty();
-    const db = await admin();
+    try {
+      const { generateRegistrationOptions } = await import("@simplewebauthn/server");
+      const { rpID } = getRelyingParty();
+      const db = await admin();
 
-    const { data: existing } = await db
-      .from("webauthn_credentials")
-      .select("credential_id, transports")
-      .eq("user_id", context.userId);
+      const { data: existing } = await db
+        .from("webauthn_credentials")
+        .select("credential_id, transports")
+        .eq("user_id", context.userId);
 
-    const email = (context.claims as { email?: string })?.email ?? "neo user";
+      const email = (context.claims as { email?: string })?.email ?? "neo user";
 
-    const options = await generateRegistrationOptions({
-      rpName: RP_NAME,
-      rpID,
-      userID: fromBase64Url(Buffer.from(context.userId).toString("base64url")),
-      userName: email,
-      userDisplayName: email,
-      attestationType: "none",
-      excludeCredentials: (existing ?? []).map((credential) => ({
-        id: credential.credential_id,
-        transports: credential.transports as never,
-      })),
-      authenticatorSelection: {
-        residentKey: "preferred",
-        userVerification: "preferred",
-      },
-    });
+      const options = await generateRegistrationOptions({
+        rpName: RP_NAME,
+        rpID,
+        userID: fromBase64Url(Buffer.from(context.userId).toString("base64url")),
+        userName: email,
+        userDisplayName: email,
+        attestationType: "none",
+        excludeCredentials: (existing ?? []).map((credential) => ({
+          id: credential.credential_id,
+          transports: credential.transports as never,
+        })),
+        authenticatorSelection: {
+          residentKey: "preferred",
+          userVerification: "preferred",
+        },
+      });
 
-    await storeChallenge({
-      challenge: options.challenge,
-      purpose: "registration",
-      userId: context.userId,
-    });
+      await storeChallenge({
+        challenge: options.challenge,
+        purpose: "registration",
+        userId: context.userId,
+      });
 
-    return { optionsJSON: JSON.stringify(options) };
+      return { optionsJSON: JSON.stringify(options), error: null };
+    } catch (error) {
+      console.error("Unable to create biometric registration options", error);
+      return { optionsJSON: null, error: BIOMETRIC_UNAVAILABLE };
+    }
   });
 
 export const verifyRegistration = createServerFn({ method: "POST" })
@@ -153,16 +160,21 @@ export const verifyRegistration = createServerFn({ method: "POST" })
 /* ---------------------------- authentication ----------------------------- */
 
 export const getAuthenticationOptions = createServerFn({ method: "POST" }).handler(async () => {
-  const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
-  const { rpID } = getRelyingParty();
+  try {
+    const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
+    const { rpID } = getRelyingParty();
 
-  const options = await generateAuthenticationOptions({
-    rpID,
-    userVerification: "preferred",
-  });
+    const options = await generateAuthenticationOptions({
+      rpID,
+      userVerification: "preferred",
+    });
 
-  await storeChallenge({ challenge: options.challenge, purpose: "authentication" });
-  return { optionsJSON: JSON.stringify(options) };
+    await storeChallenge({ challenge: options.challenge, purpose: "authentication" });
+    return { optionsJSON: JSON.stringify(options), error: null };
+  } catch (error) {
+    console.error("Unable to create biometric authentication options", error);
+    return { optionsJSON: null, error: BIOMETRIC_UNAVAILABLE };
+  }
 });
 
 export const verifyAuthentication = createServerFn({ method: "POST" })
