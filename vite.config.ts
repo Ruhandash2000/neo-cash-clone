@@ -1,17 +1,20 @@
-/**
- * Vite & TanStack Start Application Configuration
- * Configures server entries, TypeScript paths, and build pipeline settings.
- */
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { defineConfig } from "vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import tailwindcss from "@tailwindcss/vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
-  vite: {
-    server: {
-      allowedHosts: true,
-    },
-  },
-  tanstackStart: {
-    // Configures server entry point for Server-Side Rendering (SSR) and Nitro bundler
-    server: { entry: "server" },
+  plugins: [
+    tsconfigPaths(),
+    tailwindcss(),
+    tanstackStart({
+      server: { entry: "server" },
+    }),
+    react(),
+  ],
+  server: {
+    allowedHosts: true,
   },
 });
+
