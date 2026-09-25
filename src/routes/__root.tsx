@@ -10,8 +10,10 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 
+/**
+ * Fallback component rendered when a route is not found (404).
+ */
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -34,11 +36,15 @@ function NotFoundComponent() {
   );
 }
 
+/**
+ * Root error boundary component to capture and display runtime application errors.
+ */
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
   const router = useRouter();
+
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    // Log unexpected runtime errors to the browser console for debugging
+    console.error("[App Error Boundary caught]:", error);
   }, [error]);
 
   return (

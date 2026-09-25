@@ -1,3 +1,10 @@
+/**
+ * Authenticated User Dashboard Route (`/_authenticated/dashboard`)
+ * 
+ * Displays user account information, active WebAuthn registered devices,
+ * passkey biometric enrollment options, and session logout functionality.
+ */
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -5,7 +12,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { enrollBiometric } from "@/lib/biometrics";
 import { listMyCredentials } from "@/lib/webauthn.functions";
-import purpleLogo from "@/assets/neo-purple-logo.png.asset.json";
+import purpleLogo from "@/assets/neo-purple-logo.png";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -24,11 +31,13 @@ function Dashboard() {
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
 
+  /** Query to fetch user's registered WebAuthn biometric credentials */
   const credentials = useQuery({
     queryKey: ["webauthn-credentials"],
     queryFn: () => listMyCredentials(),
   });
 
+  /** Handle user session sign out */
   const handleSignOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
@@ -36,6 +45,7 @@ function Dashboard() {
     await navigate({ to: "/", replace: true });
   };
 
+  /** Trigger biometric credential enrollment */
   const handleEnroll = async () => {
     setMessage("Waiting for your device…");
     const result = await enrollBiometric();
@@ -46,7 +56,7 @@ function Dashboard() {
   return (
     <main className="dash">
       <header className="dash-header">
-        <img src={purpleLogo.url} alt="Neo" className="dash-logo" />
+        <img src={purpleLogo} alt="Neo" className="dash-logo" />
         <button type="button" className="dash-signout" onClick={handleSignOut}>
           Logout
         </button>

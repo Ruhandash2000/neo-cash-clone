@@ -1,3 +1,10 @@
+/**
+ * User Account Registration Page (`/signup`)
+ * 
+ * Features registration form validation, Supabase user account creation,
+ * optional marketing consent opt-in, and WebAuthn biometric passkey enrollment.
+ */
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -27,6 +34,7 @@ export const Route = createFileRoute("/signup")({
   component: SignUpPage,
 });
 
+/** Registration Form Validation Errors */
 type Errors = Partial<Record<"username" | "email" | "password" | "repeat" | "terms" | "form", string>>;
 
 function SignUpPage() {
@@ -46,9 +54,11 @@ function SignUpPage() {
     { tone: "error" | "success" | "info"; message: string } | null
   >(null);
 
+  /** Helper to update individual form state fields */
   const update = (key: keyof typeof form, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  /** Validate form inputs before submission */
   const validate = () => {
     const next: Errors = {};
     if (!form.username.trim()) next.username = "Username is required.";
@@ -66,6 +76,7 @@ function SignUpPage() {
     return Object.keys(next).length === 0;
   };
 
+  /** Process registration form submission */
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!validate()) return;
@@ -99,6 +110,7 @@ function SignUpPage() {
     setStage("biometric");
   };
 
+  /** Enroll device authenticator for biometric login after registration */
   const handleEnroll = async () => {
     setBioStatus({ tone: "info", message: "Waiting for your device…" });
     setBusy(true);
@@ -239,6 +251,7 @@ function SignUpPage() {
   );
 }
 
+/** Reusable Form Input Field Component */
 function Field({
   id,
   label,

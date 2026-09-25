@@ -1,3 +1,8 @@
+/**
+ * WebAuthn Biometric Authentication Module
+ * Manages device passkey registration (enrollment) and biometric sign-in (TouchID / FaceID / PIN).
+ */
+
 import {
   startRegistration,
   startAuthentication,
@@ -13,9 +18,13 @@ import {
   verifyRegistration,
 } from "./webauthn.functions";
 
+/** Return type for WebAuthn biometric operations */
 export type BiometricResult = { ok: true } | { ok: false; error: string; cancelled?: boolean };
 
-export async function biometricsAvailable() {
+/**
+ * Checks whether WebAuthn biometric authentication is supported by the current browser and device hardware.
+ */
+export async function biometricsAvailable(): Promise<boolean> {
   if (typeof window === "undefined" || !browserSupportsWebAuthn()) return false;
   try {
     return await platformAuthenticatorIsAvailable();
@@ -24,6 +33,7 @@ export async function biometricsAvailable() {
   }
 }
 
+/** Formats WebAuthn exception errors into user-friendly status responses */
 function describe(error: unknown): BiometricResult {
   const err = error as { name?: string; message?: string };
   if (err?.name === "NotAllowedError" || err?.name === "AbortError") {
@@ -32,7 +42,9 @@ function describe(error: unknown): BiometricResult {
   return { ok: false, error: err?.message ?? "Your device could not complete the request." };
 }
 
-/** Enroll the signed-in account's device authenticator (passkey / fingerprint). */
+/**
+ * Registers the user's device authenticator (passkey / fingerprint) for biometric login.
+ */
 export async function enrollBiometric(): Promise<BiometricResult> {
   if (!browserSupportsWebAuthn()) {
     return { ok: false, error: "This browser does not support device authentication." };
@@ -53,7 +65,9 @@ export async function enrollBiometric(): Promise<BiometricResult> {
   }
 }
 
-/** Sign in with a registered device authenticator; the server verifies the assertion. */
+/**
+ * Authenticates the user using a registered biometric device (Fingerprint / FaceID / Hardware PIN).
+ */
 export async function signInWithBiometric(): Promise<BiometricResult> {
   if (!browserSupportsWebAuthn()) {
     return { ok: false, error: "This browser does not support device authentication." };
@@ -70,6 +84,7 @@ export async function signInWithBiometric(): Promise<BiometricResult> {
     });
     if (!result.verified) return { ok: false, error: result.error ?? "Verification failed." };
 
+    // Establish Supabase auth session using returned tokens
     const { error } = await supabase.auth.setSession({
       access_token: result.accessToken,
       refresh_token: result.refreshToken,

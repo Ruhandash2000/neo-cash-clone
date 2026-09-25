@@ -2,14 +2,20 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { signInWithBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "./biometric-panel";
 import authArt from "@/assets/auth-side-illustration.jpg";
 
+/** View modes for the authentication modal dialog */
 type View = "login" | "biometric" | "forgot";
+
+/** Status notification message object for user feedback */
 type Status = { tone: "error" | "success" | "info"; message: string } | null;
 
+/**
+ * Authentication Modal Component
+ * Supports Email/Password authentication, Google OAuth 2.0, WebAuthn Biometrics, and Password Reset flow.
+ */
 export function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -21,6 +27,7 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<Status>(null);
 
+  // Handle modal open/close lifecycle, scroll locking, and keyboard shortcuts
   useEffect(() => {
     if (!open) return;
     setView("login");
@@ -40,11 +47,13 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
 
   if (!open) return null;
 
+  /** Complete login process and redirect user to application dashboard */
   const finishLogin = async () => {
     onClose();
     await navigate({ to: "/dashboard" });
   };
 
+  /** Authenticate user using Email and Password via Supabase */
   const handlePasswordLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setStatus(null);
@@ -63,19 +72,21 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
     await finishLogin();
   };
 
+  /** Trigger Google OAuth 2.0 single sign-on redirect via Supabase */
   const handleGoogle = async () => {
     setStatus(null);
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
     });
     setBusy(false);
-    if (result.error) {
-      setStatus({ tone: "error", message: result.error.message ?? "Google sign-in failed." });
+    if (error) {
+      setStatus({ tone: "error", message: error.message ?? "Google sign-in failed." });
       return;
     }
-    if (result.redirected) return;
-    await finishLogin();
   };
 
   const handleBiometric = async () => {

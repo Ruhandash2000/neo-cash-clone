@@ -1,3 +1,10 @@
+/**
+ * Password Reset Confirmation Page (`/reset-password`)
+ * 
+ * Invoked when users click their password recovery link emailed via Supabase Auth.
+ * Allows setting a new secure password.
+ */
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -21,6 +28,7 @@ function ResetPassword() {
   const [status, setStatus] = useState<{ tone: "error" | "success"; message: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
+  /** Update password via Supabase Auth client */
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (password.length < 8) {

@@ -1,3 +1,9 @@
+/**
+ * Home Page Additional Content Sections Component
+ * Contains "Why Choose Us" features grid, "Have Any Question?" FAQ accordion,
+ * Contact form, and the main Site Footer.
+ */
+
 import { useState, type FormEvent } from "react";
 import {
   BarChart3,
@@ -17,10 +23,11 @@ import {
 } from "lucide-react";
 
 import faqIllustration from "../assets/faq-financial-planning.png";
-import purpleLogo from "../assets/neo-purple-logo.png.asset.json";
+import purpleLogo from "../assets/neo-purple-logo.png";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 
+/* Feature highlights data list */
 const features = [
   {
     title: "Personalized for you",
@@ -60,6 +67,7 @@ const features = [
   },
 ] as const;
 
+/* Frequently Asked Questions data list */
 const faqs = [
   {
     question: "Why should I care about financial planning?",
@@ -83,6 +91,7 @@ const faqs = [
   },
 ];
 
+/* Footer navigation columns definition */
 const footerColumns = [
   { title: "Product", links: ["Overview", "Features", "Solutions", "Tutorials", "Pricing"] },
   { title: "Company", links: ["About us", "Careers", "News", "Media", "Contact"] },
@@ -96,6 +105,7 @@ function SectionHeading({ children, id }: { children: string; id?: string }) {
   return <h2 className="content-heading" id={id}>{children}</h2>;
 }
 
+/** "Why Choose Us" Feature Cards Section */
 function WhyChooseUs() {
   return (
     <section className="content-section why-section" aria-labelledby="why-heading">
@@ -119,6 +129,7 @@ function WhyChooseUs() {
   );
 }
 
+/** FAQ Accordion Section */
 function Questions() {
   return (
     <section className="content-section faq-section" aria-labelledby="faq-heading">
@@ -155,6 +166,7 @@ function Questions() {
   );
 }
 
+/** User Message / Feedback Form Section */
 function Contact() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
@@ -199,13 +211,14 @@ function Contact() {
   );
 }
 
+/** Global Footer Component */
 function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-shell">
         <div className="footer-brand">
           <a href="#top" className="footer-logo" aria-label="Neo home">
-            <img src={purpleLogo.url} alt="Neo" />
+            <img src={purpleLogo} alt="Neo" />
           </a>
           <p>No paperwork. No queues. No cash.<br />Only fast, secure, AI-powered automation.</p>
           <h2>Contact</h2>
@@ -236,12 +249,13 @@ function Footer() {
             <a href="#twitter" aria-label="Twitter X"><Twitter /></a>
           </div>
         </div>
-        <p className="copyright">Copyright © 2024 Neo. All rights reserved</p>
+        <p className="copyright">Copyright © 2026 Neo. All rights reserved</p>
       </div>
     </footer>
   );
 }
 
+/** Home Content Wrapper containing all additional home page sections */
 export function HomeSections() {
   return (
     <div className="home-content">
