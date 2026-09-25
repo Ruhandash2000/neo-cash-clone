@@ -451,7 +451,7 @@ button { font: inherit; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center 54%;
   display: block;
 }
 .auth-form-side { padding: 42px 48px; display: flex; align-items: center; }

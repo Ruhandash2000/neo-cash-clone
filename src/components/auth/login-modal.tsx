@@ -2,36 +2,72 @@ import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { signInWithBiometric } from "@/lib/biometrics";
+import { enrollBiometric, signInWithBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "./biometric-panel";
 import skeletonArt from "@/assets/skeleton-illustration.png";
+import signupArt from "@/assets/signup-skeleton-illustration.png";
 
 /** View modes for the authentication modal dialog */
-type View = "login" | "biometric" | "forgot";
+type View = "login" | "biometric" | "forgot" | "signup";
 
 /** Status notification message object for user feedback */
 type Status = { tone: "error" | "success" | "info"; message: string } | null;
 
+/** Form validation errors interface */
+type SignupErrors = {
+  username?: string;
+  email?: string;
+  password?: string;
+  repeat?: string;
+  terms?: string;
+  form?: string;
+};
+
 /**
  * Authentication Modal Component
- * Supports Email/Password authentication, Google OAuth 2.0, WebAuthn Biometrics, and Password Reset flow.
+ * Supports Email/Password authentication, Google OAuth 2.0, WebAuthn Biometrics, Signup flow, and Password Reset.
  */
-export function LoginModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function LoginModal({
+  open,
+  onClose,
+  initialView = "login",
+}: {
+  open: boolean;
+  onClose: () => void;
+  initialView?: View;
+}) {
   const navigate = useNavigate();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const [view, setView] = useState<View>("login");
+  const [view, setView] = useState<View>(initialView);
+  
+  // Login form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
   const [resetEmail, setResetEmail] = useState("");
+
+  // Signup form state
+  const [signupForm, setSignupForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    repeat: "",
+    contactMe: true,
+    terms: false,
+  });
+  const [signupErrors, setSignupErrors] = useState<SignupErrors>({});
+  const [signupStage, setSignupStage] = useState<"form" | "biometric" | "done">("form");
+
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<Status>(null);
 
   // Handle modal open/close lifecycle, scroll locking, and keyboard shortcuts
   useEffect(() => {
     if (!open) return;
-    setView("login");
+    setView(initialView);
     setStatus(null);
+    setSignupStage("form");
+    setSignupErrors({});
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (event: KeyboardEvent) => {
@@ -43,7 +79,7 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, initialView, onClose]);
 
   if (!open) return null;
 
@@ -51,6 +87,77 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
   const finishLogin = async () => {
     onClose();
     await navigate({ to: "/dashboard" });
+  };
+
+  /** Update signup form fields */
+  const updateSignup = (key: keyof typeof signupForm, value: string | boolean) => {
+    setSignupForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  /** Validate signup form inputs */
+  const validateSignup = () => {
+    const next: SignupErrors = {};
+    if (!signupForm.username.trim()) next.username = "Username is required.";
+    else if (signupForm.username.trim().length < 3) next.username = "Use at least 3 characters.";
+    if (!signupForm.email.trim()) next.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupForm.email.trim()))
+      next.email = "Enter a valid email address.";
+    if (!signupForm.password) next.password = "Password is required.";
+    else if (signupForm.password.length < 8) next.password = "Use at least 8 characters.";
+    else if (!/[A-Za-z]/.test(signupForm.password) || !/[0-9]/.test(signupForm.password))
+      next.password = "Include at least one letter and one number.";
+    if (signupForm.repeat !== signupForm.password) next.repeat = "Passwords do not match.";
+    if (!signupForm.terms) next.terms = "You must accept the Terms and Conditions.";
+    setSignupErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  /** Process registration form submission */
+  const handleSignupSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!validateSignup()) return;
+    setBusy(true);
+    const { data, error } = await supabase.auth.signUp({
+      email: signupForm.email.trim(),
+      password: signupForm.password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { username: signupForm.username.trim(), marketing_opt_in: signupForm.contactMe },
+      },
+    });
+    setBusy(false);
+
+    if (error) {
+      setSignupErrors({ form: error.message });
+      return;
+    }
+    if (data.user && data.user.identities?.length === 0) {
+      setSignupErrors({ email: "An account already exists for this email address." });
+      return;
+    }
+    if (!data.session) {
+      setSignupStage("done");
+      setStatus({
+        tone: "info",
+        message: "Account created. Confirm your email address, then sign in to finish setup.",
+      });
+      return;
+    }
+    setSignupStage("biometric");
+  };
+
+  /** Enroll biometric passkey during signup */
+  const handleSignupEnroll = async () => {
+    setStatus({ tone: "info", message: "Waiting for your device…" });
+    setBusy(true);
+    const result = await enrollBiometric();
+    setBusy(false);
+    if (!result.ok) {
+      setStatus({ tone: "error", message: result.error });
+      return;
+    }
+    setStatus({ tone: "success", message: "Fingerprint login enabled for this device." });
+    setTimeout(() => void finishLogin(), 900);
   };
 
   /** Authenticate user using Email and Password via Supabase */
@@ -131,7 +238,7 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
         className="auth-modal"
         role="dialog"
         aria-modal="true"
-        aria-label="Login to your Account"
+        aria-label={view === "signup" ? "Create an account" : "Login to your Account"}
         ref={dialogRef}
       >
         <button type="button" className="auth-close" onClick={onClose} aria-label="Close login">
@@ -139,11 +246,154 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
         </button>
 
         <aside className="auth-art">
-          <img src={skeletonArt} alt="Skeleton working on laptop" loading="lazy" width={1024} height={1024} />
+          <img
+            src={view === "signup" ? signupArt : skeletonArt}
+            alt="Skeleton illustration"
+            loading="lazy"
+            width={1024}
+            height={1024}
+          />
         </aside>
 
         <div className="auth-form-side">
-          {view === "biometric" ? (
+          {view === "signup" ? (
+            signupStage === "biometric" ? (
+              <BiometricPanel
+                title="Set Up Biometric Login"
+                instruction="Use your device's biometric authentication for convenient sign-in."
+                actionLabel="Enable Fingerprint Login"
+                cancelLabel="Skip for Now"
+                onScan={handleSignupEnroll}
+                onCancel={() => void finishLogin()}
+                status={status}
+                busy={busy}
+                secondary={{ label: "Skip for Now", onClick: () => void finishLogin() }}
+              />
+            ) : signupStage === "done" ? (
+              <div className="auth-form">
+                <h2 className="auth-heading">Almost there</h2>
+                <p className="auth-status auth-status--info">{status?.message}</p>
+                <button className="auth-primary" type="button" onClick={() => setView("login")}>
+                  Back to Login
+                </button>
+              </div>
+            ) : (
+              <form className="auth-form" onSubmit={handleSignupSubmit} noValidate>
+                <h2 className="auth-heading auth-heading--sm">Register with your e-mail</h2>
+
+                <div className="auth-field">
+                  <label className="auth-label auth-label--caps" htmlFor="signup-username">
+                    USERNAME (*)
+                  </label>
+                  <input
+                    id="signup-username"
+                    type="text"
+                    className="auth-input auth-input--line"
+                    placeholder="Username"
+                    value={signupForm.username}
+                    onChange={(e) => updateSignup("username", e.target.value)}
+                    autoComplete="username"
+                  />
+                  {signupErrors.username ? <p className="auth-error">{signupErrors.username}</p> : null}
+                </div>
+
+                <div className="auth-field">
+                  <label className="auth-label auth-label--caps" htmlFor="signup-email">
+                    EMAIL (*)
+                  </label>
+                  <input
+                    id="signup-email"
+                    type="email"
+                    className="auth-input auth-input--line"
+                    placeholder="E-mail"
+                    value={signupForm.email}
+                    onChange={(e) => updateSignup("email", e.target.value)}
+                    autoComplete="email"
+                  />
+                  {signupErrors.email ? <p className="auth-error">{signupErrors.email}</p> : null}
+                </div>
+
+                <div className="auth-grid">
+                  <div className="auth-field">
+                    <label className="auth-label auth-label--caps" htmlFor="signup-password">
+                      PASSWORD (*)
+                    </label>
+                    <input
+                      id="signup-password"
+                      type="password"
+                      className="auth-input auth-input--line"
+                      placeholder="Password"
+                      value={signupForm.password}
+                      onChange={(e) => updateSignup("password", e.target.value)}
+                      autoComplete="new-password"
+                    />
+                    {signupErrors.password ? <p className="auth-error">{signupErrors.password}</p> : null}
+                  </div>
+                  <div className="auth-field">
+                    <label className="auth-label auth-label--caps" htmlFor="signup-repeat">
+                      REPEAT PASSWORD (*)
+                    </label>
+                    <input
+                      id="signup-repeat"
+                      type="password"
+                      className="auth-input auth-input--line"
+                      placeholder="Repeat Password"
+                      value={signupForm.repeat}
+                      onChange={(e) => updateSignup("repeat", e.target.value)}
+                      autoComplete="new-password"
+                    />
+                    {signupErrors.repeat ? <p className="auth-error">{signupErrors.repeat}</p> : null}
+                  </div>
+                </div>
+
+                <p className="auth-consent">
+                  Awwwards may keep me informed with personalized emails about products and services. See our
+                  Privacy Policy for more details.
+                </p>
+
+                <label className="auth-check">
+                  <input
+                    type="checkbox"
+                    checked={signupForm.contactMe}
+                    onChange={(e) => updateSignup("contactMe", e.target.checked)}
+                  />
+                  Please contact me via e-mail
+                </label>
+                <label className="auth-check">
+                  <input
+                    type="checkbox"
+                    checked={signupForm.terms}
+                    onChange={(e) => updateSignup("terms", e.target.checked)}
+                  />
+                  I have read and accept the Terms and Conditions
+                </label>
+                {signupErrors.terms ? <p className="auth-error">{signupErrors.terms}</p> : null}
+                {signupErrors.form ? (
+                  <p className="auth-status auth-status--error" role="alert">
+                    {signupErrors.form}
+                  </p>
+                ) : null}
+
+                <button className="auth-primary" type="submit" disabled={busy}>
+                  {busy ? "Creating account…" : "Create Account"}
+                </button>
+
+                <p className="auth-footer">
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    className="auth-inline-link"
+                    onClick={() => {
+                      setStatus(null);
+                      setView("login");
+                    }}
+                  >
+                    Back to login
+                  </button>
+                </p>
+              </form>
+            )
+          ) : view === "biometric" ? (
             <BiometricPanel
               title="Verify your identity using your device"
               instruction="Your device will ask for a fingerprint, face scan or PIN."
@@ -197,7 +447,7 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
               </button>
 
               <div className="auth-divider">
-                <span>or Sign in with Email</span>
+                <span>or Sign In with Email</span>
               </div>
 
               <label className="auth-label" htmlFor="login-email">
@@ -267,8 +517,8 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
                   type="button"
                   className="auth-inline-link"
                   onClick={() => {
-                    onClose();
-                    void navigate({ to: "/signup" });
+                    setStatus(null);
+                    setView("signup");
                   }}
                 >
                   Create an account
