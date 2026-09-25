@@ -14,7 +14,7 @@ export function BiometricPanel({
   actionLabel,
   onScan,
   onCancel,
-  cancelLabel = "Cancel",
+  cancelLabel = "Back to Login",
   secondary,
   status,
   busy,
@@ -41,16 +41,18 @@ export function BiometricPanel({
 
   return (
     <div className="bio-panel">
-      {/* Top Right Close Button */}
-      <button
-        type="button"
-        className="bio-cancel"
-        onClick={onCancel}
-        aria-label={cancelLabel}
-        title={cancelLabel}
-      >
-        ✕
-      </button>
+      {/* Top Left Navigation Action */}
+      <div className="bio-top-bar">
+        <button
+          type="button"
+          className="bio-back-button"
+          onClick={onCancel}
+          aria-label={cancelLabel}
+          title={cancelLabel}
+        >
+          ← {cancelLabel}
+        </button>
+      </div>
 
       <h2 className="auth-heading">{title}</h2>
       <p className="auth-subtitle">{instruction}</p>
