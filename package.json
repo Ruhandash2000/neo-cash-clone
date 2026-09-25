@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "deploy:cf": "npm run build && wrangler deploy --config .output/server/wrangler.json",
+    "deploy:gh": "npm run build && node scripts/prepare-gh-pages.js && gh-pages -d .output/public",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
