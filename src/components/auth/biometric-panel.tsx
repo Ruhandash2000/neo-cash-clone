@@ -1,3 +1,8 @@
+/**
+ * Biometric Scanning & Enrolling Panel Component
+ * Displays instructions, animated fingerprint scanner, scanning status, and fallback options.
+ */
+
 import { useEffect, useState } from "react";
 
 import { FingerprintScan } from "./fingerprint-scan";
@@ -36,14 +41,22 @@ export function BiometricPanel({
 
   return (
     <div className="bio-panel">
-      <button type="button" className="bio-cancel" onClick={onCancel}>
-        {cancelLabel} <span aria-hidden="true">✕</span>
+      {/* Top Right Close Button */}
+      <button
+        type="button"
+        className="bio-cancel"
+        onClick={onCancel}
+        aria-label={cancelLabel}
+        title={cancelLabel}
+      >
+        ✕
       </button>
 
       <h2 className="auth-heading">{title}</h2>
       <p className="auth-subtitle">{instruction}</p>
 
       <div className="bio-body">
+        {/* Animated Scanner Button */}
         <button
           type="button"
           className="bio-scan"
@@ -51,10 +64,11 @@ export function BiometricPanel({
           disabled={busy}
           aria-label={actionLabel}
         >
-          <FingerprintScan />
+          <FingerprintScan size={104} busy={Boolean(busy)} />
         </button>
+
         <p className="bio-hint">
-          <span aria-hidden="true">👆</span> {busy ? "Waiting for your device…" : actionLabel}
+          <span aria-hidden="true">👇</span> {busy ? "Scanning your fingerprint…" : actionLabel}
         </p>
       </div>
 
