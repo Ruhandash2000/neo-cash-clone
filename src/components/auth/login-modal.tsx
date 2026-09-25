@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { signInWithBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "./biometric-panel";
-import authArt from "@/assets/auth-side-illustration.jpg";
+import skeletonArt from "@/assets/skeleton-illustration.png";
 
 /** View modes for the authentication modal dialog */
 type View = "login" | "biometric" | "forgot";
@@ -139,7 +139,7 @@ export function LoginModal({ open, onClose }: { open: boolean; onClose: () => vo
         </button>
 
         <aside className="auth-art">
-          <img src={authArt} alt="" loading="lazy" width={1024} height={1024} />
+          <img src={skeletonArt} alt="Skeleton working on laptop" loading="lazy" width={1024} height={1024} />
           <p>Eliminate delays. Eliminate errors. Eliminate cash.</p>
         </aside>
 
