@@ -18,8 +18,15 @@ import greenLogo from "../assets/neo-green-logo.png";
 
 // Define TanStack Start Route configuration with search validation & meta headers
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): { login?: boolean } =>
-    search["login"] === true || search["login"] === "true" ? { login: true } : {},
+  validateSearch: (search: Record<string, unknown>): { login?: boolean; signup?: boolean; view?: "login" | "biometric" | "signup" } => {
+    const res: { login?: boolean; signup?: boolean; view?: "login" | "biometric" | "signup" } = {};
+    if (search["login"] === true || search["login"] === "true") res.login = true;
+    if (search["signup"] === true || search["signup"] === "true") res.signup = true;
+    if (typeof search["view"] === "string" && ["login", "biometric", "signup"].includes(search["view"])) {
+      res.view = search["view"] as "login" | "biometric" | "signup";
+    }
+    return res;
+  },
   head: () => ({
     meta: [
       { title: "Neo Cashless — Intelligent Financial Ecosystem" },
@@ -84,9 +91,22 @@ function NeoCashless() {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [active, setActive] = useState(0);
   const [language, setLanguage] = useState<Language>("en");
-  const { login: loginParam } = Route.useSearch();
-  const [loginOpen, setLoginOpen] = useState(Boolean(loginParam));
+  const search = Route.useSearch();
+  const [loginOpen, setLoginOpen] = useState(Boolean(search.login || search.signup || search.view));
+  const [authView, setAuthView] = useState<"login" | "biometric" | "forgot" | "signup">(
+    search.signup ? "signup" : search.view || "login"
+  );
   const copy = content[language];
+
+  useEffect(() => {
+    if (search.signup) {
+      setAuthView("signup");
+      setLoginOpen(true);
+    } else if (search.login || search.view) {
+      setAuthView(search.view || "login");
+      setLoginOpen(true);
+    }
+  }, [search]);
 
   // Observer to track which section is currently visible on screen
   useEffect(() => {
@@ -270,7 +290,7 @@ function NeoCashless() {
 
       {/* Feature Sections & Auth Modal */}
       <HomeSections />
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} initialView={authView} />
     </main>
   );
 }
