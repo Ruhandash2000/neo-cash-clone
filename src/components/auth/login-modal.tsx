@@ -181,18 +181,24 @@ export function LoginModal({
 
   /** Trigger Google OAuth 2.0 single sign-on redirect via Supabase */
   const handleGoogle = async () => {
-    setStatus(null);
+    setStatus({ tone: "info", message: "Connecting to Google..." });
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    setBusy(false);
-    if (error) {
-      setStatus({ tone: "error", message: error.message ?? "Google sign-in failed." });
-      return;
+    try {
+      const redirectUrl = window.location.origin + window.location.pathname;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+      if (error) {
+        setBusy(false);
+        setStatus({ tone: "error", message: error.message ?? "Google sign-in failed." });
+      }
+    } catch (err: unknown) {
+      setBusy(false);
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setStatus({ tone: "error", message: msg });
     }
   };
 
