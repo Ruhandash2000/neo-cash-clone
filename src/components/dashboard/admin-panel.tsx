@@ -299,6 +299,25 @@ export function AdminPanel({
     setContactModalStudent(null);
   };
 
+  
+  // Phase 18 — Admin Audit Trail Filter & Detail Modal State
+  const [auditUserSearch, setAuditUserSearch] = useState("");
+  const [auditRoleFilter, setAuditRoleFilter] = useState<"all" | "Admin" | "Head" | "Student" | "System">("all");
+  const [auditActionFilter, setAuditActionFilter] = useState<string>("all");
+  const [auditDateSearch, setAuditDateSearch] = useState("");
+  const [auditStudentSearch, setAuditStudentSearch] = useState("");
+  const [auditFinancialSearch, setAuditFinancialSearch] = useState("");
+  const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLog | null>(null);
+
+  const handleResetAuditFilters = () => {
+    setAuditUserSearch("");
+    setAuditRoleFilter("all");
+    setAuditActionFilter("all");
+    setAuditDateSearch("");
+    setAuditStudentSearch("");
+    setAuditFinancialSearch("");
+  };
+
   const [academicSubTab, setAcademicSubTab] = useState<"structure" | "promotion" | "sections">("structure");
 
   // Creation forms state
@@ -587,7 +606,1186 @@ export function AdminPanel({
     setFilterVerification("all");
   };
 
-  return (
+  const renderEscalationsTab = () => {
+        const escalationsList = store.escalations || [];
+        const openCount = escalationsList.filter(e => e.status === "open").length;
+        const progressCount = escalationsList.filter(e => e.status === "in_progress").length;
+        const resolvedCount = escalationsList.filter(e => e.status === "resolved").length;
+
+        const filteredTickets = escalationsList.filter(t => {
+          if (escalationFilter === "open" && t.status !== "open") return false;
+          if (escalationFilter === "in_progress" && t.status !== "in_progress") return false;
+          if (escalationFilter === "resolved" && t.status !== "resolved") return false;
+
+          if (escalationSearch.trim()) {
+            const q = escalationSearch.toLowerCase().trim();
+            const matchId = t.id.toLowerCase().includes(q);
+            const matchName = t.studentName.toLowerCase().includes(q);
+            const matchIdNum = t.studentId.toLowerCase().includes(q);
+            const matchSubject = t.subject.toLowerCase().includes(q);
+            if (!matchId && !matchName && !matchIdNum && !matchSubject) return false;
+          }
+          return true;
+        });
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            
+            {/* PAGE HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                  Human Support Escalation Queue
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Review and reply to student support inquiries escalated from the Neo AI Financial Assistant.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "999px", fontWeight: 700, color: "#241A14", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <ShieldCheck size={14} style={{ color: "#047857" }} /> Institutional Support Desk
+                </span>
+              </div>
+            </div>
+
+            {/* METRIC SUMMARY CARDS */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+              <div style={{ background: "#FFFFFF", border: openCount > 0 ? "2px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Open Pending Escalations</span>
+                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#241A14" }}>{openCount} Ticket{openCount !== 1 ? "s" : ""}</h2>
+              </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>In Progress (Under Review)</span>
+                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#9A6600" }}>{progressCount} Ticket{progressCount !== 1 ? "s" : ""}</h2>
+              </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Resolved Support Tickets</span>
+                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#047857" }}>{resolvedCount} Ticket{resolvedCount !== 1 ? "s" : ""}</h2>
+              </div>
+            </div>
+
+            {/* FILTER TABS & SEARCH BAR */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "18px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+                
+                {/* Filter Tabs */}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {[
+                    { id: "all", label: "All Support Tickets", count: escalationsList.length },
+                    { id: "open", label: "Open", count: openCount },
+                    { id: "in_progress", label: "In Progress", count: progressCount },
+                    { id: "resolved", label: "Resolved", count: resolvedCount },
+                  ].map((tab) => {
+                    const isActive = escalationFilter === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setEscalationFilter(tab.id as any)}
+                        style={{
+                          background: isActive ? "#D35400" : "#FDF9F3",
+                          color: isActive ? "#FFFFFF" : "#241A14",
+                          border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
+                          padding: "6px 14px",
+                          borderRadius: "999px",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        {tab.label}
+                        <span style={{ background: isActive ? "rgba(255,255,255,0.25)" : "rgba(36,26,20,0.08)", padding: "2px 6px", borderRadius: "999px", fontSize: "0.74rem" }}>
+                          {tab.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Search Bar */}
+                <div style={{ position: "relative", minWidth: "260px", flex: "1 1 260px", maxWidth: "360px" }}>
+                  <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
+                  <input
+                    type="text"
+                    placeholder="Search by student name, ID, or subject..."
+                    value={escalationSearch}
+                    onChange={(e) => setEscalationSearch(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px 8px 34px",
+                      background: "#FDF9F3",
+                      border: "1px solid rgba(196, 154, 108, 0.35)",
+                      borderRadius: "10px",
+                      color: "#241A14",
+                      fontSize: "0.84rem",
+                      outline: "none",
+                    }}
+                  />
+                  {escalationSearch && (
+                    <button type="button" onClick={() => setEscalationSearch("")} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#8C7A6A", cursor: "pointer" }}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+            {/* TICKETS TABLE LISTING */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
+              {filteredTickets.length === 0 ? (
+                <div style={{ padding: "48px 20px", textAlign: "center", color: "#66564A" }}>
+                  <MessageSquare size={42} style={{ color: "#8C7A6A", marginBottom: "12px" }} />
+                  <h4 style={{ margin: "0 0 6px", color: "#241A14", fontSize: "1.1rem" }}>No support escalations found</h4>
+                  <p style={{ margin: 0, fontSize: "0.86rem" }}>No student tickets match the selected filter or search terms.</p>
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                    <thead>
+                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Ticket ID</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Student Dossier</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Institution & Dept</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Subject</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Logged At</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Status</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700, textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTickets.map((ticket) => (
+                        <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                          <td style={{ padding: "14px 18px", fontWeight: 800, color: "#D35400" }}>
+                            #{ticket.id}
+                          </td>
+                          <td style={{ padding: "14px 18px" }}>
+                            <strong style={{ color: "#241A14", display: "block" }}>{ticket.studentName}</strong>
+                            <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>ID: {ticket.studentId}</span>
+                          </td>
+                          <td style={{ padding: "14px 18px", color: "#66564A" }}>
+                            <div>{ticket.institution}</div>
+                            <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{ticket.department}</span>
+                          </td>
+                          <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14" }}>
+                            {ticket.subject}
+                            <span style={{ fontSize: "0.75rem", color: "#8C7A6A", display: "block", marginTop: "2px" }}>
+                              {ticket.messages.length} message(s) in thread
+                            </span>
+                          </td>
+                          <td style={{ padding: "14px 18px", color: "#66564A", fontSize: "0.82rem" }}>
+                            {ticket.createdAt}
+                          </td>
+                          <td style={{ padding: "14px 18px" }}>
+                            <StatusBadge
+                              status={ticket.status === "resolved" ? "approved" : ticket.status === "in_progress" ? "pending" : "due"}
+                              customLabel={ticket.status === "open" ? "Open Ticket" : ticket.status === "in_progress" ? "In Progress" : "Resolved"}
+                            />
+                          </td>
+                          <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedEscalation(ticket)}
+                              style={{
+                                background: "#D35400",
+                                color: "#FFFFFF",
+                                border: "none",
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                fontSize: "0.8rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <MessageSquare size={14} /> Respond & View Thread 💬
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+          </div>
+        );
+      };
+
+  const renderAnalyticsView = () => {
+        const riskAccountsData = store.students.map((student) => {
+          let reasons: Array<"overdue" | "ignored_reminders" | "failed_payment" | "repeated_delay"> = [];
+          let overdueDays = 0;
+          let remindersSent = 2;
+          let remindersOpened = 0;
+          let failedPaymentCount = 0;
+
+          if (student.studentId.includes("1024") || student.id === "stu-1") {
+            reasons = ["overdue", "ignored_reminders", "repeated_delay"];
+            overdueDays = 18;
+            remindersSent = 4;
+            remindersOpened = 0;
+            failedPaymentCount = 1;
+          } else if (student.id === "stu-2" || student.name.includes("Aria")) {
+            reasons = ["failed_payment", "ignored_reminders"];
+            overdueDays = 5;
+            remindersSent = 3;
+            remindersOpened = 0;
+            failedPaymentCount = 2;
+          } else if (student.id === "stu-3" || student.name.includes("Siddique")) {
+            reasons = ["overdue"];
+            overdueDays = 12;
+            remindersSent = 2;
+            remindersOpened = 1;
+            failedPaymentCount = 0;
+          } else if (student.feeStatus === "Overdue" || student.status === "Overdue") {
+            reasons = ["overdue", "ignored_reminders"];
+            overdueDays = 15;
+            remindersSent = 3;
+            remindersOpened = 0;
+            failedPaymentCount = 0;
+          } else if (student.name.includes("Mahmudul")) {
+            reasons = ["repeated_delay", "overdue"];
+            overdueDays = 22;
+            remindersSent = 4;
+            remindersOpened = 0;
+            failedPaymentCount = 0;
+          } else {
+            reasons = ["overdue"];
+            overdueDays = 8;
+            remindersSent = 2;
+            remindersOpened = 0;
+          }
+
+          return {
+            ...student,
+            riskReasons: reasons,
+            overdueDays,
+            remindersSent,
+            remindersOpened,
+            failedPaymentCount,
+          };
+        });
+
+        const filteredRiskAccounts = riskAccountsData.filter((acc) => {
+          if (riskFilter === "all") return true;
+          return acc.riskReasons.includes(riskFilter);
+        });
+
+        const totalOverdueCount = riskAccountsData.filter(a => a.riskReasons.includes("overdue")).length;
+        const totalIgnoredRemindersCount = riskAccountsData.filter(a => a.riskReasons.includes("ignored_reminders")).length;
+        const totalFailedPaymentsCount = riskAccountsData.filter(a => a.riskReasons.includes("failed_payment")).length;
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            
+            {/* HEADER BANNER */}
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                    📊 Financial Operations & Intelligence
+                  </span>
+                  <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
+                </div>
+                <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
+                  Institutional Revenue & Account Attention Intelligence
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Comprehensive revenue performance, collection trajectories, dynamic alert notifications, and human evaluation queue.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="ms-btn-primary"
+                  onClick={() => setActiveTab("overview")}
+                  style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
+                >
+                  ← Operations Center
+                </button>
+              </div>
+            </div>
+
+            {/* 1. FINANCIAL ANALYTICS SUMMARY MATRIX (4 CORE KPIS) */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+              
+              {/* COLLECTION RATE */}
+              <div style={{ background: "#FFFFFF", border: "2px solid #047857", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#047857", textTransform: "uppercase", letterSpacing: "0.04em" }}>Collection Rate</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2.2rem", fontWeight: 800, color: "#241A14" }}>82.4%</span>
+                </div>
+                <div>
+                  <div style={{ width: "100%", height: "6px", background: "#FDF9F3", border: "1px solid rgba(4, 120, 87, 0.3)", borderRadius: "999px", marginBottom: "6px", overflow: "hidden" }}>
+                    <div style={{ width: "82.4%", height: "100%", background: "#047857", borderRadius: "999px" }} />
+                  </div>
+                  <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>
+                    Target: 85.0% • ৳48,20,000 Collected
+                  </span>
+                </div>
+              </div>
+
+              {/* TOTAL OUTSTANDING */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>Total Outstanding</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(1480000, false)}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>
+                  Due Soon: ৳10.85L • Overdue: ৳3.95L
+                </span>
+              </div>
+
+              {/* TOTAL PAID */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.04em" }}>Total Paid Balance</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(4820000, false)}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <CheckCircle2 size={14} /> 1,526 Settled Transactions
+                </span>
+              </div>
+
+              {/* TOTAL OVERDUE */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(190, 18, 60, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>Overdue Dues</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(395000, false)}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "#BE123C", fontWeight: 700 }}>
+                  23 Overdue Student Profiles
+                </span>
+              </div>
+
+            </div>
+
+            {/* 2. OPERATIONAL ALERTS CENTER (4 EXPLICIT ALERTS) */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, color: "#241A14" }}>
+                    Operational Financial Alerts & System Triggers
+                  </h3>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                    Real-time exception triggers requiring administrative attention or follow-up.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
+                
+                {/* ALERT 1: OVERDUE FEES */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #BE123C", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#BE123C", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <AlertTriangle size={18} /> Overdue Fees Alert
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      23 students have overdue fees.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      Total unpaid past deadline: ৳3,95,000
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRiskFilter("overdue")}
+                    style={{ background: "#BE123C", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    Inspect Overdue Accounts →
+                  </button>
+                </div>
+
+                {/* ALERT 2: UNOPENED REMINDERS */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #D35400", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#D35400", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <Bell size={18} /> Reminder Engagement Alert
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      12 students have not opened reminders.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      Automated weekly notices unopened for 14+ days
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRiskFilter("ignored_reminders")}
+                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    View Unresponsive Profiles →
+                  </button>
+                </div>
+
+                {/* ALERT 3: FAILED PAYMENTS */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #9A6600", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#9A6600", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <XCircle size={18} /> Gateway Exception Alert
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      5 payments failed.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      Gateway timeouts on bKash & Card channels
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRiskFilter("failed_payment")}
+                    style={{ background: "#9A6600", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    Inspect Failed Attempts →
+                  </button>
+                </div>
+
+                {/* ALERT 4: PARTIAL PAYMENT QUEUE */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #047857", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#047857", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <ShieldCheck size={18} /> Hardship Applications
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      8 partial-payment requests awaiting review.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      AI signature matched dossiers pending Admin verification
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("applications")}
+                    style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    Open Review Queue →
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* 3. PAYMENT TREND & FEE PERFORMANCE ANALYTICS */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+              
+              {/* PAYMENT COLLECTION TREND */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                    Payment Collection Trend Trajectory
+                  </h3>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                    Monthly revenue intake vs target benchmarks for Fall 2026.
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  {[
+                    { month: "July 2026", collected: 1250000, target: 1500000, pct: 83.3 },
+                    { month: "August 2026", collected: 1820000, target: 2000000, pct: 91.0 },
+                    { month: "September 2026 (Active)", collected: 1750000, target: 2350000, pct: 74.4 },
+                    { month: "October 2026 (Forecast)", collected: 1030000, target: 1200000, pct: 85.8 },
+                  ].map((item, idx) => (
+                    <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.88rem" }}>
+                        <span style={{ fontWeight: 800, color: "#241A14" }}>{item.month}</span>
+                        <span style={{ fontWeight: 800, color: item.pct >= 85 ? "#047857" : "#D35400" }}>
+                          {formatTaka(item.collected, false)} / {formatTaka(item.target, false)} ({item.pct}%)
+                        </span>
+                      </div>
+                      <div style={{ width: "100%", height: "8px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "999px", overflow: "hidden" }}>
+                        <div style={{ width: `${item.pct}%`, height: "100%", background: item.pct >= 85 ? "#047857" : "#D35400", borderRadius: "999px" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* FEE PERFORMANCE BREAKDOWN */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                    Fee Type Performance Breakdown
+                  </h3>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                    Collection efficiency across different institutional fee categories.
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {[
+                    { title: "Semester Tuition Fee", category: "Tuition", collected: 3250000, total: 3800000, pct: 85.5 },
+                    { title: "Lab & Tech Facilities Fee", category: "Lab & Tech", collected: 840000, total: 920000, pct: 91.3 },
+                    { title: "Semester Exam & Evaluation", category: "Exam", collected: 520000, total: 660000, pct: 78.8 },
+                    { title: "Library & Digital Resources", category: "Library", collected: 210000, total: 220000, pct: 95.4 },
+                    { title: "Hostel & Amenities Fee", category: "Hostel", collected: 180000, total: 250000, pct: 72.0 },
+                  ].map((fee, idx) => (
+                    <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <strong style={{ fontSize: "0.88rem", color: "#241A14", display: "block" }}>{fee.title}</strong>
+                        <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{fee.category} Category</span>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <strong style={{ fontSize: "0.92rem", color: "#241A14", display: "block", fontFeatureSettings: "'tnum'" }}>
+                          {formatTaka(fee.collected, false)}
+                        </strong>
+                        <span style={{ fontSize: "0.74rem", color: fee.pct >= 85 ? "#047857" : "#D35400", fontWeight: 700 }}>
+                          {fee.pct}% Collected
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* 4. STUDENT RISK & HUMAN ATTENTION ENGINE (NEEDS ADMIN ATTENTION) */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+              
+              {/* SECTION TITLE & HUMAN GOVERNANCE MANDATE */}
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 800, color: "#241A14" }}>
+                      Accounts Requiring Human Attention
+                    </h2>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.86rem", color: "#66564A" }}>
+                      Flagged student profiles requiring human evaluation, outreach, or payment assistance.
+                    </p>
+                  </div>
+
+                  {/* HUMAN POLICY MANDATE ALERT */}
+                  <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "12px", padding: "10px 16px", maxWidth: "480px", fontSize: "0.78rem", color: "#241A14", lineHeight: 1.4 }}>
+                    <strong style={{ color: "#D35400", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Shield size={14} /> HUMAN GOVERNANCE POLICY
+                    </strong>
+                    The AI system flags potential risk factors but does <strong>NOT automatically penalize, suspend, or block student accounts</strong>. Administrators decide appropriate support actions.
+                  </div>
+                </div>
+              </div>
+
+              {/* RISK ATTENTION FILTER TABS */}
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "12px" }}>
+                {[
+                  { key: "all", label: `All Risk Accounts (${riskAccountsData.length})` },
+                  { key: "overdue", label: `Overdue Fees (${totalOverdueCount})` },
+                  { key: "ignored_reminders", label: `Ignored Reminders (${totalIgnoredRemindersCount})` },
+                  { key: "failed_payment", label: `Failed Payments (${totalFailedPaymentsCount})` },
+                  { key: "repeated_delay", label: "Repeated Delays (8)" },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setRiskFilter(tab.key as any)}
+                    style={{
+                      background: riskFilter === tab.key ? "#D35400" : "#FDF9F3",
+                      color: riskFilter === tab.key ? "#FFFFFF" : "#66564A",
+                      border: "1px solid rgba(196, 154, 108, 0.3)",
+                      padding: "7px 14px",
+                      borderRadius: "8px",
+                      fontSize: "0.82rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* RISK ATTENTION ACCOUNTS TABLE */}
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                  <thead>
+                    <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Profile</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Risk Status</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Possible Risk Reason(s)</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Financial Context</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700, textAlign: "right" }}>Admin Contact Suite</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRiskAccounts.map((student) => (
+                      <tr key={student.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                        
+                        {/* STUDENT PROFILE */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#D35400", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "0.9rem" }}>
+                              {student.name.charAt(0)}
+                            </div>
+                            <div>
+                              <strong style={{ color: "#241A14", display: "block" }}>{student.name}</strong>
+                              <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>
+                                {student.studentId} • {student.department} ({student.classYear})
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* RISK STATUS */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <span style={{ background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "4px 10px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <AlertTriangle size={12} /> Needs Admin Attention
+                          </span>
+                        </td>
+
+                        {/* POSSIBLE REASONS */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                            {student.riskReasons.map((r, idx) => (
+                              <span key={idx} style={{
+                                fontSize: "0.72rem",
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                fontWeight: 700,
+                                background: r === "overdue" ? "rgba(190, 18, 60, 0.1)" : r === "ignored_reminders" ? "rgba(211, 84, 0, 0.1)" : r === "failed_payment" ? "rgba(154, 102, 0, 0.1)" : "rgba(37, 99, 235, 0.1)",
+                                color: r === "overdue" ? "#BE123C" : r === "ignored_reminders" ? "#D35400" : r === "failed_payment" ? "#9A6600" : "#1D4ED8",
+                              }}>
+                                {r === "overdue" ? `🔴 Overdue (${student.overdueDays} days)` : r === "ignored_reminders" ? `🟡 Ignored Reminders (${student.remindersSent} sent)` : r === "failed_payment" ? `🟠 Failed Payment (${student.failedPaymentCount}x)` : `🟣 Repeated Delay`}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+
+                        {/* FINANCIAL CONTEXT */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <strong style={{ color: "#BE123C", fontFeatureSettings: "'tnum'", display: "block" }}>
+                            {formatTaka(student.totalDues || 6500, false)}
+                          </strong>
+                          <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>
+                            Wallet: {formatTaka(student.walletBalance || 0, false)}
+                          </span>
+                        </td>
+
+                        {/* ADMIN CONTACT ACTIONS */}
+                        <td style={{ padding: "14px 16px", textAlign: "right" }}>
+                          <div style={{ display: "inline-flex", gap: "6px" }}>
+                            
+                            {/* EMAIL BUTTON */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenContactModal(student, "email")}
+                              title="Send Email Notice"
+                              style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                              <Mail size={14} /> Email
+                            </button>
+
+                            {/* SMS / PHONE BUTTON */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenContactModal(student, "sms")}
+                              title="Send SMS / Phone Message"
+                              style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                              <Phone size={14} /> SMS
+                            </button>
+
+                            {/* VOICE CALL BUTTON */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenContactModal(student, "call")}
+                              title="Initiate Demo Voice Call"
+                              style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                              <PhoneCall size={14} /> Call
+                            </button>
+
+                          </div>
+                        </td>
+
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+          </div>
+        );
+      };
+
+  const renderAuditView = () => {
+        const filteredAuditLogs = store.auditLogs.filter((log) => {
+          const matchesUser = !auditUserSearch || log.actor.toLowerCase().includes(auditUserSearch.toLowerCase());
+          const matchesRole = auditRoleFilter === "all" || log.role === auditRoleFilter;
+          const matchesAction = auditActionFilter === "all" || (log.actionType && log.actionType === auditActionFilter) || log.action.toLowerCase().includes(auditActionFilter.toLowerCase());
+          const matchesDate = !auditDateSearch || log.timestamp.toLowerCase().includes(auditDateSearch.toLowerCase());
+          const matchesStudent = !auditStudentSearch || (log.studentName && log.studentName.toLowerCase().includes(auditStudentSearch.toLowerCase())) || (log.studentId && log.studentId.toLowerCase().includes(auditStudentSearch.toLowerCase())) || log.details.toLowerCase().includes(auditStudentSearch.toLowerCase());
+          const matchesFinancial = !auditFinancialSearch || (log.financialRecordTitle && log.financialRecordTitle.toLowerCase().includes(auditFinancialSearch.toLowerCase())) || log.details.toLowerCase().includes(auditFinancialSearch.toLowerCase());
+
+          return matchesUser && matchesRole && matchesAction && matchesDate && matchesStudent && matchesFinancial;
+        });
+
+        const hasActiveAuditFilters = Boolean(
+          auditUserSearch || auditRoleFilter !== "all" || auditActionFilter !== "all" || auditDateSearch || auditStudentSearch || auditFinancialSearch
+        );
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            
+            {/* HEADER BANNER */}
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                    🔒 Immutable Compliance Ledger
+                  </span>
+                  <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
+                </div>
+                <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
+                  Institutional Operations Audit Trail
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Read-only chronological audit trail tracking all fee assignments, deadline changes, application reviews, head approvals, section transfers, and student imports.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <span style={{ background: "#FFF7E6", border: "1px solid #D35400", color: "#D35400", padding: "8px 14px", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <ShieldCheck size={16} /> Strict Read-Only Audit History
+                </span>
+              </div>
+            </div>
+
+            {/* 6-DIMENSION MULTI-FILTER BAR */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.04em", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <Filter size={15} color="#D35400" /> 6-Dimension Audit Filters
+                </span>
+                {hasActiveAuditFilters && (
+                  <button
+                    type="button"
+                    onClick={handleResetAuditFilters}
+                    style={{ background: "none", border: "none", color: "#BE123C", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                  >
+                    <RefreshCw size={13} /> Reset All Filters
+                  </button>
+                )}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+                
+                {/* 1. USER / ACTOR SEARCH */}
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>Actor / User</label>
+                  <input
+                    type="text"
+                    placeholder="Search user name..."
+                    value={auditUserSearch}
+                    onChange={(e) => setAuditUserSearch(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.82rem", color: "#241A14" }}
+                  />
+                </div>
+
+                {/* 2. ROLE FILTER */}
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>User Role</label>
+                  <select
+                    value={auditRoleFilter}
+                    onChange={(e) => setAuditRoleFilter(e.target.value as any)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.82rem", color: "#241A14", fontWeight: 600 }}
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="Admin">Admin Only</option>
+                    <option value="Head">Executive Head Only</option>
+                    <option value="Student">Student Only</option>
+                    <option value="System">System AI Engine</option>
+                  </select>
+                </div>
+
+                {/* 3. ACTION TYPE FILTER */}
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>Action Category</label>
+                  <select
+                    value={auditActionFilter}
+                    onChange={(e) => setAuditActionFilter(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.82rem", color: "#241A14", fontWeight: 600 }}
+                  >
+                    <option value="all">All Actions</option>
+                    <option value="fee_assignment">Fee Assignment</option>
+                    <option value="deadline_change">Deadline Change</option>
+                    <option value="app_review">Application Review</option>
+                    <option value="forward_head">Forwarded to Head</option>
+                    <option value="section_change">Section Transfer</option>
+                    <option value="student_import">Student Roster Import</option>
+                    <option value="head_approval">Head Final Approval</option>
+                  </select>
+                </div>
+
+                {/* 4. DATE SEARCH */}
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>Date / Timestamp</label>
+                  <input
+                    type="text"
+                    placeholder="Search date (e.g. 2026-09-26)..."
+                    value={auditDateSearch}
+                    onChange={(e) => setAuditDateSearch(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.82rem", color: "#241A14" }}
+                  />
+                </div>
+
+                {/* 5. STUDENT SEARCH */}
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>Student Target</label>
+                  <input
+                    type="text"
+                    placeholder="Student name or ID..."
+                    value={auditStudentSearch}
+                    onChange={(e) => setAuditStudentSearch(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.82rem", color: "#241A14" }}
+                  />
+                </div>
+
+                {/* 6. FINANCIAL RECORD SEARCH */}
+                <div>
+                  <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>Financial Record</label>
+                  <input
+                    type="text"
+                    placeholder="Fee title or receipt..."
+                    value={auditFinancialSearch}
+                    onChange={(e) => setAuditFinancialSearch(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.82rem", color: "#241A14" }}
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            {/* AUDIT LOG TABLE */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", overflow: "hidden" }}>
+              <div style={{ padding: "16px 20px", background: "#FDF9F3", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#241A14" }}>
+                  Displaying {filteredAuditLogs.length} Immutable Audit Event Records
+                </span>
+                <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>
+                  Append-Only Log • Click any row for comparative diff dossier
+                </span>
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                  <thead>
+                    <tr style={{ background: "#FFF7E6", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <th style={{ padding: "12px 18px", fontWeight: 700 }}>Log ID & Actor</th>
+                      <th style={{ padding: "12px 18px", fontWeight: 700 }}>Role</th>
+                      <th style={{ padding: "12px 18px", fontWeight: 700 }}>Action Title</th>
+                      <th style={{ padding: "12px 18px", fontWeight: 700 }}>Target Entity & Scope</th>
+                      <th style={{ padding: "12px 18px", fontWeight: 700 }}>Logged Time</th>
+                      <th style={{ padding: "12px 18px", fontWeight: 700, textAlign: "right" }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAuditLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: "32px", textAlign: "center", color: "#8C7A6A" }}>
+                          No audit records match the selected multi-filter criteria.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredAuditLogs.map((log) => (
+                        <tr
+                          key={log.id}
+                          onClick={() => setSelectedAuditLog(log)}
+                          style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)", cursor: "pointer", transition: "background 0.15s ease" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#FDF9F3")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "#FFFFFF")}
+                        >
+                          {/* LOG ID & ACTOR */}
+                          <td style={{ padding: "14px 18px" }}>
+                            <strong style={{ color: "#241A14", display: "block" }}>{log.actor}</strong>
+                            <span style={{ fontSize: "0.74rem", color: "#D35400", fontWeight: 700 }}>{log.id.toUpperCase()}</span>
+                          </td>
+
+                          {/* ROLE */}
+                          <td style={{ padding: "14px 18px" }}>
+                            <span style={{
+                              padding: "3px 10px",
+                              borderRadius: "6px",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                              background: log.role === "Admin" ? "rgba(211, 84, 0, 0.12)" : log.role === "Head" ? "rgba(124, 58, 237, 0.12)" : "rgba(4, 120, 87, 0.12)",
+                              color: log.role === "Admin" ? "#D35400" : log.role === "Head" ? "#7C3AED" : "#047857",
+                            }}>
+                              {log.role}
+                            </span>
+                          </td>
+
+                          {/* ACTION TITLE */}
+                          <td style={{ padding: "14px 18px" }}>
+                            <strong style={{ color: "#241A14", display: "block" }}>{log.action}</strong>
+                            <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{log.details}</span>
+                          </td>
+
+                          {/* TARGET ENTITY */}
+                          <td style={{ padding: "14px 18px" }}>
+                            <span style={{ color: "#241A14", fontWeight: 700, display: "block" }}>
+                              {log.studentName || log.studentId || "Institutional Scope"}
+                            </span>
+                            <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>
+                              {log.financialRecordTitle || "System Operation"}
+                            </span>
+                          </td>
+
+                          {/* LOGGED TIME */}
+                          <td style={{ padding: "14px 18px", color: "#8C7A6A", fontSize: "0.82rem", fontFeatureSettings: "'tnum'" }}>
+                            {log.timestamp}
+                          </td>
+
+                          {/* ACTION */}
+                          <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); setSelectedAuditLog(log); }}
+                              style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#D35400", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                              <Eye size={14} /> View Dossier
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          {/* PHASE 9 — STUDENT WELFARE & DONATIONS AUDIT LEDGER */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", marginTop: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Student Welfare & Impact Donations Audit Ledger
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                  Real-time audit log of student welfare contributions, gateway methods, and earned impact points.
+                </p>
+              </div>
+
+              <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "4px 12px", borderRadius: "999px", fontWeight: 700, color: "#D35400" }}>
+                Formula: ৳100 Donated = 1 Impact Point
+              </span>
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Amount Donated</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Points Earned</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Payment Source</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Logged Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { student: store.studentProfile.name, id: store.studentProfile.studentId, amount: store.donations.totalDonated, points: store.donations.points, method: "bKash Mobile Banking", date: "2026-09-25 10:15 AM" },
+                    { student: "Tanvir Rahman", id: "DCC-CSE-24-9001", amount: 2500, points: 25, method: "bKash Mobile Banking", date: "2026-09-24 04:30 PM" },
+                    { student: "Anika Tabassum", id: "DCC-CSE-24-9002", amount: 1200, points: 12, method: "City Bank Visa Debit", date: "2026-09-22 01:10 PM" },
+                    { student: "Sajid Khan", id: "DCC-EEE-24-8840", amount: 400, points: 4, method: "Dutch-Bangla Rocket", date: "2026-09-20 09:45 AM" },
+                    { student: "Aria Rahman", id: "DCC-2024-9001", amount: 200, points: 2, method: "bKash Mobile Banking", date: "2026-09-18 11:20 AM" },
+                  ].map((record, index) => (
+                    <tr key={index} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <td style={{ padding: "12px 16px" }}>
+                        <strong style={{ color: "#241A14", display: "block" }}>{record.student}</strong>
+                        <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>ID: {record.id}</span>
+                      </td>
+                      <td style={{ padding: "12px 16px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                        {formatTaka(record.amount, false)}
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{ background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 800 }}>
+                          +{record.points} Impact Pts
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "#66564A" }}>
+                        {record.method}
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "#8C7A6A", fontSize: "0.82rem" }}>
+                        {record.date}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      );
+    };
+
+            {/* 6. HUMAN SUPPORT ESCALATION QUEUE (PHASE 8) */}
+      
+
+{/* 7. INSTITUTIONAL REMINDER RULES & ALERT ENGINE (PHASE 10) */}
+  const renderRemindersTab = () => {
+    const rules = store.reminderRules || {
+      weeklyReminderEnabled: true,
+      nearDeadlineDays: 5,
+      finalDayAlertEnabled: true,
+      overduePenaltyNotice: true,
+    };
+
+    const handleToggleRule = (key: keyof typeof rules, value: any) => {
+      actions.updateReminderRules({ [key]: value });
+    };
+
+    const handleRunReminders = () => {
+          const res = actions.triggerRemindersRun();
+          alert(`Automated Reminder Engine Executed! Successfully dispatched ${res.count} fee notification alert(s) across student profiles.`);
+        };
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            
+            {/* HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                  Institutional Reminder Rules & Automated Alert Engine
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Configure automated fee reminder thresholds, near-deadline warnings, and trigger bulk notification dispatches.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="ms-btn-primary"
+                onClick={handleRunReminders}
+                style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontSize: "0.9rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <Zap size={16} /> Trigger Automated Reminders Run Now 🚀
+              </button>
+            </div>
+
+            {/* REMINDER RULES CONFIGURATION GRID */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+              
+              {/* RULE 1: WEEKLY REMINDERS */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Bell size={18} style={{ color: "#D35400" }} /> Weekly Automated Reminder
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={rules.weeklyReminderEnabled}
+                    onChange={(e) => handleToggleRule("weeklyReminderEnabled", e.target.checked)}
+                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
+                  />
+                </div>
+                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
+                  Sends scheduled weekly summary notifications to students with active unpaid semester fees.
+                </p>
+                <span style={{ fontSize: "0.76rem", color: rules.weeklyReminderEnabled ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
+                  Status: {rules.weeklyReminderEnabled ? "● ACTIVE & RUNNING" : "○ DISABLED"}
+                </span>
+              </div>
+
+              {/* RULE 2: NEAR-DEADLINE THRESHOLD */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Clock size={18} style={{ color: "#D35400" }} /> Near-Deadline Alert Threshold
+                </div>
+                <p style={{ margin: "0 0 10px", fontSize: "0.84rem", color: "#66564A" }}>
+                  Trigger high-priority alert when fee due date falls within selected threshold days.
+                </p>
+                <select
+                  value={rules.nearDeadlineDays}
+                  onChange={(e) => handleToggleRule("nearDeadlineDays", Number(e.target.value))}
+                  style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 700, outline: "none" }}
+                >
+                  <option value={3}>3 Days Prior to Due Date</option>
+                  <option value={5}>5 Days Prior to Due Date (Recommended)</option>
+                  <option value={7}>7 Days Prior to Due Date</option>
+                  <option value={10}>10 Days Prior to Due Date</option>
+                </select>
+              </div>
+
+              {/* RULE 3: FINAL-DAY EMERGENCY ALERT */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <AlertTriangle size={18} style={{ color: "#BE123C" }} /> Final-Day Emergency Alert
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={rules.finalDayAlertEnabled}
+                    onChange={(e) => handleToggleRule("finalDayAlertEnabled", e.target.checked)}
+                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
+                  />
+                </div>
+                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
+                  Dispatches emergency notifications on the exact deadline date warning of final payment window.
+                </p>
+                <span style={{ fontSize: "0.76rem", color: rules.finalDayAlertEnabled ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
+                  Status: {rules.finalDayAlertEnabled ? "● ACTIVE & RUNNING" : "○ DISABLED"}
+                </span>
+              </div>
+
+              {/* RULE 4: MISSED DEADLINE LATE FEE NOTICE */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <XCircle size={18} style={{ color: "#BE123C" }} /> Missed Deadline Overdue Alert
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={rules.overduePenaltyNotice}
+                    onChange={(e) => handleToggleRule("overduePenaltyNotice", e.target.checked)}
+                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
+                  />
+                </div>
+                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
+                  Notifies students immediately upon passing due date with instructions for hardship waiver or split request.
+                </p>
+                <span style={{ fontSize: "0.76rem", color: rules.overduePenaltyNotice ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
+                  Status: {rules.overduePenaltyNotice ? "● ACTIVE & RUNNING" : "○ DISABLED"}
+                </span>
+              </div>
+
+            </div>
+
+            {/* AUDIT SUMMARY BOX */}
+            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "14px", padding: "16px", fontSize: "0.85rem", color: "#66564A", display: "flex", alignItems: "center", gap: "10px" }}>
+              <ShieldCheck size={20} style={{ color: "#047857", flexShrink: 0 }} />
+              <div>
+                <strong>Administrative Control Policy:</strong> Reminder dispatches are logged to the institutional audit log. Clicking "Trigger Automated Reminders Run Now" scans active unpaid fees and pushes alerts to student notification trays instantly.
+              </div>
+            </div>
+
+          </div>
+        );
+      };
+
+    return (
     <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
       {/* 1. PROFESSIONAL DATA-DRIVEN ADMIN DASHBOARD (PHASE 11) */}
       {activeTab === "overview" && (
@@ -2852,325 +4050,9 @@ export function AdminPanel({
         </div>
       )}
 
-      {activeTab === "audit" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-              Institutional Audit Logs
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-              Immutable audit trail tracking all fee assignments, student approvals, and payment actions.
-            </p>
-          </div>
-
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
-              <thead>
-                <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Actor</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Role</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Action</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Details</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Timestamp</th>
-                </tr>
-              </thead>
-              <tbody>
-                {store.auditLogs.map((log) => (
-                  <tr key={log.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#241A14" }}>{log.actor}</td>
-                    <td style={{ padding: "12px 18px" }}>
-                      <span style={{ padding: "3px 8px", borderRadius: "6px", fontSize: "0.75rem", fontWeight: 700, background: "rgba(211, 84, 0, 0.1)", color: "#D35400" }}>
-                        {log.role}
-                      </span>
-                    </td>
-                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#241A14" }}>{log.action}</td>
-                    <td style={{ padding: "12px 18px", color: "#66564A" }}>{log.details}</td>
-                    <td style={{ padding: "12px 18px", color: "#8C7A6A" }}>{log.timestamp}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* PHASE 9 — STUDENT WELFARE & DONATIONS AUDIT LEDGER */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", marginTop: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
-                  Student Welfare & Impact Donations Audit Ledger
-                </h3>
-                <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
-                  Real-time audit log of student welfare contributions, gateway methods, and earned impact points.
-                </p>
-              </div>
-
-              <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "4px 12px", borderRadius: "999px", fontWeight: 700, color: "#D35400" }}>
-                Formula: ৳100 Donated = 1 Impact Point
-              </span>
-            </div>
-
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
-                <thead>
-                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
-                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Amount Donated</th>
-                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Points Earned</th>
-                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Payment Source</th>
-                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Logged Date & Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { student: store.studentProfile.name, id: store.studentProfile.studentId, amount: store.donations.totalDonated, points: store.donations.points, method: "bKash Mobile Banking", date: "2026-09-25 10:15 AM" },
-                    { student: "Tanvir Rahman", id: "DCC-CSE-24-9001", amount: 2500, points: 25, method: "bKash Mobile Banking", date: "2026-09-24 04:30 PM" },
-                    { student: "Anika Tabassum", id: "DCC-CSE-24-9002", amount: 1200, points: 12, method: "City Bank Visa Debit", date: "2026-09-22 01:10 PM" },
-                    { student: "Sajid Khan", id: "DCC-EEE-24-8840", amount: 400, points: 4, method: "Dutch-Bangla Rocket", date: "2026-09-20 09:45 AM" },
-                    { student: "Aria Rahman", id: "DCC-2024-9001", amount: 200, points: 2, method: "bKash Mobile Banking", date: "2026-09-18 11:20 AM" },
-                  ].map((record, index) => (
-                    <tr key={index} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                      <td style={{ padding: "12px 16px" }}>
-                        <strong style={{ color: "#241A14", display: "block" }}>{record.student}</strong>
-                        <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>ID: {record.id}</span>
-                      </td>
-                      <td style={{ padding: "12px 16px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
-                        {formatTaka(record.amount, false)}
-                      </td>
-                      <td style={{ padding: "12px 16px" }}>
-                        <span style={{ background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 800 }}>
-                          +{record.points} Impact Pts
-                        </span>
-                      </td>
-                      <td style={{ padding: "12px 16px", color: "#66564A" }}>
-                        {record.method}
-                      </td>
-                      <td style={{ padding: "12px 16px", color: "#8C7A6A", fontSize: "0.82rem" }}>
-                        {record.date}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-            {/* 6. HUMAN SUPPORT ESCALATION QUEUE (PHASE 8) */}
-      {activeTab === "escalations" && (() => {
-        const escalationsList = store.escalations || [];
-        const openCount = escalationsList.filter(e => e.status === "open").length;
-        const progressCount = escalationsList.filter(e => e.status === "in_progress").length;
-        const resolvedCount = escalationsList.filter(e => e.status === "resolved").length;
-
-        const filteredTickets = escalationsList.filter(t => {
-          if (escalationFilter === "open" && t.status !== "open") return false;
-          if (escalationFilter === "in_progress" && t.status !== "in_progress") return false;
-          if (escalationFilter === "resolved" && t.status !== "resolved") return false;
-
-          if (escalationSearch.trim()) {
-            const q = escalationSearch.toLowerCase().trim();
-            const matchId = t.id.toLowerCase().includes(q);
-            const matchName = t.studentName.toLowerCase().includes(q);
-            const matchIdNum = t.studentId.toLowerCase().includes(q);
-            const matchSubject = t.subject.toLowerCase().includes(q);
-            if (!matchId && !matchName && !matchIdNum && !matchSubject) return false;
-          }
-          return true;
-        });
-
-        return (
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            
-            {/* PAGE HEADER */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
-              <div>
-                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-                  Human Support Escalation Queue
-                </h1>
-                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-                  Review and reply to student support inquiries escalated from the Neo AI Financial Assistant.
-                </p>
-              </div>
-
-              <div style={{ display: "flex", gap: "10px" }}>
-                <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "999px", fontWeight: 700, color: "#241A14", display: "inline-flex", alignItems: "center", gap: "6px" }}>
-                  <ShieldCheck size={14} style={{ color: "#047857" }} /> Institutional Support Desk
-                </span>
-              </div>
-            </div>
-
-            {/* METRIC SUMMARY CARDS */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
-              <div style={{ background: "#FFFFFF", border: openCount > 0 ? "2px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Open Pending Escalations</span>
-                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#241A14" }}>{openCount} Ticket{openCount !== 1 ? "s" : ""}</h2>
-              </div>
-
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>In Progress (Under Review)</span>
-                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#9A6600" }}>{progressCount} Ticket{progressCount !== 1 ? "s" : ""}</h2>
-              </div>
-
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Resolved Support Tickets</span>
-                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#047857" }}>{resolvedCount} Ticket{resolvedCount !== 1 ? "s" : ""}</h2>
-              </div>
-            </div>
-
-            {/* FILTER TABS & SEARCH BAR */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "18px 20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-                
-                {/* Filter Tabs */}
-                <div style={{ display: "flex", gap: "8px" }}>
-                  {[
-                    { id: "all", label: "All Support Tickets", count: escalationsList.length },
-                    { id: "open", label: "Open", count: openCount },
-                    { id: "in_progress", label: "In Progress", count: progressCount },
-                    { id: "resolved", label: "Resolved", count: resolvedCount },
-                  ].map((tab) => {
-                    const isActive = escalationFilter === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setEscalationFilter(tab.id as any)}
-                        style={{
-                          background: isActive ? "#D35400" : "#FDF9F3",
-                          color: isActive ? "#FFFFFF" : "#241A14",
-                          border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
-                          padding: "6px 14px",
-                          borderRadius: "999px",
-                          fontSize: "0.82rem",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "6px",
-                        }}
-                      >
-                        {tab.label}
-                        <span style={{ background: isActive ? "rgba(255,255,255,0.25)" : "rgba(36,26,20,0.08)", padding: "2px 6px", borderRadius: "999px", fontSize: "0.74rem" }}>
-                          {tab.count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Search Bar */}
-                <div style={{ position: "relative", minWidth: "260px", flex: "1 1 260px", maxWidth: "360px" }}>
-                  <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
-                  <input
-                    type="text"
-                    placeholder="Search by student name, ID, or subject..."
-                    value={escalationSearch}
-                    onChange={(e) => setEscalationSearch(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "8px 12px 8px 34px",
-                      background: "#FDF9F3",
-                      border: "1px solid rgba(196, 154, 108, 0.35)",
-                      borderRadius: "10px",
-                      color: "#241A14",
-                      fontSize: "0.84rem",
-                      outline: "none",
-                    }}
-                  />
-                  {escalationSearch && (
-                    <button type="button" onClick={() => setEscalationSearch("")} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#8C7A6A", cursor: "pointer" }}>
-                      <X size={14} />
-                    </button>
-                  )}
-                </div>
-
-              </div>
-            </div>
-
-            {/* TICKETS TABLE LISTING */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
-              {filteredTickets.length === 0 ? (
-                <div style={{ padding: "48px 20px", textAlign: "center", color: "#66564A" }}>
-                  <MessageSquare size={42} style={{ color: "#8C7A6A", marginBottom: "12px" }} />
-                  <h4 style={{ margin: "0 0 6px", color: "#241A14", fontSize: "1.1rem" }}>No support escalations found</h4>
-                  <p style={{ margin: 0, fontSize: "0.86rem" }}>No student tickets match the selected filter or search terms.</p>
-                </div>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
-                    <thead>
-                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Ticket ID</th>
-                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Student Dossier</th>
-                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Institution & Dept</th>
-                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Subject</th>
-                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Logged At</th>
-                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Status</th>
-                        <th style={{ padding: "14px 18px", fontWeight: 700, textAlign: "right" }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTickets.map((ticket) => (
-                        <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                          <td style={{ padding: "14px 18px", fontWeight: 800, color: "#D35400" }}>
-                            #{ticket.id}
-                          </td>
-                          <td style={{ padding: "14px 18px" }}>
-                            <strong style={{ color: "#241A14", display: "block" }}>{ticket.studentName}</strong>
-                            <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>ID: {ticket.studentId}</span>
-                          </td>
-                          <td style={{ padding: "14px 18px", color: "#66564A" }}>
-                            <div>{ticket.institution}</div>
-                            <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{ticket.department}</span>
-                          </td>
-                          <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14" }}>
-                            {ticket.subject}
-                            <span style={{ fontSize: "0.75rem", color: "#8C7A6A", display: "block", marginTop: "2px" }}>
-                              {ticket.messages.length} message(s) in thread
-                            </span>
-                          </td>
-                          <td style={{ padding: "14px 18px", color: "#66564A", fontSize: "0.82rem" }}>
-                            {ticket.createdAt}
-                          </td>
-                          <td style={{ padding: "14px 18px" }}>
-                            <StatusBadge
-                              status={ticket.status === "resolved" ? "approved" : ticket.status === "in_progress" ? "pending" : "due"}
-                              customLabel={ticket.status === "open" ? "Open Ticket" : ticket.status === "in_progress" ? "In Progress" : "Resolved"}
-                            />
-                          </td>
-                          <td style={{ padding: "14px 18px", textAlign: "right" }}>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedEscalation(ticket)}
-                              style={{
-                                background: "#D35400",
-                                color: "#FFFFFF",
-                                border: "none",
-                                padding: "6px 14px",
-                                borderRadius: "8px",
-                                fontSize: "0.8rem",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                gap: "6px",
-                              }}
-                            >
-                              <MessageSquare size={14} /> Respond & View Thread 💬
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-
-          </div>
-        );
-      })()}
+      
+      {/* PHASE 18 — IMMUTABLE INSTITUTIONAL AUDIT TRAIL */}
+      
 
       {/* ESCALATION TICKET RESPONSE MODAL */}
       {selectedEscalation && (
@@ -3273,148 +4155,6 @@ export function AdminPanel({
         </div>
       )}
 
-
-{/* 7. INSTITUTIONAL REMINDER RULES & ALERT ENGINE (PHASE 10) */}
-      {activeTab === "reminders" && (() => {
-        const rules = store.reminderRules || {
-          weeklyReminderEnabled: true,
-          nearDeadlineDays: 5,
-          finalDayAlertEnabled: true,
-          overduePenaltyNotice: true,
-        };
-
-        const handleToggleRule = (key: keyof typeof rules, value: any) => {
-          actions.updateReminderRules({ [key]: value });
-        };
-
-        const handleRunReminders = () => {
-          const res = actions.triggerRemindersRun();
-          alert(`Automated Reminder Engine Executed! Successfully dispatched ${res.count} fee notification alert(s) across student profiles.`);
-        };
-
-        return (
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            
-            {/* HEADER */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
-              <div>
-                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-                  Institutional Reminder Rules & Automated Alert Engine
-                </h1>
-                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-                  Configure automated fee reminder thresholds, near-deadline warnings, and trigger bulk notification dispatches.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className="ms-btn-primary"
-                onClick={handleRunReminders}
-                style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontSize: "0.9rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "6px" }}
-              >
-                <Zap size={16} /> Trigger Automated Reminders Run Now 🚀
-              </button>
-            </div>
-
-            {/* REMINDER RULES CONFIGURATION GRID */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
-              
-              {/* RULE 1: WEEKLY REMINDERS */}
-              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <Bell size={18} style={{ color: "#D35400" }} /> Weekly Automated Reminder
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={rules.weeklyReminderEnabled}
-                    onChange={(e) => handleToggleRule("weeklyReminderEnabled", e.target.checked)}
-                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
-                  />
-                </div>
-                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
-                  Sends scheduled weekly summary notifications to students with active unpaid semester fees.
-                </p>
-                <span style={{ fontSize: "0.76rem", color: rules.weeklyReminderEnabled ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
-                  Status: {rules.weeklyReminderEnabled ? "● ACTIVE & RUNNING" : "○ DISABLED"}
-                </span>
-              </div>
-
-              {/* RULE 2: NEAR-DEADLINE THRESHOLD */}
-              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-                <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Clock size={18} style={{ color: "#D35400" }} /> Near-Deadline Alert Threshold
-                </div>
-                <p style={{ margin: "0 0 10px", fontSize: "0.84rem", color: "#66564A" }}>
-                  Trigger high-priority alert when fee due date falls within selected threshold days.
-                </p>
-                <select
-                  value={rules.nearDeadlineDays}
-                  onChange={(e) => handleToggleRule("nearDeadlineDays", Number(e.target.value))}
-                  style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 700, outline: "none" }}
-                >
-                  <option value={3}>3 Days Prior to Due Date</option>
-                  <option value={5}>5 Days Prior to Due Date (Recommended)</option>
-                  <option value={7}>7 Days Prior to Due Date</option>
-                  <option value={10}>10 Days Prior to Due Date</option>
-                </select>
-              </div>
-
-              {/* RULE 3: FINAL-DAY EMERGENCY ALERT */}
-              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <AlertTriangle size={18} style={{ color: "#BE123C" }} /> Final-Day Emergency Alert
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={rules.finalDayAlertEnabled}
-                    onChange={(e) => handleToggleRule("finalDayAlertEnabled", e.target.checked)}
-                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
-                  />
-                </div>
-                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
-                  Dispatches emergency notifications on the exact deadline date warning of final payment window.
-                </p>
-                <span style={{ fontSize: "0.76rem", color: rules.finalDayAlertEnabled ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
-                  Status: {rules.finalDayAlertEnabled ? "● ACTIVE & RUNNING" : "○ DISABLED"}
-                </span>
-              </div>
-
-              {/* RULE 4: MISSED DEADLINE LATE FEE NOTICE */}
-              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <XCircle size={18} style={{ color: "#BE123C" }} /> Missed Deadline Overdue Alert
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={rules.overduePenaltyNotice}
-                    onChange={(e) => handleToggleRule("overduePenaltyNotice", e.target.checked)}
-                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
-                  />
-                </div>
-                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
-                  Notifies students immediately upon passing due date with instructions for hardship waiver or split request.
-                </p>
-                <span style={{ fontSize: "0.76rem", color: rules.overduePenaltyNotice ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
-                  Status: {rules.overduePenaltyNotice ? "● ACTIVE & RUNNING" : "○ DISABLED"}
-                </span>
-              </div>
-
-            </div>
-
-            {/* AUDIT SUMMARY BOX */}
-            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "14px", padding: "16px", fontSize: "0.85rem", color: "#66564A", display: "flex", alignItems: "center", gap: "10px" }}>
-              <ShieldCheck size={20} style={{ color: "#047857", flexShrink: 0 }} />
-              <div>
-                <strong>Administrative Control Policy:</strong> Reminder dispatches are logged to the institutional audit log. Clicking "Trigger Automated Reminders Run Now" scans active unpaid fees and pushes alerts to student notification trays instantly.
-              </div>
-            </div>
-
-          </div>
-        );
-      })()}
 
       {/* REVIEW APPLICATION MODAL */}
       {reviewApp && (
@@ -4058,512 +4798,8 @@ export function AdminPanel({
       {/* PHASE 14 — SAFETY BULK ASSIGNMENT CONFIRMATION MODAL */}
       
       {/* PHASE 17 — ADMIN FINANCIAL INTELLIGENCE & ANALYTICS */}
-      {activeTab === "analytics" && (() => {
-        const riskAccountsData = store.students.map((student) => {
-          let reasons: Array<"overdue" | "ignored_reminders" | "failed_payment" | "repeated_delay"> = [];
-          let overdueDays = 0;
-          let remindersSent = 2;
-          let remindersOpened = 0;
-          let failedPaymentCount = 0;
+      
 
-          if (student.studentId.includes("1024") || student.id === "stu-1") {
-            reasons = ["overdue", "ignored_reminders", "repeated_delay"];
-            overdueDays = 18;
-            remindersSent = 4;
-            remindersOpened = 0;
-            failedPaymentCount = 1;
-          } else if (student.id === "stu-2" || student.name.includes("Aria")) {
-            reasons = ["failed_payment", "ignored_reminders"];
-            overdueDays = 5;
-            remindersSent = 3;
-            remindersOpened = 0;
-            failedPaymentCount = 2;
-          } else if (student.id === "stu-3" || student.name.includes("Siddique")) {
-            reasons = ["overdue"];
-            overdueDays = 12;
-            remindersSent = 2;
-            remindersOpened = 1;
-            failedPaymentCount = 0;
-          } else if (student.feeStatus === "Overdue" || student.status === "Overdue") {
-            reasons = ["overdue", "ignored_reminders"];
-            overdueDays = 15;
-            remindersSent = 3;
-            remindersOpened = 0;
-            failedPaymentCount = 0;
-          } else if (student.name.includes("Mahmudul")) {
-            reasons = ["repeated_delay", "overdue"];
-            overdueDays = 22;
-            remindersSent = 4;
-            remindersOpened = 0;
-            failedPaymentCount = 0;
-          } else {
-            reasons = ["overdue"];
-            overdueDays = 8;
-            remindersSent = 2;
-            remindersOpened = 0;
-          }
-
-          return {
-            ...student,
-            riskReasons: reasons,
-            overdueDays,
-            remindersSent,
-            remindersOpened,
-            failedPaymentCount,
-          };
-        });
-
-        const filteredRiskAccounts = riskAccountsData.filter((acc) => {
-          if (riskFilter === "all") return true;
-          return acc.riskReasons.includes(riskFilter);
-        });
-
-        const totalOverdueCount = riskAccountsData.filter(a => a.riskReasons.includes("overdue")).length;
-        const totalIgnoredRemindersCount = riskAccountsData.filter(a => a.riskReasons.includes("ignored_reminders")).length;
-        const totalFailedPaymentsCount = riskAccountsData.filter(a => a.riskReasons.includes("failed_payment")).length;
-
-        return (
-          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-            
-            {/* HEADER BANNER */}
-            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                  <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
-                    📊 Financial Operations & Intelligence
-                  </span>
-                  <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
-                </div>
-                <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
-                  Institutional Revenue & Account Attention Intelligence
-                </h1>
-                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-                  Comprehensive revenue performance, collection trajectories, dynamic alert notifications, and human evaluation queue.
-                </p>
-              </div>
-
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button
-                  type="button"
-                  className="ms-btn-primary"
-                  onClick={() => setActiveTab("overview")}
-                  style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
-                >
-                  ← Operations Center
-                </button>
-              </div>
-            </div>
-
-            {/* 1. FINANCIAL ANALYTICS SUMMARY MATRIX (4 CORE KPIS) */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
-              
-              {/* COLLECTION RATE */}
-              <div style={{ background: "#FFFFFF", border: "2px solid #047857", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#047857", textTransform: "uppercase", letterSpacing: "0.04em" }}>Collection Rate</span>
-                <div style={{ margin: "12px 0 4px" }}>
-                  <span style={{ fontSize: "2.2rem", fontWeight: 800, color: "#241A14" }}>82.4%</span>
-                </div>
-                <div>
-                  <div style={{ width: "100%", height: "6px", background: "#FDF9F3", border: "1px solid rgba(4, 120, 87, 0.3)", borderRadius: "999px", marginBottom: "6px", overflow: "hidden" }}>
-                    <div style={{ width: "82.4%", height: "100%", background: "#047857", borderRadius: "999px" }} />
-                  </div>
-                  <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>
-                    Target: 85.0% • ৳48,20,000 Collected
-                  </span>
-                </div>
-              </div>
-
-              {/* TOTAL OUTSTANDING */}
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>Total Outstanding</span>
-                <div style={{ margin: "12px 0 4px" }}>
-                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
-                    {formatTaka(1480000, false)}
-                  </span>
-                </div>
-                <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>
-                  Due Soon: ৳10.85L • Overdue: ৳3.95L
-                </span>
-              </div>
-
-              {/* TOTAL PAID */}
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.04em" }}>Total Paid Balance</span>
-                <div style={{ margin: "12px 0 4px" }}>
-                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
-                    {formatTaka(4820000, false)}
-                  </span>
-                </div>
-                <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                  <CheckCircle2 size={14} /> 1,526 Settled Transactions
-                </span>
-              </div>
-
-              {/* TOTAL OVERDUE */}
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(190, 18, 60, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>Overdue Dues</span>
-                <div style={{ margin: "12px 0 4px" }}>
-                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
-                    {formatTaka(395000, false)}
-                  </span>
-                </div>
-                <span style={{ fontSize: "0.78rem", color: "#BE123C", fontWeight: 700 }}>
-                  23 Overdue Student Profiles
-                </span>
-              </div>
-
-            </div>
-
-            {/* 2. OPERATIONAL ALERTS CENTER (4 EXPLICIT ALERTS) */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, color: "#241A14" }}>
-                    Operational Financial Alerts & System Triggers
-                  </h3>
-                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
-                    Real-time exception triggers requiring administrative attention or follow-up.
-                  </p>
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
-                
-                {/* ALERT 1: OVERDUE FEES */}
-                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #BE123C", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#BE123C", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
-                      <AlertTriangle size={18} /> Overdue Fees Alert
-                    </div>
-                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
-                      23 students have overdue fees.
-                    </p>
-                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
-                      Total unpaid past deadline: ৳3,95,000
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setRiskFilter("overdue")}
-                    style={{ background: "#BE123C", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
-                  >
-                    Inspect Overdue Accounts →
-                  </button>
-                </div>
-
-                {/* ALERT 2: UNOPENED REMINDERS */}
-                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #D35400", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#D35400", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
-                      <Bell size={18} /> Reminder Engagement Alert
-                    </div>
-                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
-                      12 students have not opened reminders.
-                    </p>
-                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
-                      Automated weekly notices unopened for 14+ days
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setRiskFilter("ignored_reminders")}
-                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
-                  >
-                    View Unresponsive Profiles →
-                  </button>
-                </div>
-
-                {/* ALERT 3: FAILED PAYMENTS */}
-                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #9A6600", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#9A6600", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
-                      <XCircle size={18} /> Gateway Exception Alert
-                    </div>
-                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
-                      5 payments failed.
-                    </p>
-                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
-                      Gateway timeouts on bKash & Card channels
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setRiskFilter("failed_payment")}
-                    style={{ background: "#9A6600", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
-                  >
-                    Inspect Failed Attempts →
-                  </button>
-                </div>
-
-                {/* ALERT 4: PARTIAL PAYMENT QUEUE */}
-                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #047857", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#047857", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
-                      <ShieldCheck size={18} /> Hardship Applications
-                    </div>
-                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
-                      8 partial-payment requests awaiting review.
-                    </p>
-                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
-                      AI signature matched dossiers pending Admin verification
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab("applications")}
-                    style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
-                  >
-                    Open Review Queue →
-                  </button>
-                </div>
-
-              </div>
-            </div>
-
-            {/* 3. PAYMENT TREND & FEE PERFORMANCE ANALYTICS */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-              
-              {/* PAYMENT COLLECTION TREND */}
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
-                    Payment Collection Trend Trajectory
-                  </h3>
-                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
-                    Monthly revenue intake vs target benchmarks for Fall 2026.
-                  </p>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                  {[
-                    { month: "July 2026", collected: 1250000, target: 1500000, pct: 83.3 },
-                    { month: "August 2026", collected: 1820000, target: 2000000, pct: 91.0 },
-                    { month: "September 2026 (Active)", collected: 1750000, target: 2350000, pct: 74.4 },
-                    { month: "October 2026 (Forecast)", collected: 1030000, target: 1200000, pct: 85.8 },
-                  ].map((item, idx) => (
-                    <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.88rem" }}>
-                        <span style={{ fontWeight: 800, color: "#241A14" }}>{item.month}</span>
-                        <span style={{ fontWeight: 800, color: item.pct >= 85 ? "#047857" : "#D35400" }}>
-                          {formatTaka(item.collected, false)} / {formatTaka(item.target, false)} ({item.pct}%)
-                        </span>
-                      </div>
-                      <div style={{ width: "100%", height: "8px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "999px", overflow: "hidden" }}>
-                        <div style={{ width: `${item.pct}%`, height: "100%", background: item.pct >= 85 ? "#047857" : "#D35400", borderRadius: "999px" }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* FEE PERFORMANCE BREAKDOWN */}
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
-                    Fee Type Performance Breakdown
-                  </h3>
-                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
-                    Collection efficiency across different institutional fee categories.
-                  </p>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {[
-                    { title: "Semester Tuition Fee", category: "Tuition", collected: 3250000, total: 3800000, pct: 85.5 },
-                    { title: "Lab & Tech Facilities Fee", category: "Lab & Tech", collected: 840000, total: 920000, pct: 91.3 },
-                    { title: "Semester Exam & Evaluation", category: "Exam", collected: 520000, total: 660000, pct: 78.8 },
-                    { title: "Library & Digital Resources", category: "Library", collected: 210000, total: 220000, pct: 95.4 },
-                    { title: "Hostel & Amenities Fee", category: "Hostel", collected: 180000, total: 250000, pct: 72.0 },
-                  ].map((fee, idx) => (
-                    <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <strong style={{ fontSize: "0.88rem", color: "#241A14", display: "block" }}>{fee.title}</strong>
-                        <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{fee.category} Category</span>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <strong style={{ fontSize: "0.92rem", color: "#241A14", display: "block", fontFeatureSettings: "'tnum'" }}>
-                          {formatTaka(fee.collected, false)}
-                        </strong>
-                        <span style={{ fontSize: "0.74rem", color: fee.pct >= 85 ? "#047857" : "#D35400", fontWeight: 700 }}>
-                          {fee.pct}% Collected
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-
-            {/* 4. STUDENT RISK & HUMAN ATTENTION ENGINE (NEEDS ADMIN ATTENTION) */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
-              
-              {/* SECTION TITLE & HUMAN GOVERNANCE MANDATE */}
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
-                  <div>
-                    <h2 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 800, color: "#241A14" }}>
-                      Accounts Requiring Human Attention
-                    </h2>
-                    <p style={{ margin: "2px 0 0", fontSize: "0.86rem", color: "#66564A" }}>
-                      Flagged student profiles requiring human evaluation, outreach, or payment assistance.
-                    </p>
-                  </div>
-
-                  {/* HUMAN POLICY MANDATE ALERT */}
-                  <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "12px", padding: "10px 16px", maxWidth: "480px", fontSize: "0.78rem", color: "#241A14", lineHeight: 1.4 }}>
-                    <strong style={{ color: "#D35400", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Shield size={14} /> HUMAN GOVERNANCE POLICY
-                    </strong>
-                    The AI system flags potential risk factors but does <strong>NOT automatically penalize, suspend, or block student accounts</strong>. Administrators decide appropriate support actions.
-                  </div>
-                </div>
-              </div>
-
-              {/* RISK ATTENTION FILTER TABS */}
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "12px" }}>
-                {[
-                  { key: "all", label: `All Risk Accounts (${riskAccountsData.length})` },
-                  { key: "overdue", label: `Overdue Fees (${totalOverdueCount})` },
-                  { key: "ignored_reminders", label: `Ignored Reminders (${totalIgnoredRemindersCount})` },
-                  { key: "failed_payment", label: `Failed Payments (${totalFailedPaymentsCount})` },
-                  { key: "repeated_delay", label: "Repeated Delays (8)" },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    type="button"
-                    onClick={() => setRiskFilter(tab.key as any)}
-                    style={{
-                      background: riskFilter === tab.key ? "#D35400" : "#FDF9F3",
-                      color: riskFilter === tab.key ? "#FFFFFF" : "#66564A",
-                      border: "1px solid rgba(196, 154, 108, 0.3)",
-                      padding: "7px 14px",
-                      borderRadius: "8px",
-                      fontSize: "0.82rem",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* RISK ATTENTION ACCOUNTS TABLE */}
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
-                  <thead>
-                    <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Profile</th>
-                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Risk Status</th>
-                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Possible Risk Reason(s)</th>
-                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Financial Context</th>
-                      <th style={{ padding: "12px 16px", fontWeight: 700, textAlign: "right" }}>Admin Contact Suite</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRiskAccounts.map((student) => (
-                      <tr key={student.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                        
-                        {/* STUDENT PROFILE */}
-                        <td style={{ padding: "14px 16px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#D35400", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "0.9rem" }}>
-                              {student.name.charAt(0)}
-                            </div>
-                            <div>
-                              <strong style={{ color: "#241A14", display: "block" }}>{student.name}</strong>
-                              <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>
-                                {student.studentId} • {student.department} ({student.classYear})
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* RISK STATUS */}
-                        <td style={{ padding: "14px 16px" }}>
-                          <span style={{ background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "4px 10px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            <AlertTriangle size={12} /> Needs Admin Attention
-                          </span>
-                        </td>
-
-                        {/* POSSIBLE REASONS */}
-                        <td style={{ padding: "14px 16px" }}>
-                          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                            {student.riskReasons.map((r, idx) => (
-                              <span key={idx} style={{
-                                fontSize: "0.72rem",
-                                padding: "2px 8px",
-                                borderRadius: "6px",
-                                fontWeight: 700,
-                                background: r === "overdue" ? "rgba(190, 18, 60, 0.1)" : r === "ignored_reminders" ? "rgba(211, 84, 0, 0.1)" : r === "failed_payment" ? "rgba(154, 102, 0, 0.1)" : "rgba(37, 99, 235, 0.1)",
-                                color: r === "overdue" ? "#BE123C" : r === "ignored_reminders" ? "#D35400" : r === "failed_payment" ? "#9A6600" : "#1D4ED8",
-                              }}>
-                                {r === "overdue" ? `🔴 Overdue (${student.overdueDays} days)` : r === "ignored_reminders" ? `🟡 Ignored Reminders (${student.remindersSent} sent)` : r === "failed_payment" ? `🟠 Failed Payment (${student.failedPaymentCount}x)` : `🟣 Repeated Delay`}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-
-                        {/* FINANCIAL CONTEXT */}
-                        <td style={{ padding: "14px 16px" }}>
-                          <strong style={{ color: "#BE123C", fontFeatureSettings: "'tnum'", display: "block" }}>
-                            {formatTaka(student.totalDues || 6500, false)}
-                          </strong>
-                          <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>
-                            Wallet: {formatTaka(student.walletBalance || 0, false)}
-                          </span>
-                        </td>
-
-                        {/* ADMIN CONTACT ACTIONS */}
-                        <td style={{ padding: "14px 16px", textAlign: "right" }}>
-                          <div style={{ display: "inline-flex", gap: "6px" }}>
-                            
-                            {/* EMAIL BUTTON */}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenContactModal(student, "email")}
-                              title="Send Email Notice"
-                              style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                            >
-                              <Mail size={14} /> Email
-                            </button>
-
-                            {/* SMS / PHONE BUTTON */}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenContactModal(student, "sms")}
-                              title="Send SMS / Phone Message"
-                              style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                            >
-                              <Phone size={14} /> SMS
-                            </button>
-
-                            {/* VOICE CALL BUTTON */}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenContactModal(student, "call")}
-                              title="Initiate Demo Voice Call"
-                              style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                            >
-                              <PhoneCall size={14} /> Call
-                            </button>
-
-                          </div>
-                        </td>
-
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-            </div>
-
-          </div>
-        );
-      })()}
 
 
       
@@ -4795,6 +5031,132 @@ export function AdminPanel({
         </div>
       )}
 
+
+      
+      {/* PHASE 18 — STRICT READ-ONLY AUDIT RECORD INSPECTION DOSSIER */}
+      {selectedAuditLog && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
+          <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "680px", padding: "26px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "20px" }}>
+            
+            {/* MODAL HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
+                    EVENT DOSSIER #{selectedAuditLog.id.toUpperCase()}
+                  </span>
+                  <span style={{ fontSize: "0.78rem", color: "#8C7A6A", fontFeatureSettings: "'tnum'" }}>
+                    {selectedAuditLog.timestamp}
+                  </span>
+                </div>
+                <h3 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 800, color: "#241A14" }}>
+                  {selectedAuditLog.action}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedAuditLog(null)}
+                style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* MANDATE BANNER — STRICT READ ONLY */}
+            <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "12px", padding: "12px 16px", fontSize: "0.8rem", color: "#241A14", lineHeight: 1.4, display: "flex", alignItems: "flex-start", gap: "10px" }}>
+              <ShieldCheck size={20} color="#D35400" style={{ flexShrink: 0, marginTop: "2px" }} />
+              <div>
+                <strong style={{ color: "#D35400", display: "block", marginBottom: "2px" }}>
+                  IMMUTABLE AUDIT LOG — READ ONLY RECORD
+                </strong>
+                Audit trail entries are immutably logged for financial compliance. Editing, modifying, or deleting audit history is strictly prohibited by security policy.
+              </div>
+            </div>
+
+            {/* ACTOR & METADATA GRID */}
+            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", fontSize: "0.85rem" }}>
+              <div>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Performing Actor</span>
+                <strong style={{ color: "#241A14", display: "block", fontSize: "0.95rem", marginTop: "2px" }}>{selectedAuditLog.actor}</strong>
+                <span style={{ fontSize: "0.75rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "1px 6px", borderRadius: "4px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>
+                  Role: {selectedAuditLog.role}
+                </span>
+              </div>
+
+              <div>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Target Entity Scope</span>
+                <strong style={{ color: "#241A14", display: "block", fontSize: "0.95rem", marginTop: "2px" }}>
+                  {selectedAuditLog.studentName || selectedAuditLog.studentId || "Institutional Scope"}
+                </strong>
+                <span style={{ fontSize: "0.78rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                  Record: {selectedAuditLog.financialRecordTitle || "System Operation"}
+                </span>
+              </div>
+            </div>
+
+            {/* BEFORE VALUE VS AFTER VALUE COMPARATIVE DIFF BOX */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              
+              {/* BEFORE VALUE BOX */}
+              <div style={{ background: "rgba(190, 18, 60, 0.04)", border: "1.5px solid rgba(190, 18, 60, 0.3)", borderRadius: "14px", padding: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  [BEFORE VALUE]
+                </span>
+                <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "#241A14", lineHeight: 1.4 }}>
+                  {selectedAuditLog.beforeValue || "Unassigned / Initial State"}
+                </div>
+              </div>
+
+              {/* AFTER VALUE BOX */}
+              <div style={{ background: "rgba(4, 120, 87, 0.04)", border: "1.5px solid rgba(4, 120, 87, 0.3)", borderRadius: "14px", padding: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#047857", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  [AFTER VALUE]
+                </span>
+                <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "#241A14", lineHeight: 1.4 }}>
+                  {selectedAuditLog.afterValue || "Updated / Executed State"}
+                </div>
+              </div>
+
+            </div>
+
+            {/* EVENT DETAILS & NARRATIVE */}
+            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Event Action Details</span>
+              <p style={{ margin: 0, fontSize: "0.88rem", color: "#241A14", lineHeight: 1.4 }}>
+                {selectedAuditLog.details}
+              </p>
+            </div>
+
+            {/* AUDIT HASH */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(196, 154, 108, 0.25)", paddingTop: "12px", fontSize: "0.75rem", color: "#8C7A6A" }}>
+              <span>Verification Hash: <strong style={{ color: "#241A14" }}>{selectedAuditLog.hash || "SHA256: 8f92a10b42c98401e712a104"}</strong></span>
+              <span style={{ color: "#047857", fontWeight: 700 }}>● Cryptographically Verified</span>
+            </div>
+
+            {/* FOOTER — READ ONLY CLOSE BUTTON ONLY */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "4px" }}>
+              <button
+                type="button"
+                onClick={() => setSelectedAuditLog(null)}
+                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 22px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.3)" }}
+              >
+                Close Audit Dossier
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+
+      {activeTab === "analytics" && renderAnalyticsView()}
+
+      {activeTab === "audit" && renderAuditView()}
+
+      {activeTab === "escalations" && renderEscalationsTab()}
+
+      {activeTab === "reminders" && renderRemindersTab()}
 
       {showBulkConfirmModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>

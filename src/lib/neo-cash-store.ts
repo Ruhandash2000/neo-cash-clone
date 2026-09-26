@@ -161,10 +161,17 @@ export interface EscalationTicket {
 export interface AuditLog {
   id: string;
   actor: string;
-  role: "Student" | "Admin" | "Head";
+  role: "Student" | "Admin" | "Head" | "System";
   action: string;
   details: string;
   timestamp: string;
+  actionType?: "fee_assignment" | "deadline_change" | "app_review" | "forward_head" | "section_change" | "student_import" | "head_approval" | "system";
+  studentName?: string;
+  studentId?: string;
+  financialRecordTitle?: string;
+  beforeValue?: string;
+  afterValue?: string;
+  hash?: string;
 }
 
 export interface StudentRecord {
@@ -652,28 +659,124 @@ const INITIAL_STATE: NeoState = {
   ],
   auditLogs: [
     {
-      id: "log-101",
+      id: "log-107",
+      actor: "Executive Head (Dr. Anisur Rahman)",
+      role: "Head",
+      action: "Approved Partial Application",
+      actionType: "head_approval",
+      details: "Granted final executive authorization for ৳2,500 installment application",
+      timestamp: "2026-09-26 05:45 PM",
+      studentName: "Shelly Paul",
+      studentId: "DCC-2024-9042",
+      financialRecordTitle: "Semester Tuition Fee (Spring 2026)",
+      beforeValue: "Status: Awaiting Head Approval (forwarded_head)",
+      afterValue: "Status: Approved by Head (approved_head) • New Due: ৳2,500",
+      hash: "SHA256: 8f92a10b42c98401e712a104",
+    },
+    {
+      id: "log-106",
       actor: "Admin (Refat Rahman)",
       role: "Admin",
       action: "Forwarded Application to Head",
-      details: "Application APP-9042 for Shelly Paul (Requested ৳2,500 / ৳6,000)",
+      actionType: "forward_head",
+      details: "Application APP-9042 for Shelly Paul reviewed and forwarded to Head",
+      timestamp: "2026-09-26 04:12 PM",
+      studentName: "Shelly Paul",
+      studentId: "DCC-2024-9042",
+      financialRecordTitle: "Application APP-9042",
+      beforeValue: "Status: Pending Admin Review (pending_admin)",
+      afterValue: "Status: Forwarded to Executive Head (forwarded_head)",
+      hash: "SHA256: 3c91e20d8841a029c7811d02",
+    },
+    {
+      id: "log-105",
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Reviewed Partial Application",
+      actionType: "app_review",
+      details: "Verified student profile, payment history, guardian NID & AI signature comparison (96.4% match)",
+      timestamp: "2026-09-26 03:50 PM",
+      studentName: "Shelly Paul",
+      studentId: "DCC-2024-9042",
+      financialRecordTitle: "Application APP-9042",
+      beforeValue: "Status: Submitted (pending_admin)",
+      afterValue: "Status: Verified & Signature Confirmed (96.4% Match)",
+      hash: "SHA256: 7d10b991a02c4819e0129a01",
+    },
+    {
+      id: "log-104",
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Changed Student Section",
+      actionType: "section_change",
+      details: "Reassigned student section allocation based on capacity adjustment",
+      timestamp: "2026-09-26 02:15 PM",
+      studentName: "Ruhan Dash Dibya",
+      studentId: "DCC-CSE-24-1024",
+      financialRecordTitle: "Academic Placement Record",
+      beforeValue: "Section: Sec A (CSE 1st Year)",
+      afterValue: "Section: Sec B (CSE 1st Year)",
+      hash: "SHA256: 1a89c00e12f4981a8123c909",
+    },
+    {
+      id: "log-103",
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Changed Payment Deadline",
+      actionType: "deadline_change",
+      details: "Extended payment deadline for Semester Tuition Fee for Ruhan Dash Dibya",
+      timestamp: "2026-09-26 11:30 AM",
+      studentName: "Ruhan Dash Dibya",
+      studentId: "DCC-CSE-24-1024",
+      financialRecordTitle: "Semester Tuition Fee (Fall 2026)",
+      beforeValue: "Deadline: September 15, 2026",
+      afterValue: "Deadline: September 30, 2026",
+      hash: "SHA256: 9e02c118b77412e09124a817",
+    },
+    {
+      id: "log-102",
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Assigned Bulk Fee",
+      actionType: "fee_assignment",
+      details: "Assigned Semester Tuition Fee (৳6,500) to 42 students in CSE 1st Year (Sec A)",
+      timestamp: "2026-09-26 09:15 AM",
+      studentName: "Target Cohort (42 CSE Students)",
+      studentId: "CSE-1ST-SEC-A",
+      financialRecordTitle: "Semester Tuition Fee (Fall 2026)",
+      beforeValue: "Unassigned / No Active Fee Obligation",
+      afterValue: "৳6,500 Assigned (Deadline: 2026-09-30)",
+      hash: "SHA256: 4b12a88190c128f91048123e",
+    },
+    {
+      id: "log-101",
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Imported Student Roster",
+      actionType: "student_import",
+      details: "Uploaded and validated batch file fall_2026_cse_freshers.csv via AI Data Processor",
       timestamp: "2026-09-25 04:12 PM",
+      studentName: "Batch Import (42 Students)",
+      studentId: "BATCH-2026-09",
+      financialRecordTitle: "Institutional Directory Roster",
+      beforeValue: "Directory Count: 2,078 Students",
+      afterValue: "Directory Count: 2,120 Students (42 Imported, 2 Rejected)",
+      hash: "SHA256: 6f78e901a238b901e81290a1",
     },
     {
       id: "log-100",
       actor: "Shelly Paul",
       role: "Student",
       action: "Submitted Partial Payment Request",
+      actionType: "app_review",
       details: "Attached Guardian NID & Signature. AI Score: 96%",
       timestamp: "2026-09-24 10:30 AM",
-    },
-    {
-      id: "log-99",
-      actor: "Shelly Paul",
-      role: "Student",
-      action: "Paid Library Fee",
-      details: "Amount: ৳1,000 via bKash",
-      timestamp: "2026-09-01 02:15 PM",
+      studentName: "Shelly Paul",
+      studentId: "DCC-2024-9042",
+      financialRecordTitle: "Application APP-9042",
+      beforeValue: "No Active Hardship Application",
+      afterValue: "Submitted ৳2,500 Installment Request (AI Match 96%)",
+      hash: "SHA256: 2a91b8821901c82e7182910a",
     },
   ],
   students: [
