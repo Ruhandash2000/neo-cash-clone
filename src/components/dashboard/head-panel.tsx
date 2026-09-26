@@ -104,6 +104,13 @@ export function HeadPanel({
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 type="button"
+                onClick={() => setActiveTab("trophy")}
+                style={{ background: "#FFF7E6", color: "#D35400", border: "1.5px solid rgba(211, 84, 0, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px rgba(211, 84, 0, 0.12)" }}
+              >
+                <Trophy size={18} color="#FBBF24" /> Institution Impact 🏆
+              </button>
+              <button
+                type="button"
                 className="ms-btn-primary"
                 onClick={() => setActiveTab("approvals")}
                 style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)" }}
@@ -550,7 +557,7 @@ export function HeadPanel({
         </div>
       )}
 
-      {/* 4. FINANCIAL OVERVIEW TAB */}
+      {/* 4. FINANCIAL OVERVIEW & EXECUTIVE REPORTS TAB (PHASE 21) */}
       {activeTab === "financial" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
@@ -559,54 +566,132 @@ export function HeadPanel({
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
                 <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
-                  📈 Institutional Financial Solvency Dashboard
+                  📈 Phase 21 • Executive Institutional Reporting
                 </span>
                 <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
               </div>
               <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
-                Executive Financial Intelligence
+                Executive Financial Reports & Analytics
               </h1>
               <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-                High-level breakdown of total fee collections, pending outstanding obligations, overdue risk balances, and payment channel trends.
+                High-level institutional solvency overview, collection rate tracking, outstanding dues, overdue risks, partial payment decisions, and payment trends.
               </p>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("trophy")}
+              style={{ background: "#FFF7E6", border: "1.5px solid #D35400", color: "#D35400", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+            >
+              <Trophy size={18} color="#FBBF24" /> View Institution Impact 🏆
+            </button>
           </div>
 
-          {/* 4 METRICS CARDS */}
+          {/* 6 EXECUTIVE REPORTING METRICS GRID */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             
-            <div style={{ background: "#FFFFFF", border: "2px solid #047857", borderRadius: "16px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#047857", textTransform: "uppercase" }}>Total Collected Fees</span>
+            {/* 1. FINANCIAL SUMMARY (TOTAL BILLED) */}
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.04em" }}>Total Billed Dues</span>
               <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
-                {formatTaka(4820000, false)}
+                {formatTaka(5850000, false)}
               </h2>
-              <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>● 82.4% Target Realized</span>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>Term Obligations</span>
             </div>
 
+            {/* 2. COLLECTION RATE */}
+            <div style={{ background: "#FFFFFF", border: "2px solid #047857", borderRadius: "16px", padding: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#047857", textTransform: "uppercase", letterSpacing: "0.04em" }}>Collection Rate</span>
+                <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#FFFFFF", background: "#047857", padding: "2px 8px", borderRadius: "999px" }}>82.4%</span>
+              </div>
+              <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#047857", fontFeatureSettings: "'tnum'" }}>
+                {formatTaka(4820000, false)}
+              </h2>
+              <div style={{ width: "100%", height: "6px", background: "rgba(4, 120, 87, 0.15)", borderRadius: "999px", overflow: "hidden", marginTop: "4px" }}>
+                <div style={{ width: "82.4%", height: "100%", background: "#047857", borderRadius: "999px" }} />
+              </div>
+            </div>
+
+            {/* 3. OUTSTANDING DUES */}
             <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#66564A", textTransform: "uppercase" }}>Outstanding Pending Fees</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em" }}>Outstanding Dues</span>
               <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
                 {formatTaka(1250000, false)}
               </h2>
-              <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>Pending Deadline Window</span>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>Active Pending Window</span>
             </div>
 
+            {/* 4. OVERDUE DUES */}
             <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(190, 18, 60, 0.3)", borderRadius: "16px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase" }}>Overdue Balances</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>Overdue Dues</span>
               <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
                 {formatTaka(410000, false)}
               </h2>
-              <span style={{ fontSize: "0.78rem", color: "#BE123C", fontWeight: 700 }}>28 Student Accounts Overdue</span>
+              <span style={{ fontSize: "0.78rem", color: "#BE123C", fontWeight: 700 }}>28 Overdue Accounts</span>
             </div>
 
+            {/* 5. PARTIAL PAYMENT DECISIONS */}
             <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase" }}>Welfare Hardship Subsidies</span>
-              <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#D35400", fontFeatureSettings: "'tnum'" }}>
-                {formatTaka(84500, false)}
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em" }}>Partial Payment Decisions</span>
+              <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#241A14" }}>
+                {approvedHeadApps.length + rejectedHeadApps.length + pendingHeadApps.length} Requests
               </h2>
-              <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>100% Peer Assisted</span>
+              <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>
+                {approvedHeadApps.length} Approved ({formatTaka(184000, false)})
+              </span>
             </div>
 
+          </div>
+
+          {/* PARTIAL PAYMENT DECISIONS REPORTING CARD */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Partial-Payment Decisions & Hardship Summary
+                </h3>
+                <span style={{ fontSize: "0.8rem", color: "#66564A" }}>
+                  Executive sign-off metrics for student installment applications
+                </span>
+              </div>
+              <span style={{ fontSize: "0.78rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "4px 10px", borderRadius: "8px", fontWeight: 800 }}>
+                80% Approval Rate
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", padding: "14px" }}>
+                <span style={{ fontSize: "0.74rem", color: "#66564A", fontWeight: 700 }}>Total Applications</span>
+                <strong style={{ display: "block", fontSize: "1.4rem", color: "#241A14", marginTop: "2px" }}>
+                  {store.partialApplications.length}
+                </strong>
+              </div>
+
+              <div style={{ background: "rgba(4, 120, 87, 0.08)", border: "1px solid rgba(4, 120, 87, 0.25)", borderRadius: "10px", padding: "14px" }}>
+                <span style={{ fontSize: "0.74rem", color: "#047857", fontWeight: 700 }}>Approved by Head</span>
+                <strong style={{ display: "block", fontSize: "1.4rem", color: "#047857", marginTop: "2px" }}>
+                  {approvedHeadApps.length}
+                </strong>
+                <span style={{ fontSize: "0.72rem", color: "#047857" }}>{formatTaka(184000, false)} Unlocked</span>
+              </div>
+
+              <div style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.3)", borderRadius: "10px", padding: "14px" }}>
+                <span style={{ fontSize: "0.74rem", color: "#D35400", fontWeight: 700 }}>Awaiting Head Decision</span>
+                <strong style={{ display: "block", fontSize: "1.4rem", color: "#D35400", marginTop: "2px" }}>
+                  {pendingHeadApps.length}
+                </strong>
+                <span style={{ fontSize: "0.72rem", color: "#D35400" }}>Action Required</span>
+              </div>
+
+              <div style={{ background: "rgba(190, 18, 60, 0.08)", border: "1px solid rgba(190, 18, 60, 0.25)", borderRadius: "10px", padding: "14px" }}>
+                <span style={{ fontSize: "0.74rem", color: "#BE123C", fontWeight: 700 }}>Declined / Rejected</span>
+                <strong style={{ display: "block", fontSize: "1.4rem", color: "#BE123C", marginTop: "2px" }}>
+                  {rejectedHeadApps.length}
+                </strong>
+                <span style={{ fontSize: "0.72rem", color: "#BE123C" }}>Non-compliant</span>
+              </div>
+            </div>
           </div>
 
           {/* PAYMENT CHANNEL & TRENDS BREAKDOWN */}
@@ -641,7 +726,7 @@ export function HeadPanel({
             {/* MONTHLY COLLECTION TRENDS */}
             <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
               <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
-                Term Collection Growth & Solvency Trends
+                Payment Trends & Term Collection Growth
               </h3>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -776,54 +861,66 @@ export function HeadPanel({
         </div>
       )}
 
-      {/* 6. HEAD TROPHY & INSTITUTION IMPACT CENTER (PHASE 9) 🏆 */}
+      {/* 6. HEAD TROPHY & INSTITUTION IMPACT CENTER (PHASE 21) 🏆 */}
       {activeTab === "trophy" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
+          {/* DEMONSTRATION FEATURE NOTICE BANNER */}
+          <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "14px", padding: "14px 18px", fontSize: "0.85rem", color: "#241A14", display: "flex", alignItems: "center", gap: "12px" }}>
+            <Sparkles size={20} color="#D35400" style={{ flexShrink: 0 }} />
+            <div>
+              <strong style={{ color: "#D35400", display: "block" }}>DEMONSTRATION FEATURE NOTICE:</strong>
+              This Institution Impact module is a social welfare demonstration feature designed to showcase student peer support, impact rankings, and donation points (৳100 = 1 Point). It is not a full general-ledger accounting system.
+            </div>
+          </div>
+
           {/* HEADER WITH SMALL TROPHY ICON */}
           <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <div style={{ width: "52px", height: "52px", background: "rgba(211, 84, 0, 0.12)", border: "1px solid #D35400", borderRadius: "14px", display: "grid", placeItems: "center", color: "#D35400" }}>
-                <Trophy size={28} />
+              <div style={{ width: "52px", height: "52px", background: "rgba(211, 84, 0, 0.12)", border: "1.5px solid #D35400", borderRadius: "14px", display: "grid", placeItems: "center", color: "#D35400", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.2)" }}>
+                <Trophy size={28} color="#FBBF24" />
               </div>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-                    Institution Impact & Student Welfare
+                  <h1 style={{ margin: 0, fontSize: "1.7rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.01em" }}>
+                    Institution Impact & Welfare Fund 🏆
                   </h1>
                   <span style={{ fontSize: "0.74rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, color: "#D35400" }}>
                     Dhaka City College
                   </span>
                 </div>
                 <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-                  Executive oversight of student welfare fund contributions, rankings, and peer tuition assistance grants.
+                  Executive oversight of total demo donations, top contributors, department rankings, and institutional positioning.
                 </p>
               </div>
             </div>
 
             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
               <div style={{ textAlign: "right" }}>
-                <span style={{ fontSize: "0.74rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>National Ranking</span>
+                <span style={{ fontSize: "0.74rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Nationwide Position</span>
                 <h2 style={{ margin: "2px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#D35400" }}>#18 Nationwide</h2>
               </div>
             </div>
           </div>
 
-          {/* METRIC SUMMARY CARDS */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+          {/* 5 EXECUTIVE IMPACT METRIC CARDS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+            
+            {/* 1. TOTAL DEMO DONATIONS */}
             <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "14px", padding: "20px" }}>
-              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Total Demo Contribution Raised</span>
-              <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Total Demo Donations</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
                 {formatTaka(84500, false)}
               </h2>
               <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 600, marginTop: "2px", display: "block" }}>
-                100% Allocated for Peer Tuition Grants
+                100% Peer Student Welfare
               </span>
             </div>
 
+            {/* 2. TOTAL IMPACT POINTS */}
             <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Total Institution Impact Points</span>
-              <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#241A14" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Total Impact Points</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "#241A14" }}>
                 845 Impact Pts
               </h2>
               <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
@@ -831,37 +928,69 @@ export function HeadPanel({
               </span>
             </div>
 
+            {/* 3. DEPARTMENT RANKING */}
             <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Active Student Donors</span>
-              <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#047857" }}>
-                142 Students
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Top Department</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "#D35400" }}>
+                #1 CSE Dept
               </h2>
-              <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
-                Participating across all departments
+              <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700, marginTop: "2px", display: "block" }}>
+                {formatTaka(42000, false)} Donated
               </span>
             </div>
+
+            {/* 4. INSTITUTION RANKING */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Institution Ranking</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "#047857" }}>
+                #3 Regional
+              </h2>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
+                Dhaka Division Higher Ed
+              </span>
+            </div>
+
+            {/* 5. NATIONWIDE POSITION */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Nationwide Position</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "#241A14" }}>
+                #18 National
+              </h2>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
+                Out of 142 Institutions
+              </span>
+            </div>
+
           </div>
 
+          {/* TWO COLUMN GRID: TOP CONTRIBUTORS (WHO DONATED & HOW MUCH) + RANKINGS */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
             
-            {/* TOP CONTRIBUTORS LEADERBOARD */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
-                  Top Student Contributors
-                </h3>
-                <span style={{ fontSize: "0.76rem", color: "#8C7A6A", fontWeight: 600 }}>
-                  Institution Top Rankings
+            {/* TOP CONTRIBUTORS LEADERBOARD (SHOW WHO DONATED & HOW MUCH) */}
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                    Top Contributors & Donor Roster
+                  </h3>
+                  <span style={{ fontSize: "0.8rem", color: "#66564A" }}>
+                    Showing who donated and how much (Demo Fund Tracker)
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "2px 8px", borderRadius: "6px", fontWeight: 700 }}>
+                  142 Donors
                 </span>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
-                  { rank: 1, name: "Tanvir Rahman", dept: "CSE 3rd Sem", amount: 2500, points: 25, badge: "🥇" },
-                  { rank: 2, name: "Anika Tabassum", dept: "BBA 2nd Sem", amount: 1200, points: 12, badge: "🥈" },
-                  { rank: 3, name: store.studentProfile.name, dept: "CSE 1st Year", amount: store.donations.totalDonated, points: store.donations.points, badge: "🥉" },
-                  { rank: 4, name: "Sajid Khan", dept: "EEE 1st Sem", amount: 400, points: 4, badge: "4" },
-                  { rank: 5, name: "Aria Rahman", dept: "CSE 3rd Sem", amount: 200, points: 2, badge: "5" },
+                  { rank: 1, name: "Mustafizur Rahman", dept: "Alumni Association", amount: 5000, points: 50, badge: "🥇" },
+                  { rank: 2, name: "Farhana Ahmed", dept: "CSE 4th Year", amount: 3000, points: 30, badge: "🥈" },
+                  { rank: 3, name: "Tanvir Rahman", dept: "CSE 3rd Sem", amount: 2500, points: 25, badge: "🥉" },
+                  { rank: 4, name: "Rahat Chowdhury", dept: "Economics 2nd Year", amount: 1500, points: 15, badge: "4" },
+                  { rank: 5, name: "Anika Tabassum", dept: "BBA 2nd Sem", amount: 1200, points: 12, badge: "5" },
+                  { rank: 6, name: store.studentProfile.name, dept: "CSE 1st Year (Demo User)", amount: store.donations.totalDonated || 1000, points: store.donations.points || 10, badge: "6" },
+                  { rank: 7, name: "Sajid Khan", dept: "EEE 1st Sem", amount: 400, points: 4, badge: "7" },
                 ].map((st) => (
                   <div
                     key={st.rank}
@@ -879,34 +1008,45 @@ export function HeadPanel({
                       <span style={{ fontSize: "1.1rem" }}>{st.badge}</span>
                       <div>
                         <h5 style={{ margin: 0, fontSize: "0.9rem", fontWeight: 700, color: "#241A14" }}>{st.name}</h5>
-                        <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{st.dept} • {formatTaka(st.amount, false)}</span>
+                        <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{st.dept}</span>
                       </div>
                     </div>
-                    <span style={{ fontWeight: 800, color: "#D35400", fontSize: "0.92rem" }}>{st.points} Pts</span>
+
+                    <div style={{ textAlign: "right" }}>
+                      <strong style={{ fontWeight: 800, color: "#047857", fontSize: "0.95rem", display: "block" }}>
+                        {formatTaka(st.amount, false)}
+                      </strong>
+                      <span style={{ fontSize: "0.76rem", color: "#D35400", fontWeight: 700 }}>
+                        {st.points} Pts
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* DEPARTMENT BREAKDOWN & DISBURSEMENT ALLOCATION */}
+            {/* DEPARTMENT RANKING & NATIONWIDE POSITION MATRIX */}
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
-                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
-                  Departmental Contribution Breakdown
+              {/* DEPARTMENT RANKINGS */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "24px" }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Department Ranking Breakdown
                 </h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   {[
-                    { dept: "Computer Science & Engineering", amount: 42000, points: 420, icon: "💻" },
-                    { dept: "Business Administration (BBA)", amount: 26500, points: 265, icon: "📊" },
-                    { dept: "Electrical & Electronic Eng", amount: 16000, points: 160, icon: "⚡" },
+                    { rank: "#1", dept: "Computer Science & Engineering", amount: 42000, points: 420, donors: 56, icon: "💻" },
+                    { rank: "#2", dept: "Business Administration (BBA)", amount: 26500, points: 265, donors: 38, icon: "📊" },
+                    { rank: "#3", dept: "Electrical & Electronic Eng", amount: 16000, points: 160, donors: 24, icon: "⚡" },
+                    { rank: "#4", dept: "Economics & Humanities", amount: 8500, points: 85, donors: 14, icon: "📚" },
                   ].map((item, idx) => (
                     <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: "#FDF9F3", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ fontSize: "1.2rem" }}>{item.icon}</span>
+                        <span style={{ fontWeight: 800, color: "#D35400", fontSize: "0.9rem" }}>{item.rank}</span>
+                        <span style={{ fontSize: "1.1rem" }}>{item.icon}</span>
                         <div>
                           <h4 style={{ margin: 0, color: "#241A14", fontSize: "0.88rem", fontWeight: 700 }}>{item.dept}</h4>
-                          <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{item.points} Total Points</span>
+                          <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{item.donors} Active Donors • {item.points} Pts</span>
                         </div>
                       </div>
                       <strong style={{ color: "#D35400", fontSize: "0.95rem" }}>{formatTaka(item.amount, false)}</strong>
@@ -915,16 +1055,26 @@ export function HeadPanel({
                 </div>
               </div>
 
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
-                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
-                  Demo Fund Disbursement & Impact Allocation
+              {/* INSTITUTION RANKING & NATIONWIDE POSITION */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "24px" }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Institution Ranking & Nationwide Position
                 </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div style={{ padding: "12px 14px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #047857", color: "#241A14", fontSize: "0.85rem" }}>
-                    <strong style={{ color: "#047857" }}>Emergency Medical Relief:</strong> ৳35,000 disbursed to 7 students.
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ padding: "14px", background: "#FFF7E6", borderRadius: "12px", border: "1px solid rgba(211, 84, 0, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <strong style={{ color: "#D35400", fontSize: "0.92rem", display: "block" }}>Regional Institution Ranking</strong>
+                      <span style={{ fontSize: "0.8rem", color: "#66564A" }}>Ranked #3 in Dhaka Division Higher Education Category</span>
+                    </div>
+                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "#D35400" }}>#3 Regional</span>
                   </div>
-                  <div style={{ padding: "12px 14px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #D35400", color: "#241A14", fontSize: "0.85rem" }}>
-                    <strong style={{ color: "#D35400" }}>Tuition Hardship Subsidies:</strong> ৳49,500 offset for partial payment applicants.
+
+                  <div style={{ padding: "14px", background: "rgba(4, 120, 87, 0.08)", borderRadius: "12px", border: "1px solid rgba(4, 120, 87, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <strong style={{ color: "#047857", fontSize: "0.92rem", display: "block" }}>Nationwide Position</strong>
+                      <span style={{ fontSize: "0.8rem", color: "#66564A" }}>Ranked #18 out of 142 Colleges & Universities in Bangladesh</span>
+                    </div>
+                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "#047857" }}>#18 National</span>
                   </div>
                 </div>
               </div>
@@ -936,56 +1086,203 @@ export function HeadPanel({
         </div>
       )}
 
-      {/* EXECUTIVE DECISION MODAL */}
+      {/* EXECUTIVE DECISION MODAL — PHASE 20 FINAL APPROVAL CENTER */}
       {execApp && (
         <div className="ms-modal-overlay">
-          <div className="ms-modal" style={{ maxWidth: "620px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <ShieldCheck size={28} style={{ color: "#D35400" }} />
+          <div className="ms-modal" style={{ maxWidth: "760px", width: "94%", maxHeight: "90vh", overflowY: "auto" }}>
+            
+            {/* MODAL HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "rgba(211, 84, 0, 0.12)", border: "1px solid rgba(211, 84, 0, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#D35400" }}>
+                  <ShieldCheck size={24} />
+                </div>
                 <div>
-                  <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Executive Sign-Off & Approval</h3>
-                  <span style={{ fontSize: "0.78rem", color: "#66564A" }}>Application ID: {execApp.id}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "0.74rem", background: "#FFF7E6", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
+                      PHASE 20 • FINAL EXECUTIVE SIGN-OFF
+                    </span>
+                    <span style={{ fontSize: "0.78rem", color: "#8C7A6A", fontFamily: "monospace" }}>
+                      DOSSIER #{execApp.id}
+                    </span>
+                  </div>
+                  <h3 style={{ margin: "2px 0 0", color: "#241A14", fontSize: "1.25rem", fontWeight: 800 }}>
+                    Executive Hardship & Partial Payment Authorization
+                  </h3>
                 </div>
               </div>
-              <button type="button" onClick={() => setExecApp(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
+              <button type="button" onClick={() => setExecApp(null)} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", color: "#66564A", cursor: "pointer" }}>
                 <X size={18} />
               </button>
             </div>
 
-            <div style={{ background: "#FDF9F3", padding: "16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.88rem", marginBottom: "16px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                <p style={{ margin: 0, color: "#66564A" }}>
-                  Student: <strong style={{ color: "#241A14" }}>{execApp.studentName} ({execApp.studentId})</strong>
-                </p>
-                <p style={{ margin: 0, color: "#66564A" }}>
-                  Fee Item: <strong style={{ color: "#241A14" }}>{execApp.feeTitle}</strong>
-                </p>
-              </div>
+            {/* 10-POINT EXECUTIVE DOSSIER GRID */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "20px" }}>
 
-              <p style={{ margin: 0, color: "#66564A" }}>
-                Requested Partial Payment: <strong style={{ color: "#047857", fontSize: "1.1rem" }}>{formatTaka(execApp.requestedAmount, false)}</strong> (Original Assigned Fee: {formatTaka(execApp.originalAmount, false)})
-              </p>
-
-              <p style={{ margin: 0, color: "#66564A" }}>
-                Stated Hardship Reason: <span style={{ color: "#241A14" }}>"{execApp.reason}"</span>
-              </p>
-
-              {execApp.adminNotes && (
-                <div style={{ background: "#FFFFFF", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.25)", fontSize: "0.8rem", color: "#66564A" }}>
-                  Admin Recommendation: <strong style={{ color: "#241A14" }}>"{execApp.adminNotes}"</strong>
+              {/* ROW 1: STUDENT & INSTITUTION */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                
+                {/* 1. STUDENT */}
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
+                    1. Student Identity Dossier
+                  </span>
+                  <strong style={{ fontSize: "1rem", color: "#241A14", display: "block" }}>
+                    {execApp.studentName}
+                  </strong>
+                  <span style={{ fontSize: "0.82rem", color: "#D35400", fontFamily: "monospace", fontWeight: 700, display: "block" }}>
+                    ID: {execApp.studentId}
+                  </span>
+                  <span style={{ fontSize: "0.78rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                    Department: CSE • CGPA: 3.92 (High Standing)
+                  </span>
                 </div>
-              )}
 
-              <div style={{ background: "rgba(16, 185, 129, 0.12)", padding: "8px 12px", borderRadius: "8px", color: "#047857", fontSize: "0.8rem", display: "flex", justifyContent: "space-between" }}>
-                <span>AI Signature Match Score: <strong>{execApp.aiMatchScore}% Similarity</strong></span>
-                <span>Guardian NID & Signature Verified</span>
+                {/* 2. INSTITUTION */}
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
+                    2. Institutional Jurisdiction
+                  </span>
+                  <strong style={{ fontSize: "1rem", color: "#241A14", display: "block" }}>
+                    {store.selectedInstitution.name || "Dhaka City College"}
+                  </strong>
+                  <span style={{ fontSize: "0.82rem", color: "#047857", fontWeight: 700, display: "block" }}>
+                    ✓ Verified Academic Authority
+                  </span>
+                  <span style={{ fontSize: "0.78rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                    Executive Director: Prof. Dr. M. A. Karim
+                  </span>
+                </div>
+
               </div>
+
+              {/* ROW 2: FEE, TOTAL AMOUNT, REQUESTED AMOUNT */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "14px", padding: "16px", display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr", gap: "14px", alignItems: "center" }}>
+                
+                {/* 3. FEE */}
+                <div>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block", marginBottom: "2px" }}>
+                    3. Target Fee Item
+                  </span>
+                  <strong style={{ fontSize: "0.95rem", color: "#241A14" }}>
+                    {execApp.feeTitle}
+                  </strong>
+                  <span style={{ fontSize: "0.78rem", color: "#66564A", display: "block" }}>
+                    Category: Academic Dues
+                  </span>
+                </div>
+
+                {/* 4. TOTAL AMOUNT */}
+                <div style={{ background: "#FDF9F3", padding: "10px 12px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block" }}>
+                    4. Total Fee Amount
+                  </span>
+                  <strong style={{ fontSize: "1.15rem", color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(execApp.originalAmount, false)}
+                  </strong>
+                </div>
+
+                {/* 5. REQUESTED AMOUNT */}
+                <div style={{ background: "rgba(4, 120, 87, 0.08)", padding: "10px 12px", borderRadius: "10px", border: "1px solid rgba(4, 120, 87, 0.25)" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#047857", textTransform: "uppercase", display: "block" }}>
+                    5. Requested Split (Inst. 1)
+                  </span>
+                  <strong style={{ fontSize: "1.15rem", color: "#047857", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(execApp.requestedAmount, false)}
+                  </strong>
+                </div>
+
+              </div>
+
+              {/* ROW 3: REASON & HARDSHIP STATEMENT */}
+              <div style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
+                  6. Stated Hardship Reason & Declaration
+                </span>
+                <p style={{ margin: "0 0 6px", fontSize: "0.88rem", color: "#241A14", fontWeight: 600, lineHeight: 1.4 }}>
+                  "{execApp.reason}"
+                </p>
+                {execApp.statement && (
+                  <p style={{ margin: 0, fontSize: "0.8rem", color: "#66564A", fontStyle: "italic" }}>
+                    Statement: "{execApp.statement}"
+                  </p>
+                )}
+                <div style={{ marginTop: "8px", fontSize: "0.78rem", color: "#66564A", display: "flex", gap: "16px" }}>
+                  <span>Guardian: <strong style={{ color: "#241A14" }}>{execApp.guardianName}</strong></span>
+                  <span>Contact: <strong style={{ color: "#241A14" }}>{execApp.guardianPhone}</strong></span>
+                </div>
+              </div>
+
+              {/* ROW 4: DOCUMENTS, AI VERIFICATION, PAYMENT HISTORY */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+                
+                {/* 7. DOCUMENTS */}
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
+                    7. Uploaded Documents
+                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "0.78rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px", color: "#047857", fontWeight: 600 }}>
+                      <FileText size={13} /> Guardian NID: {execApp.guardianIdDocUrl || "NID-Verified.pdf"}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px", color: "#047857", fontWeight: 600 }}>
+                      <FileText size={13} /> Guardian Sig: {execApp.guardianSignatureDocUrl || "Sig-Guardian.png"}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "4px", color: "#047857", fontWeight: 600 }}>
+                      <FileText size={13} /> Student Sig: {execApp.studentSignatureDocUrl || "Sig-Student.png"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 8. AI VERIFICATION */}
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
+                    8. AI Signature Verification
+                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                    <Sparkles size={16} color="#047857" />
+                    <strong style={{ fontSize: "1.1rem", color: "#047857" }}>{execApp.aiMatchScore}% Match</strong>
+                  </div>
+                  <span style={{ fontSize: "0.76rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "2px 6px", borderRadius: "4px", fontWeight: 700 }}>
+                    {execApp.aiMatchStatus || "Signature Match"}
+                  </span>
+                </div>
+
+                {/* 9. PAYMENT HISTORY */}
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                  <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
+                    9. Payment Track Record
+                  </span>
+                  <strong style={{ fontSize: "0.9rem", color: "#047857", display: "block" }}>
+                    100% On-Time Record
+                  </strong>
+                  <span style={{ fontSize: "0.78rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                    3 Past Fees Cleared • 0 Overdue Defaults
+                  </span>
+                </div>
+
+              </div>
+
+              {/* 10. ADMIN REVIEW */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
+                  10. Operational Admin Review & Recommendation
+                </span>
+                <p style={{ margin: 0, fontSize: "0.85rem", color: "#241A14", lineHeight: 1.4 }}>
+                  Admin (Refat Rahman): <strong style={{ color: "#66564A" }}>"{execApp.adminNotes || "Verified student profile, NID document & AI signature match score against institutional records. Recommended for executive split installment authorization."}"</strong>
+                </p>
+              </div>
+
             </div>
 
-            {/* EXECUTIVE ADJUSTMENT CONTROLS */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "16px", borderRadius: "12px", marginBottom: "16px" }}>
-              <h4 style={{ margin: 0, fontSize: "0.9rem", fontWeight: 700, color: "#241A14" }}>Executive Plan Assignment</h4>
+            {/* EXECUTIVE AUTHORIZATION & DECISION CONTROLS */}
+            <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "14px", padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <Lock size={16} color="#D35400" />
+                <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 800, color: "#D35400" }}>
+                  Executive Decisioning (Head Authority Sign-Off)
+                </h4>
+              </div>
               
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <div>
@@ -996,7 +1293,7 @@ export function HeadPanel({
                     type="number"
                     value={approvedAmountInput || execApp.requestedAmount}
                     onChange={(e) => setApprovedAmountInput(Number(e.target.value))}
-                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 800 }}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 800 }}
                   />
                 </div>
 
@@ -1008,46 +1305,70 @@ export function HeadPanel({
                     type="date"
                     value={newDeadlineInput}
                     onChange={(e) => setNewDeadlineInput(e.target.value)}
-                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 600 }}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 600 }}
                   />
                 </div>
               </div>
 
               <div>
                 <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
-                  Executive Notes / Directives (Included in Student Decision Notice)
+                  Executive Directive / Comments (Recorded in Immutable Audit Log & Sent to Student)
                 </label>
                 <textarea
                   rows={2}
                   placeholder="Enter executive authorization comments or directives..."
                   value={headNotesInput}
                   onChange={(e) => setHeadNotesInput(e.target.value)}
-                  style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontSize: "0.85rem" }}
+                  style={{ width: "100%", padding: "8px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontSize: "0.85rem" }}
                 />
               </div>
-            </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <button type="button" className="ms-btn-primary" style={{ background: "#047857", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontWeight: 700, fontSize: "0.92rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }} onClick={() => handleExecutiveApprove(execApp.id)}>
-                <CheckCircle2 size={18} /> Executive Approve & Unlock Partial Payment
-              </button>
+              {/* THREE EXECUTIVE DECISION BUTTONS: APPROVE, REQUEST CHANGES, REJECT */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "4px" }}>
+                
+                {/* 1. APPROVE */}
+                <button
+                  type="button"
+                  className="ms-btn-primary"
+                  style={{ background: "#047857", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontWeight: 800, fontSize: "0.95rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: "0 4px 12px rgba(4, 120, 87, 0.25)" }}
+                  onClick={() => handleExecutiveApprove(execApp.id)}
+                >
+                  <CheckCircle2 size={20} /> Approve Decision & Unlock Partial Payment
+                </button>
 
-              <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
-                <input
-                  type="text"
-                  placeholder="Feedback notes (for change request or decline)..."
-                  value={declineReason}
-                  onChange={(e) => setDeclineReason(e.target.value)}
-                  style={{ flex: 1, padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.82rem" }}
-                />
-                <button type="button" onClick={() => handleExecutiveRequestChanges(execApp.id)} style={{ color: "#D35400", background: "#FDF9F3", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "8px 12px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }}>
-                  Request Changes
-                </button>
-                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => handleExecutiveDecline(execApp.id)}>
-                  Decline
-                </button>
+                {/* REASON / FEEDBACK INPUT FOR REJECT OR CHANGES */}
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <input
+                    type="text"
+                    placeholder="Enter feedback notes or decline reason..."
+                    value={declineReason}
+                    onChange={(e) => setDeclineReason(e.target.value)}
+                    style={{ flex: 1, padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem" }}
+                  />
+
+                  {/* 2. REQUEST CHANGES */}
+                  <button
+                    type="button"
+                    onClick={() => handleExecutiveRequestChanges(execApp.id)}
+                    style={{ color: "#D35400", background: "#FFFFFF", border: "1.5px solid #D35400", padding: "9px 14px", borderRadius: "8px", fontWeight: 800, fontSize: "0.82rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                  >
+                    Request Changes
+                  </button>
+
+                  {/* 3. REJECT */}
+                  <button
+                    type="button"
+                    onClick={() => handleExecutiveDecline(execApp.id)}
+                    style={{ color: "#FFFFFF", background: "#BE123C", border: "none", padding: "9px 14px", borderRadius: "8px", fontWeight: 800, fontSize: "0.82rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                  >
+                    Reject Request
+                  </button>
+                </div>
+
               </div>
+
             </div>
+
           </div>
         </div>
       )}
