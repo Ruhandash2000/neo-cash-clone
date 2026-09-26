@@ -521,6 +521,17 @@ export function LoginModal({
                 </p>
               ) : null}
 
+              <button
+                type="button"
+                className="auth-primary"
+                onClick={() => {
+                  setStatus(null);
+                  setView("biometric");
+                }}
+                disabled={busy}
+              >
+                Biometric Login
+              </button>
               <button className="auth-primary" type="submit" disabled={busy}>
                 {busy ? "Signing in…" : "Login"}
               </button>
