@@ -86,7 +86,7 @@ export function LoginModal({
   /** Complete login process and stay on landing page */
   const finishLogin = async () => {
     onClose();
-    await navigate({ to: "/", search: {}, replace: true });
+    await navigate({ to: "/dashboard", search: {}, replace: true });
   };
 
   /** Update signup form fields */
