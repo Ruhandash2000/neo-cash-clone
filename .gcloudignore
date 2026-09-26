@@ -1,0 +1,27 @@
+# .gcloudignore for Neo Cash AI Google Cloud App Engine Deployment
+
+.gcloudignore
+.git
+.gitignore
+
+# Local development files
+node_modules/
+.env
+.env.local
+.env.development
+.env.production
+
+# Build scratch and IDE folders
+.gemini/
+.output/
+.tanstack/
+.wrangler/
+.prettierrc
+.prettierignore
+scratch/
+
+# Tests & Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log

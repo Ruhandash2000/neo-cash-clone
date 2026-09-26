@@ -1,0 +1,39 @@
+# Google Cloud App Engine Configuration for Neo Cash AI
+# Runtime specification for Node.js 20 LTS
+
+runtime: nodejs20
+env: standard
+instance_class: F1
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 10
+  target_cpu_utilization: 0.65
+
+# Environment variables configuration placeholder
+# Populate with your Supabase credentials or configure via Secret Manager
+env_variables:
+  NODE_ENV: "production"
+  PORT: "8080"
+  # VITE_SUPABASE_URL: "https://your-supabase-project.supabase.co"
+  # VITE_SUPABASE_ANON_KEY: "your-supabase-anon-key"
+
+handlers:
+  # Serve static assets directly from build output
+  - url: /assets
+    static_dir: dist/client/assets
+    secure: always
+
+  - url: /favicon.ico
+    static_files: dist/client/favicon.ico
+    upload: dist/client/favicon.ico
+    secure: always
+
+  # Default fallback handler for TanStack Start SSR web server
+  - url: /.*
+    script: auto
+    secure: always
+
+# Enable HTTP/2 and modern SSL
+http_headers:
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
