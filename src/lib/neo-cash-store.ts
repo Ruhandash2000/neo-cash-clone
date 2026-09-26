@@ -972,10 +972,29 @@ if (typeof window !== "undefined") {
   try {
     const saved = localStorage.getItem("neo_cash_state_v1");
     if (saved) {
-      currentState = { ...INITIAL_STATE, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === "object") {
+        currentState = {
+          ...INITIAL_STATE,
+          ...parsed,
+          studentProfile: { ...INITIAL_STATE.studentProfile, ...(parsed.studentProfile || {}) },
+          balances: { ...INITIAL_STATE.balances, ...(parsed.balances || {}) },
+          donations: { ...INITIAL_STATE.donations, ...(parsed.donations || {}) },
+          reminderRules: { ...INITIAL_STATE.reminderRules, ...(parsed.reminderRules || {}) },
+          fees: Array.isArray(parsed.fees) && parsed.fees.length > 0 ? parsed.fees : INITIAL_STATE.fees,
+          transactions: Array.isArray(parsed.transactions) ? parsed.transactions : INITIAL_STATE.transactions,
+          notifications: Array.isArray(parsed.notifications) ? parsed.notifications : INITIAL_STATE.notifications,
+          demoEmailLogs: Array.isArray(parsed.demoEmailLogs) ? parsed.demoEmailLogs : INITIAL_STATE.demoEmailLogs,
+          auditLogs: Array.isArray(parsed.auditLogs) ? parsed.auditLogs : INITIAL_STATE.auditLogs,
+          partialApplications: Array.isArray(parsed.partialApplications) ? parsed.partialApplications : INITIAL_STATE.partialApplications,
+          students: Array.isArray(parsed.students) && parsed.students.length > 0 ? parsed.students : INITIAL_STATE.students,
+          escalations: Array.isArray(parsed.escalations) ? parsed.escalations : INITIAL_STATE.escalations,
+        };
+      }
     }
   } catch (e) {
     console.warn("Failed to load local Neo state:", e);
+    currentState = { ...INITIAL_STATE };
   }
 }
 
