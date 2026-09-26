@@ -60,8 +60,7 @@ export function AdminPanel({
   const [targetClass, setTargetClass] = useState("CSE 3rd Semester");
   const [targetSection, setTargetSection] = useState("Sec A");
 
-  // Excel Import File State
-  const [importFileName, setImportFileName] = useState<string | null>(null);
+
   const [importRows, setImportRows] = useState<Array<{ name: string; studentId: string; department: string; classSection: string; email: string }>>([
     { name: "Aria Rahman", studentId: "DCC-2024-9001", department: "CSE", classSection: "CSE 3rd Sem (Sec B)", email: "aria.r@dcc.edu.bd" },
     { name: "Siddique Hossain", studentId: "DCC-2024-9002", department: "EEE", classSection: "EEE 1st Sem (Sec A)", email: "siddique.h@dcc.edu.bd" },
@@ -72,7 +71,108 @@ export function AdminPanel({
   const [reviewApp, setReviewApp] = useState<PartialApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
-    // Phase 14 — Excel-Like Bulk Fee Assignment State
+      // Phase 15 — Student Excel/CSV Import & AI Processor State
+  const [importFileName, setImportFileName] = useState<string | null>("fall_2026_cse_freshers.csv");
+  const [importFilterTab, setImportFilterTab] = useState<"all" | "valid" | "warning" | "error">("all");
+
+  interface ImportRowItem {
+    id: string;
+    name: string;
+    studentId: string;
+    roll: string;
+    department: string;
+    classYear: string;
+    section: string;
+    semester: string;
+    session: string;
+    email: string;
+    phone: string;
+    status: "valid" | "warning" | "error";
+    issue?: string;
+  }
+
+  const [importPreviewRows, setImportPreviewRows] = useState<ImportRowItem[]>([
+    { id: "imp-row-1", name: "Aria Rahman", studentId: "DCC-2024-9001", roll: "2401", department: "CSE", classYear: "1st Year", section: "Sec A", semester: "1st Sem", session: "2024-2025", email: "aria.r@dcc.edu.bd", phone: "+880 1711-001122", status: "valid" },
+    { id: "imp-row-2", name: "Siddique Hossain", studentId: "DCC-2024-9002", roll: "2402", department: "EEE", classYear: "1st Year", section: "Sec A", semester: "1st Sem", session: "2024-2025", email: "siddique.h@dcc.edu.bd", phone: "+880 1711-001123", status: "valid" },
+    { id: "imp-row-3", name: "Mahmudul Hasan", studentId: "DCC-2024-9003", roll: "2403", department: "BBA", classYear: "2nd Year", section: "Sec B", semester: "3rd Sem", session: "2024-2025", email: "mahmudul.h@dcc.edu.bd", phone: "+880 1711-001124", status: "valid" },
+    { id: "imp-row-4", name: "", studentId: "DCC-2024-9004", roll: "2404", department: "CSE", classYear: "1st Year", section: "Sec B", semester: "1st Sem", session: "2024-2025", email: "invalid.email.com", phone: "+880 1711-001125", status: "error", issue: "Missing Student Name & Invalid Email" },
+    { id: "imp-row-5", name: "Ruhan Dash Dibya", studentId: "DCC-CSE-24-1024", roll: "1024", department: "CSE", classYear: "1st Year", section: "Sec A", semester: "2nd Sem", session: "2024-2025", email: "student@neocash.ai", phone: "+880 1712-345678", status: "error", issue: "Duplicate Student ID: DCC-CSE-24-1024" },
+    { id: "imp-row-6", name: "Nabila Islam", studentId: "DCC-2024-9006", roll: "", department: "CSE", classYear: "1st Year", section: "Sec C", semester: "1st Sem", session: "", email: "nabila.i@dcc.edu.bd", phone: "", status: "warning", issue: "Missing optional roll/session (defaults applied)" },
+  ]);
+
+  // Re-evaluates validation live when inline editing row fields
+  const validateRow = (row: ImportRowItem, allRows: ImportRowItem[]): { status: "valid" | "warning" | "error"; issue?: string } => {
+    if (!row.name || !row.name.trim()) return { status: "error", issue: "Missing Student Name" };
+    if (!row.email || !row.email.includes("@")) return { status: "error", issue: "Invalid Email Format" };
+    if (!row.classYear || !row.classYear.trim()) return { status: "error", issue: "Missing Academic Class/Year" };
+    if (!row.section || !row.section.trim()) return { status: "error", issue: "Missing Section" };
+
+    // Duplicate check in existing store & file
+    const existsInStore = store.students.some(s => s.studentId.toLowerCase() === row.studentId.toLowerCase());
+    const countInFile = allRows.filter(r => r.studentId.toLowerCase() === row.studentId.toLowerCase()).length;
+
+    if (existsInStore || countInFile > 1) {
+      return { status: "error", issue: `Duplicate Student ID: ${row.studentId}` };
+    }
+
+    if (!row.roll || !row.session || !row.phone) {
+      return { status: "warning", issue: "Missing optional roll/phone (defaults applied)" };
+    }
+
+    return { status: "valid" };
+  };
+
+  const handleUpdateRowCell = (id: string, field: keyof ImportRowItem, value: string) => {
+    setImportPreviewRows(prev => {
+      const updated = prev.map(r => r.id === id ? { ...r, [field]: value } : r);
+      return updated.map(r => {
+        const valRes = validateRow(r, updated);
+        const { issue, ...rest } = r;
+        return {
+          ...rest,
+          status: valRes.status,
+          ...(valRes.issue ? { issue: valRes.issue } : {}),
+        };
+      });
+    });
+  };
+
+  const handleLoadSampleBatch = () => {
+    const sampleBatch: ImportRowItem[] = [
+      { id: "imp-s-1", name: "Tariqul Islam", studentId: "DCC-2025-9101", roll: "2501", department: "CSE", classYear: "1st Year", section: "Sec A", semester: "1st Sem", session: "2025-2026", email: "tariqul.i@dcc.edu.bd", phone: "+880 1711-889900", status: "valid" },
+      { id: "imp-s-2", name: "Farhana Yasmin", studentId: "DCC-2025-9102", roll: "2502", department: "CSE", classYear: "1st Year", section: "Sec A", semester: "1st Sem", session: "2025-2026", email: "farhana.y@dcc.edu.bd", phone: "+880 1711-889901", status: "valid" },
+      { id: "imp-s-3", name: "Imtiaz Ahmed", studentId: "DCC-2025-9103", roll: "2503", department: "EEE", classYear: "1st Year", section: "Sec B", semester: "1st Sem", session: "2025-2026", email: "imtiaz.a@dcc.edu.bd", phone: "+880 1711-889902", status: "valid" },
+      { id: "imp-s-4", name: "Kazi Nazrul", studentId: "DCC-CSE-24-1024", roll: "2504", department: "CSE", classYear: "1st Year", section: "Sec A", semester: "1st Sem", session: "2025-2026", email: "kazi.n@dcc.edu.bd", phone: "+880 1711-889903", status: "error", issue: "Duplicate Student ID: DCC-CSE-24-1024" },
+      { id: "imp-s-5", name: "", studentId: "DCC-2025-9105", roll: "2505", department: "BBA", classYear: "1st Year", section: "Sec A", semester: "1st Sem", session: "2025-2026", email: "missing_name_domain.com", phone: "+880 1711-889904", status: "error", issue: "Missing Student Name & Invalid Email" },
+    ];
+    setImportFileName("sample_freshers_batch_2025.csv");
+    setImportPreviewRows(sampleBatch);
+    alert("Loaded sample batch file with valid rows, warnings, and deliberate errors for AI validation test!");
+  };
+
+  const handleConfirmFinalImport = () => {
+    const validRows = importPreviewRows.filter(r => r.status === "valid" || r.status === "warning");
+    const errorRows = importPreviewRows.filter(r => r.status === "error");
+
+    if (validRows.length === 0) {
+      return alert("No valid student records available to import. Please correct row errors inline in the preview matrix.");
+    }
+
+    const res = actions.importStudentsValidated({
+      students: validRows,
+      rejectedCount: errorRows.length,
+      warningCount: importPreviewRows.filter(r => r.status === "warning").length,
+      fileName: importFileName || "students_batch_upload.csv",
+    });
+
+    if (res && res.ok) {
+      alert(`Successfully imported ${res.imported} student records into the directory! ${errorRows.length} bad rows rejected.`);
+      setImportPreviewRows([]);
+      setImportFileName(null);
+    }
+  };
+
+  // Phase 14 — Excel-Like Bulk Fee Assignment State
   const [bulkInstitution, setBulkInstitution] = useState("Dhaka City College");
   const [bulkDept, setBulkDept] = useState("CSE");
   const [bulkClassYear, setBulkClassYear] = useState("1st Year");
@@ -2166,74 +2266,308 @@ export function AdminPanel({
 
       {activeTab === "import" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-              Excel Student Roster Import
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-              Upload Excel (.xlsx, .csv) student files with automated column validation.
-            </p>
+          {/* HEADER BAR */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "#241A14" }}>
+                AI Student Excel/CSV Import & Data Validation Processor
+              </h2>
+              <p style={{ margin: "4px 0 0", fontSize: "0.88rem", color: "#66564A" }}>
+                Upload batch student files. AI validation detects duplicate IDs, missing names, invalid emails, and incorrect sections. Do not silently create bad records.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <button
+                type="button"
+                onClick={handleLoadSampleBatch}
+                style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.5)", color: "#D35400", padding: "8px 14px", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <Sparkles size={14} /> Load Demo Preset CSV
+              </button>
+            </div>
           </div>
 
-          <div style={{ background: "#FFFFFF", border: "2px dashed rgba(196, 154, 108, 0.4)", borderRadius: "14px", padding: "40px", textAlign: "center" }}>
-            <FileSpreadsheet size={48} style={{ color: "#D35400", margin: "0 auto 12px" }} />
-            <h3 style={{ margin: "0 0 6px", color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Drag & Drop Excel Roster File Here</h3>
-            <p style={{ color: "#66564A", fontSize: "0.85rem", margin: "0 0 16px" }}>
-              Supported formats: .xlsx, .csv (Columns: Name, StudentID, Department, ClassSection, Email)
-            </p>
-            <button type="button" className="ms-btn-secondary" onClick={() => setImportFileName("DCC-CSE-2026-Roster.xlsx")} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
-              Select Sample Excel File
-            </button>
+          {/* UPLOAD & AI PROCESSOR BANNER */}
+          <div style={{ background: "#FFFFFF", border: "1.5px dashed rgba(196, 154, 108, 0.5)", borderRadius: "16px", padding: "24px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+            <div style={{ width: "54px", height: "54px", borderRadius: "50%", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Upload size={24} color="#D35400" />
+            </div>
+
+            <div>
+              <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
+                {importFileName ? `File Selected: ${importFileName}` : "Drag and Drop CSV or Excel File Here"}
+              </h3>
+              <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "#66564A" }}>
+                Expected Fields: <strong>Name, Student ID, Roll, Department, Class, Section, Semester, Session, Email, Phone</strong>
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <label style={{ background: "#D35400", color: "#FFFFFF", padding: "9px 18px", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <FileSpreadsheet size={15} /> Select File (.csv, .xlsx)
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImportFileName(e.target.files[0].name);
+                      alert(`Selected file "${e.target.files[0].name}". AI Validation processor active.`);
+                    }
+                  }}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </div>
           </div>
 
-          {importFileName && (
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
-                  File Preview: <span style={{ color: "#D35400" }}>{importFileName}</span> ({importRows.length} Records Validated)
+          {/* AI VALIDATION SUMMARY SCORECARDS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(4, 120, 87, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#047857", display: "block" }}>Valid Rows Ready</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#047857" }}>
+                {importPreviewRows.filter(r => r.status === "valid").length} Rows
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#66564A" }}>Passed all validation checks</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(217, 119, 6, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#D97706", display: "block" }}>Warnings / Defaults</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#D97706" }}>
+                {importPreviewRows.filter(r => r.status === "warning").length} Rows
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#66564A" }}>Missing optional fields</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(190, 18, 60, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#BE123C", display: "block" }}>Errors Detected</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#BE123C" }}>
+                {importPreviewRows.filter(r => r.status === "error").length} Rows
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#BE123C" }}>Will be rejected if uncorrected</p>
+            </div>
+          </div>
+
+          {/* PREVIEW MATRIX WITH INLINE EDITING */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
+                  AI Validation Matrix & Inline Row Editor
                 </h3>
-                <StatusBadge status="verified" customLabel="Validation Passed" />
+                <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#66564A" }}>
+                  Edit error cells directly in the preview matrix to fix duplicate IDs, invalid emails, or missing names before importing.
+                </p>
               </div>
 
-              <div style={{ border: "1px solid rgba(196, 154, 108, 0.2)", borderRadius: "10px", overflow: "hidden", marginBottom: "16px" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
-                  <thead>
-                    <tr style={{ background: "#FDF9F3", color: "#66564A" }}>
-                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Name</th>
-                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Student ID</th>
-                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Department</th>
-                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Class & Section</th>
-                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Email</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {importRows.map((row, idx) => (
-                      <tr key={idx} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.15)" }}>
-                        <td style={{ padding: "10px 14px", fontWeight: 700, color: "#241A14" }}>{row.name}</td>
-                        <td style={{ padding: "10px 14px", fontWeight: 700, color: "#D35400" }}>{row.studentId}</td>
-                        <td style={{ padding: "10px 14px", color: "#66564A" }}>{row.department}</td>
-                        <td style={{ padding: "10px 14px", color: "#66564A" }}>{row.classSection}</td>
-                        <td style={{ padding: "10px 14px", color: "#66564A" }}>{row.email}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-                <button type="button" className="ms-btn-secondary" onClick={() => setImportFileName(null)} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
-                  Cancel
-                </button>
-                <button type="button" className="ms-btn-primary" onClick={handleExcelImportConfirm} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
-                  Confirm & Import All Records
-                </button>
+              {/* FILTER TABS */}
+              <div style={{ display: "flex", gap: "6px" }}>
+                {[
+                  { id: "all", label: "All Rows" },
+                  { id: "valid", label: "Valid Only" },
+                  { id: "warning", label: "Warnings" },
+                  { id: "error", label: "Errors" },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setImportFilterTab(tab.id as any)}
+                    style={{
+                      padding: "6px 12px",
+                      background: importFilterTab === tab.id ? "#FFF7E6" : "#FDF9F3",
+                      border: "1px solid rgba(196, 154, 108, 0.4)",
+                      color: importFilterTab === tab.id ? "#D35400" : "#66564A",
+                      fontWeight: importFilterTab === tab.id ? 800 : 600,
+                      borderRadius: "6px",
+                      fontSize: "0.78rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
-          )}
+
+            {/* MATRIX TABLE */}
+            <div style={{ overflowX: "auto", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Status</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Name</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Student ID</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Dept</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Class</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Sec</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Sem</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Email (Editable)</th>
+                    <th style={{ padding: "10px 12px", fontWeight: 700 }}>Validation Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importPreviewRows.filter(r => importFilterTab === "all" || r.status === importFilterTab).length === 0 ? (
+                    <tr>
+                      <td colSpan={9} style={{ padding: "20px", textAlign: "center", color: "#8C7A6A" }}>
+                        No records match the active filter tab.
+                      </td>
+                    </tr>
+                  ) : (
+                    importPreviewRows.filter(r => importFilterTab === "all" || r.status === importFilterTab).map((r) => (
+                      <tr key={r.id} style={{ borderTop: "1px solid rgba(196, 154, 108, 0.2)", background: r.status === "error" ? "rgba(190, 18, 60, 0.04)" : r.status === "warning" ? "rgba(217, 119, 6, 0.04)" : "transparent" }}>
+                        {/* STATUS */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <span style={{
+                            padding: "3px 8px",
+                            borderRadius: "999px",
+                            fontSize: "0.74rem",
+                            fontWeight: 800,
+                            background: r.status === "valid" ? "rgba(4, 120, 87, 0.12)" : r.status === "warning" ? "rgba(217, 119, 6, 0.12)" : "rgba(190, 18, 60, 0.12)",
+                            color: r.status === "valid" ? "#047857" : r.status === "warning" ? "#D97706" : "#BE123C",
+                          }}>
+                            {r.status.toUpperCase()}
+                          </span>
+                        </td>
+
+                        {/* NAME */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            type="text"
+                            value={r.name}
+                            onChange={(e) => handleUpdateRowCell(r.id, "name", e.target.value)}
+                            placeholder="Enter Name"
+                            style={{ padding: "4px 8px", border: !r.name ? "1.5px solid #BE123C" : "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "6px", fontSize: "0.82rem", outline: "none", width: "100%", boxSizing: "border-box" }}
+                          />
+                        </td>
+
+                        {/* ID */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            type="text"
+                            value={r.studentId}
+                            onChange={(e) => handleUpdateRowCell(r.id, "studentId", e.target.value)}
+                            style={{ padding: "4px 8px", fontFamily: "monospace", fontWeight: 700, border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "6px", fontSize: "0.82rem", outline: "none", width: "100%", color: "#D35400", boxSizing: "border-box" }}
+                          />
+                        </td>
+
+                        {/* DEPT */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            type="text"
+                            value={r.department}
+                            onChange={(e) => handleUpdateRowCell(r.id, "department", e.target.value)}
+                            style={{ padding: "4px 8px", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "6px", fontSize: "0.82rem", outline: "none", width: "60px" }}
+                          />
+                        </td>
+
+                        {/* CLASS */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            type="text"
+                            value={r.classYear}
+                            onChange={(e) => handleUpdateRowCell(r.id, "classYear", e.target.value)}
+                            style={{ padding: "4px 8px", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "6px", fontSize: "0.82rem", outline: "none", width: "80px" }}
+                          />
+                        </td>
+
+                        {/* SEC */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            type="text"
+                            value={r.section}
+                            onChange={(e) => handleUpdateRowCell(r.id, "section", e.target.value)}
+                            style={{ padding: "4px 8px", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "6px", fontSize: "0.82rem", outline: "none", width: "60px" }}
+                          />
+                        </td>
+
+                        {/* SEM */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            type="text"
+                            value={r.semester}
+                            onChange={(e) => handleUpdateRowCell(r.id, "semester", e.target.value)}
+                            style={{ padding: "4px 8px", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "6px", fontSize: "0.82rem", outline: "none", width: "70px" }}
+                          />
+                        </td>
+
+                        {/* EMAIL */}
+                        <td style={{ padding: "10px 12px" }}>
+                          <input
+                            type="text"
+                            value={r.email}
+                            onChange={(e) => handleUpdateRowCell(r.id, "email", e.target.value)}
+                            placeholder="user@domain.com"
+                            style={{ padding: "4px 8px", border: (!r.email || !r.email.includes("@")) ? "1.5px solid #BE123C" : "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "6px", fontSize: "0.82rem", outline: "none", width: "100%", boxSizing: "border-box" }}
+                          />
+                        </td>
+
+                        {/* ISSUE NOTE */}
+                        <td style={{ padding: "10px 12px", color: r.status === "error" ? "#BE123C" : r.status === "warning" ? "#D97706" : "#047857", fontWeight: 700, fontSize: "0.78rem" }}>
+                          {r.issue || "Ready for import"}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* CONFIRM BUTTON */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "6px" }}>
+              <button
+                type="button"
+                onClick={handleConfirmFinalImport}
+                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "12px 24px", borderRadius: "10px", fontWeight: 800, fontSize: "0.9rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)" }}
+              >
+                <CheckCircle2 size={16} /> Confirm & Create Students ({importPreviewRows.filter(r => r.status === "valid" || r.status === "warning").length} Valid)
+              </button>
+            </div>
+          </div>
+
+          {/* IMPORT HISTORY AUDIT LEDGER */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
+              Batch Import History & AI Validation Audit Log
+            </h3>
+            <div style={{ overflowX: "auto", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.86rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "10px 14px", fontWeight: 700 }}>File Name</th>
+                    <th style={{ padding: "10px 14px", fontWeight: 700 }}>Executed By</th>
+                    <th style={{ padding: "10px 14px", fontWeight: 700 }}>Date & Time</th>
+                    <th style={{ padding: "10px 14px", fontWeight: 700 }}>Imported</th>
+                    <th style={{ padding: "10px 14px", fontWeight: 700 }}>Rejected</th>
+                    <th style={{ padding: "10px 14px", fontWeight: 700 }}>Warnings</th>
+                    <th style={{ padding: "10px 14px", fontWeight: 700 }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(store.importLogs || [
+                    { id: "i1", fileName: "fall_2026_cse_enrollment.xlsx", adminName: "Refat Rahman (Admin)", timestamp: "2026-09-24 11:30 AM", importedCount: 42, rejectedCount: 2, warningCount: 5, status: "Partial Success" },
+                    { id: "i2", fileName: "eee_sec_a_freshers.csv", adminName: "Refat Rahman (Admin)", timestamp: "2026-09-20 02:15 PM", importedCount: 30, rejectedCount: 0, warningCount: 1, status: "Completed" },
+                  ]).map((log) => (
+                    <tr key={log.id} style={{ borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <td style={{ padding: "10px 14px", fontWeight: 700, color: "#241A14" }}>{log.fileName}</td>
+                      <td style={{ padding: "10px 14px", color: "#66564A" }}>{log.adminName}</td>
+                      <td style={{ padding: "10px 14px", color: "#8C7A6A" }}>{log.timestamp}</td>
+                      <td style={{ padding: "10px 14px", fontWeight: 800, color: "#047857" }}>{log.importedCount} Records</td>
+                      <td style={{ padding: "10px 14px", fontWeight: 800, color: log.rejectedCount > 0 ? "#BE123C" : "#66564A" }}>{log.rejectedCount} Rejected</td>
+                      <td style={{ padding: "10px 14px", color: "#D97706", fontWeight: 700 }}>{log.warningCount} Warnings</td>
+                      <td style={{ padding: "10px 14px" }}>
+                        <span style={{ padding: "3px 8px", borderRadius: "999px", fontSize: "0.74rem", fontWeight: 800, background: log.status === "Completed" ? "rgba(4, 120, 87, 0.12)" : "rgba(217, 119, 6, 0.12)", color: log.status === "Completed" ? "#047857" : "#D97706" }}>
+                          {log.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* 5. AUDIT LOGS TAB */}
       {activeTab === "audit" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>

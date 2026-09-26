@@ -1,4 +1,16 @@
 
+export interface ImportLogRecord {
+  id: string;
+  fileName: string;
+  adminName: string;
+  timestamp: string;
+  importedCount: number;
+  rejectedCount: number;
+  warningCount: number;
+  status: "Completed" | "Partial Success" | "Failed";
+}
+
+
 export interface AcademicDepartment {
   id: string;
   code: string;
@@ -227,12 +239,14 @@ export interface NeoState {
   auditLogs: AuditLog[];
   escalations: EscalationTicket[];
   students: StudentRecord[];
+
   academicStructure: {
     departments: AcademicDepartment[];
     classes: AcademicClass[];
     sections: AcademicSection[];
   };
   reminderRules: ReminderRules;
+  importLogs: ImportLogRecord[];
 }
 
 const INITIAL_STATE: NeoState = {
@@ -499,6 +513,11 @@ const INITIAL_STATE: NeoState = {
       referenceId: "RF-882910",
       receiptNumber: "REC-982098",
     },
+  ],
+
+  importLogs: [
+    { id: "imp-1", fileName: "fall_2026_cse_enrollment.xlsx", adminName: "Refat Rahman (Admin)", timestamp: "2026-09-24 11:30 AM", importedCount: 42, rejectedCount: 2, warningCount: 5, status: "Partial Success" },
+    { id: "imp-2", fileName: "eee_sec_a_freshers.csv", adminName: "Refat Rahman (Admin)", timestamp: "2026-09-20 02:15 PM", importedCount: 30, rejectedCount: 0, warningCount: 1, status: "Completed" },
   ],
   academicStructure: {
     departments: [
@@ -950,6 +969,77 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
 ];
 
 export const storeActions = {
+  importStudentsValidated(payload: {
+    students: Array<{
+      name: string;
+      studentId: string;
+      roll?: string;
+      department: string;
+      classYear: string;
+      section: string;
+      semester: string;
+      session?: string;
+      email: string;
+      phone?: string;
+    }>;
+    rejectedCount: number;
+    warningCount: number;
+    fileName: string;
+  }) {
+    let imported = 0;
+    payload.students.forEach((item, index) => {
+      const newStudent: StudentRecord = {
+        id: "st-imp-" + Date.now() + "-" + index,
+        name: item.name,
+        studentId: item.studentId,
+        department: item.department || "CSE",
+        classYear: item.classYear || "1st Year",
+        section: item.section || "Sec A",
+        semester: item.semester || "1st Sem",
+        classSection: `${item.department || "CSE"} ${item.classYear || "1st Year"} (${item.section || "Sec A"})`,
+        session: item.session || "2024-2025",
+        email: item.email || `${item.studentId.toLowerCase()}@dcc.edu.bd`,
+        phone: item.phone || "+880 1700-000000",
+        status: "Active",
+        feeStatus: "Paid",
+        walletBalance: 0,
+        totalDues: 0,
+        verified: true,
+        lastActivity: "Just imported via CSV",
+      };
+      currentState.students.unshift(newStudent);
+      imported++;
+    });
+
+    const newLog: ImportLogRecord = {
+      id: "imp-log-" + Date.now(),
+      fileName: payload.fileName || "students_batch_upload.csv",
+      adminName: "Refat Rahman (Admin)",
+      timestamp: new Date().toLocaleString(),
+      importedCount: imported,
+      rejectedCount: payload.rejectedCount,
+      warningCount: payload.warningCount,
+      status: payload.rejectedCount > 0 ? "Partial Success" : "Completed",
+    };
+
+    if (!currentState.importLogs) {
+      currentState.importLogs = [];
+    }
+    currentState.importLogs.unshift(newLog);
+
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Executed Student Excel/CSV Import",
+      details: `Imported ${imported} valid student records from ${payload.fileName}. Rejected: ${payload.rejectedCount}, Warnings: ${payload.warningCount}.`,
+      timestamp: new Date().toLocaleString(),
+    });
+
+    saveState();
+    return { ok: true, imported, log: newLog };
+  },
+
   createDepartment(dept: { code: string; name: string; headName: string }) {
     const newDept: AcademicDepartment = {
       id: "dept-" + Date.now(),
