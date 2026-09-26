@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Neo Cash AI — Role-Based Financial Ecosystem Dashboard" },
