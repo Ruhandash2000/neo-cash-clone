@@ -15,11 +15,12 @@ import { StudentPanel } from "./student-panel";
 import { AdminPanel } from "./admin-panel";
 import { HeadPanel } from "./head-panel";
 import { ReceiptModal } from "./receipt-modal";
+import { DesignShowcase } from "@/components/design-system/design-showcase";
 import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
   ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X
+  LogOut, Layers, AlertCircle, X, Palette
 } from "lucide-react";
 
 export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
@@ -190,8 +191,15 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
               </>
             )}
 
+            {/* DESIGN SYSTEM SHOWCASE LINK */}
+            <li className="ms-nav-item" style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed rgba(167, 139, 250, 0.3)" }}>
+              <button className={activeTab === "design" ? "is-active" : ""} onClick={() => setActiveTab("design")}>
+                <Palette size={18} style={{ color: "#A78BFA" }} /> Design Showcase
+              </button>
+            </li>
+
             {/* COMMON LOGOUT ITEM IN SIDEBAR NAV */}
-            <li className="ms-nav-item" style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--ms-border)" }}>
+            <li className="ms-nav-item" style={{ marginTop: "8px" }}>
               <button type="button" onClick={onSignOut} style={{ color: "#EF4444" }}>
                 <LogOut size={18} /> Logout
               </button>
@@ -289,24 +297,30 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
 
           {/* DYNAMIC PANEL CONTENT */}
           <div className="ms-content">
-            {store.role === "student" && (
-              <StudentPanel
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                onOpenReceipt={(txn) => setReceiptTxn(txn)}
-              />
-            )}
-            {store.role === "admin" && (
-              <AdminPanel
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-              />
-            )}
-            {store.role === "head" && (
-              <HeadPanel
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-              />
+            {activeTab === "design" ? (
+              <DesignShowcase />
+            ) : (
+              <>
+                {store.role === "student" && (
+                  <StudentPanel
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    onOpenReceipt={(txn) => setReceiptTxn(txn)}
+                  />
+                )}
+                {store.role === "admin" && (
+                  <AdminPanel
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                  />
+                )}
+                {store.role === "head" && (
+                  <HeadPanel
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                  />
+                )}
+              </>
             )}
           </div>
         </main>

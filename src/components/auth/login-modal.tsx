@@ -532,6 +532,48 @@ export function LoginModal({
               >
                 Biometric Login
               </button>
+              <div className="auth-divider" style={{ margin: "12px 0 8px" }}>
+                <span>or 1-Click Demo Login</span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px", marginBottom: "16px" }}>
+                <button
+                  type="button"
+                  style={{ padding: "8px", fontSize: "0.78rem", background: "rgba(79, 70, 229, 0.15)", border: "1px solid rgba(79, 70, 229, 0.4)", borderRadius: "8px", color: "#A788FA", cursor: "pointer", fontWeight: "600" }}
+                  onClick={() => {
+                    actions.setRole("student");
+                    setEmail("student@neocash.ai");
+                    setPassword("demo1234");
+                    void finishLogin();
+                  }}
+                >
+                  🎓 Student
+                </button>
+                <button
+                  type="button"
+                  style={{ padding: "8px", fontSize: "0.78rem", background: "rgba(30, 58, 138, 0.25)", border: "1px solid rgba(30, 58, 138, 0.5)", borderRadius: "8px", color: "#60A5FA", cursor: "pointer", fontWeight: "600" }}
+                  onClick={() => {
+                    actions.setRole("admin");
+                    setEmail("admin@neocash.ai");
+                    setPassword("demo1234");
+                    void finishLogin();
+                  }}
+                >
+                  💼 Admin
+                </button>
+                <button
+                  type="button"
+                  style={{ padding: "8px", fontSize: "0.78rem", background: "rgba(167, 136, 250, 0.15)", border: "1px solid rgba(167, 136, 250, 0.4)", borderRadius: "8px", color: "#F3EBFF", cursor: "pointer", fontWeight: "600" }}
+                  onClick={() => {
+                    actions.setRole("head");
+                    setEmail("head@neocash.ai");
+                    setPassword("demo1234");
+                    void finishLogin();
+                  }}
+                >
+                  🏛️ Head
+                </button>
+              </div>
+
               <button className="auth-primary" type="submit" disabled={busy}>
                 {busy ? "Signing in…" : "Login"}
               </button>
