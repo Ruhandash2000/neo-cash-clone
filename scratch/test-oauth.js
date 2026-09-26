@@ -1,16 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = "https://c--247c2749-bd13-43ca-84ed-2cffa30b2fdf-prod.lovable.cloud";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_dQtpRrk6h5pKRZaStUYD_g_B7U2YY7B";
+const SUPABASE_URL = "https://nxxlezllkpqsmqnrrlyg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Tk4UcoPGSmr_nu9BsQBjGw_Jk5mBWb9";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-async function testLovableWithNewKey() {
-  console.log("Testing Lovable Proxy with new key:", SUPABASE_URL);
+async function testOAuthNxx() {
+  console.log("Testing nxxlezllkpqsmqnrrlyg URL:", SUPABASE_URL);
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: 'https://ruhandash2000.github.io/neo-cash-clone/',
+      redirectTo: 'https://neo-cash-clone.sp2khb.workers.dev/',
       skipBrowserRedirect: true,
     },
   });
@@ -28,4 +28,4 @@ async function testLovableWithNewKey() {
   console.log("Body snippet:", text.slice(0, 300));
 }
 
-testLovableWithNewKey();
+testOAuthNxx();
