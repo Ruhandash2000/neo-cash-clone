@@ -1,100 +1,229 @@
 /**
- * Student Onboarding Flow Component
+ * Neo Cash AI — Phase 2: Student Onboarding & Institution Verification Flow
  * 
- * Step 1: Institution Search (Dhaka City College, University of Dhaka, etc.)
- * Step 2: Realistic SSO Institution Verification sequence
- * Step 3: Verified Profile Confirmation ("Verified by Dhaka City College")
- * Step 4: Wallet Setup (bKash, Rocket, Visa, Mastercard)
- * Step 5: Finish & Enter Student Dashboard
+ * Complete institutional identity verification & fintech onboarding:
+ * Step 1: Institution Search (Dhaka University, Dhaka City College, Sylhet institutions, etc.)
+ * Step 2: Institution Verification (Demo SSO / Authentication Gateway)
+ * Step 3: Verified Data Returned (Locked institutional fields with "Verified by [Institution]")
+ * Step 4: Verified Profile Setup & Completion (Photo, Phone, Emergency contact, 80% progress)
+ * Step 5: Automatic Wallet Creation (Available balance ৳0, Status: Active)
+ * Step 6: Payment Methods Configuration (bKash, Rocket, Nagad, Visa, Mastercard - Available/Connected/Not connected)
+ * Step 7: Success State ("Your Neo Cash account is ready" -> Go to Dashboard)
+ * Step 8: Persistent state storage in useNeoStore & localStorage.
  */
 
 import { useState } from "react";
 import { useNeoStore } from "@/lib/neo-cash-store";
-import { Search, CheckCircle2, ShieldCheck, CreditCard, ArrowRight, Building2, Sparkles, AlertCircle } from "lucide-react";
+import {
+  Search, ShieldCheck, CheckCircle2, Lock, ArrowRight, Building2,
+  Wallet, CreditCard, Sparkles, UserCheck, Phone, Camera, User,
+  Check, RefreshCw, AlertCircle, Award, Smartphone
+} from "lucide-react";
 
-const INSTITUTION_DATABASE = [
-  { name: "Dhaka City College", type: "Collegiate University", location: "Dhanmondi, Dhaka", logo: "🏛️", verified: true },
-  { name: "University of Dhaka", type: "Public Research University", location: "Nilkhet, Dhaka", logo: "🎓", verified: true },
-  { name: "Dhaka College", type: "Government College", location: "New Market, Dhaka", logo: "🏫", verified: true },
-  { name: "Eden Mohila College", type: "Government Women's College", location: "Azimpur, Dhaka", logo: "👩‍🎓", verified: true },
-  { name: "Government Titumir College", type: "Government College", location: "Mohakhali, Dhaka", logo: "📚", verified: true },
-  { name: "BUET (Bangladesh Univ of Eng & Tech)", type: "Engineering University", location: "Palashi, Dhaka", logo: "⚙️", verified: true },
-  { name: "North South University", type: "Private University", location: "Bashundhara, Dhaka", logo: "🌐", verified: true },
+export interface DemoInstitution {
+  id: string;
+  name: string;
+  type: string;
+  location: string;
+  logo: string;
+  verified: boolean;
+  code: string;
+}
+
+export const INSTITUTION_DATABASE: DemoInstitution[] = [
+  { id: "inst-1", name: "Dhaka City College", type: "Collegiate College / University", location: "Dhanmondi, Dhaka", logo: "🏛️", verified: true, code: "DCC" },
+  { id: "inst-2", name: "University of Dhaka", type: "Public Research University", location: "Nilkhet, Dhaka", logo: "🎓", verified: true, code: "DU" },
+  { id: "inst-3", name: "Dhaka College", type: "Government College", location: "New Market, Dhaka", logo: "🏫", verified: true, code: "DC" },
+  { id: "inst-4", name: "Eden Mohila College", type: "Government Women's College", location: "Azimpur, Dhaka", logo: "👩‍🎓", verified: true, code: "EMC" },
+  { id: "inst-5", name: "Government Titumir College", type: "DU-Affiliated Government College", location: "Mohakhali, Dhaka", logo: "📚", verified: true, code: "GTC" },
+  { id: "inst-6", name: "Sylhet Agricultural University", type: "Public Agricultural University", location: "Sylhet, Bangladesh", logo: "🌾", verified: true, code: "SAU" },
+  { id: "inst-7", name: "Shahjalal University of Sci & Tech", type: "Public Science & Tech University", location: "Kumargaon, Sylhet", logo: "⚙️", verified: true, code: "SUST" },
+  { id: "inst-8", name: "Notre Dame College", type: "Higher Secondary & Honors College", location: "Motijheel, Dhaka", logo: "✝️", verified: true, code: "NDC" },
+  { id: "inst-9", name: "BUET (Bangladesh Univ of Eng & Tech)", type: "Engineering University", location: "Palashi, Dhaka", logo: "🔬", verified: true, code: "BUET" },
+  { id: "inst-10", name: "North South University", type: "Private Research University", location: "Bashundhara, Dhaka", logo: "🌐", verified: true, code: "NSU" },
 ];
 
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [store, actions] = useNeoStore();
-  const [step, setStep] = useState(1); // 1: Search, 2: SSO Verify, 3: Profile, 4: Wallet
+  
+  // Step tracker: 1: Search, 2: Verification SSO, 3: Verified Data, 4: Profile Setup, 5: Wallet Creation, 6: Payment Methods, 7: Ready
+  const [step, setStep] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedInst, setSelectedInst] = useState(INSTITUTION_DATABASE[0]);
+  const [selectedInst, setSelectedInst] = useState<DemoInstitution>(INSTITUTION_DATABASE[0]!);
 
-  // SSO Verification loading simulation
+  // Step 2 SSO Verification states
+  const [studentIdInput, setStudentIdInput] = useState("DCC-CSE-24-1024");
+  const [instEmailInput, setInstEmailInput] = useState("student@neocash.ai");
   const [verifying, setVerifying] = useState(false);
   const [verifyMessage, setVerifyMessage] = useState("");
   const [verifiedDone, setVerifiedDone] = useState(false);
 
-  // Selected payment method for wallet setup
-  const [selectedMethod, setSelectedMethod] = useState("bkash");
+  // Step 4 Profile Setup states
+  const [avatarSeed, setAvatarSeed] = useState("Ruhan");
+  const [phoneInput, setPhoneInput] = useState("+880 1712-345678");
+  const [emergencyInput, setEmergencyInput] = useState("Robert Dash (+880 1711-998877)");
+  const [bloodGroup, setBloodGroup] = useState("B+ (Positive)");
+
+  // Step 6 Payment Methods Connection states
+  const [paymentMethods, setPaymentMethods] = useState([
+    { id: "bkash", name: "bKash Mobile Banking", type: "bkash", status: "Connected", account: "+880 1712-345678", icon: "📱" },
+    { id: "rocket", name: "Dutch-Bangla Rocket", type: "rocket", status: "Available", account: "Not connected", icon: "🚀" },
+    { id: "nagad", name: "Nagad Financial Service", type: "nagad", status: "Available", account: "Not connected", icon: "⚡" },
+    { id: "visa", name: "Visa Debit Card", type: "visa", status: "Not connected", account: "Not connected", icon: "💳" },
+    { id: "mastercard", name: "Mastercard Credit", type: "mastercard", status: "Not connected", account: "Not connected", icon: "💳" },
+  ]);
 
   const filteredInstitutions = INSTITUTION_DATABASE.filter(
     (inst) =>
       inst.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inst.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inst.location.toLowerCase().includes(searchQuery.toLowerCase())
+      inst.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inst.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const startSSO = (inst: typeof INSTITUTION_DATABASE[0]) => {
+  /** Handle initiating demo SSO authentication */
+  const handleStartSSO = (inst: DemoInstitution) => {
     setSelectedInst(inst);
-    actions.setSelectedInstitution(inst);
+    setStudentIdInput(`${inst.code}-CSE-24-1024`);
     setStep(2);
+    setVerifying(false);
+    setVerifiedDone(false);
+  };
+
+  /** Trigger official-looking verification sequence */
+  const runVerificationSequence = () => {
     setVerifying(true);
     setVerifiedDone(false);
+    setVerifyMessage(`Connecting to ${selectedInst.name} Identity Gateway…`);
 
-    // Realistic SSO step sequence
-    setVerifyMessage("Connecting to " + inst.name + " Identity Server…");
     setTimeout(() => {
-      setVerifyMessage("Authenticating student credentials via SSO…");
+      setVerifyMessage(`Authenticating student credentials (${studentIdInput})…`);
       setTimeout(() => {
-        setVerifyMessage("Verifying active enrollment & department records…");
+        setVerifyMessage("Confirming active registration, session & department status…");
         setTimeout(() => {
-          setVerifyMessage("Identity Verified! Syncing student profile…");
+          setVerifyMessage("Verified identity payload returned to Neo Cash AI!");
           setVerifying(false);
           setVerifiedDone(true);
-        }, 1200);
-      }, 1200);
+        }, 1100);
+      }, 1100);
     }, 1000);
   };
 
+  /** Save profile edits and proceed to Wallet creation */
+  const handleProfileComplete = () => {
+    // Update central store
+    actions.setSelectedInstitution({
+      name: selectedInst.name,
+      type: selectedInst.type,
+      location: selectedInst.location,
+      logo: selectedInst.logo,
+      verified: true,
+    });
+
+    actions.updateStudentProfile({
+      name: "Ruhan Dash Dibya",
+      studentId: studentIdInput,
+      institution: selectedInst.name,
+      department: "Computer Science & Engineering",
+      classSection: "1st Year, 2nd Semester",
+      session: "2024–2025",
+      email: instEmailInput,
+      phone: phoneInput,
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
+      isVerified: true,
+    });
+
+    setStep(5);
+  };
+
+  /** Toggle payment method connection state for realistic fintech UX */
+  const togglePaymentMethod = (id: string) => {
+    setPaymentMethods((prev) =>
+      prev.map((pm) => {
+        if (pm.id === id) {
+          const isConn = pm.status === "Connected";
+          return {
+            ...pm,
+            status: isConn ? "Available" : "Connected",
+            account: isConn ? "Not connected" : phoneInput || "+880 1712-345678",
+          };
+        }
+        return pm;
+      })
+    );
+  };
+
+  /** Finish onboarding and navigate to Student Dashboard */
   const handleFinishOnboarding = () => {
     actions.setIsOnboarded(true);
     onComplete();
   };
 
   return (
-    <div className="ms-modal-overlay">
-      <div className="ms-modal" style={{ maxWidth: "680px" }}>
-        {/* Step Progress Bar */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px", borderBottom: "1px solid var(--ms-border)", paddingBottom: "16px" }}>
-          <div>
-            <span style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--ms-accent)", fontWeight: "700" }}>
-              Student Onboarding • Step {step} of 4
+    <div className="onboarding-overlay" style={{
+      position: "fixed",
+      inset: 0,
+      background: "rgba(33, 23, 16, 0.85)",
+      backdropFilter: "blur(8px)",
+      zIndex: 100,
+      display: "grid",
+      placeItems: "center",
+      padding: "20px",
+      overflowY: "auto",
+    }}>
+      <div className="onboarding-card" style={{
+        background: "#FFFFFF",
+        border: "1px solid rgba(196, 154, 108, 0.4)",
+        borderRadius: "24px",
+        maxWidth: "720px",
+        width: "100%",
+        padding: "32px 36px",
+        boxShadow: "0 28px 75px rgba(36, 26, 20, 0.25)",
+        color: "#241A14",
+        position: "relative",
+      }}>
+        {/* HEADER & STEPPER PROGRESS */}
+        <div style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "20px", marginBottom: "28px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+            <span style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "#D35400", fontWeight: 800 }}>
+              NEO CASH AI • INSTITUTIONAL IDENTITY VERIFICATION
             </span>
-            <h2 style={{ fontSize: "1.3rem", margin: "4px 0 0", color: "#FFF" }}>
-              {step === 1 && "Find Your Institution"}
-              {step === 2 && "Institutional Identity Verification"}
-              {step === 3 && "Verified Student Profile"}
-              {step === 4 && "Set Up Neo Wallet"}
-            </h2>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", background: "#FFF7E6", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+              Step {step} of 7
+            </span>
           </div>
-          <div style={{ display: "flex", gap: "6px" }}>
-            {[1, 2, 3, 4].map((i) => (
+
+          <h2 style={{ fontSize: "1.5rem", margin: "0 0 6px", fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "#241A14" }}>
+            {step === 1 && "Find Your Institution"}
+            {step === 2 && "Institutional Identity Gateway"}
+            {step === 3 && "Verified Institutional Identity"}
+            {step === 4 && "Verified Student Profile Setup"}
+            {step === 5 && "Automatic Wallet Creation"}
+            {step === 6 && "Link Payment Methods"}
+            {step === 7 && "Account Ready!"}
+          </h2>
+
+          <p style={{ margin: 0, fontSize: "0.88rem", color: "#66564A" }}>
+            {step === 1 && "Search and select your academic school, college, or university."}
+            {step === 2 && "Authenticate your student credentials via official identity server."}
+            {step === 3 && "Verified academic records returned from institutional database."}
+            {step === 4 && "Complete your personal profile details. Verified records remain locked."}
+            {step === 5 && "Provisioning your secure Neo Cash student digital wallet."}
+            {step === 6 && "Connect mobile banking or cards for fast fee payments."}
+            {step === 7 && "Your institutional fintech account is fully verified and active."}
+          </p>
+
+          {/* Stepper Dots */}
+          <div style={{ display: "flex", gap: "8px", marginTop: "18px" }}>
+            {[1, 2, 3, 4, 5, 6, 7].map((s) => (
               <div
-                key={i}
+                key={s}
                 style={{
-                  width: "28px",
+                  flex: 1,
                   height: "6px",
                   borderRadius: "999px",
-                  background: i <= step ? "var(--ms-primary)" : "rgba(255,255,255,0.1)",
+                  background: s <= step ? "#D35400" : "#EAD9C6",
+                  transition: "background 0.3s ease",
                 }}
               />
             ))}
@@ -104,185 +233,565 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         {/* STEP 1: INSTITUTION SEARCH */}
         {step === 1 && (
           <div>
-            <p style={{ color: "var(--ms-text-muted)", fontSize: "0.9rem", marginBottom: "16px" }}>
-              Search and select your school, college, or university to connect your academic account.
-            </p>
-
-            <div style={{ position: "relative", marginBottom: "20px" }}>
-              <Search size={18} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--ms-text-muted)" }} />
+            <div style={{ position: "relative", marginBottom: "22px" }}>
+              <Search size={18} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
               <input
                 type="text"
-                placeholder="Search by institution name, city, or type..."
+                placeholder="Search school, college or university..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
                   width: "100%",
-                  padding: "12px 14px 12px 42px",
-                  background: "rgba(30, 58, 138, 0.3)",
-                  border: "1px solid var(--ms-border)",
+                  padding: "13px 16px 13px 46px",
+                  background: "#FFF7E6",
+                  border: "1px solid rgba(196, 154, 108, 0.4)",
                   borderRadius: "12px",
-                  color: "#FFF",
-                  outline: "none",
                   fontSize: "0.95rem",
+                  color: "#241A14",
+                  outline: "none",
                 }}
               />
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "320px", overflowY: "auto" }}>
-              {filteredInstitutions.map((inst, index) => (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "360px", overflowY: "auto", paddingRight: "4px" }}>
+              {filteredInstitutions.map((inst) => (
                 <div
-                  key={index}
-                  onClick={() => startSSO(inst)}
-                  className="ms-card-hover"
+                  key={inst.id}
+                  onClick={() => handleStartSSO(inst)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "16px 20px",
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(196, 154, 108, 0.3)",
+                    borderRadius: "16px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    boxShadow: "0 2px 8px rgba(36, 26, 20, 0.04)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#D35400";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(211, 84, 0, 0.12)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(196, 154, 108, 0.3)";
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(36, 26, 20, 0.04)";
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    <span style={{ fontSize: "2rem", width: "48px", height: "48px", display: "grid", placeItems: "center", background: "#FFF7E6", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      {inst.logo}
+                    </span>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                        <h4 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700, color: "#241A14" }}>{inst.name}</h4>
+                        <span style={{ fontSize: "0.72rem", background: "rgba(4, 120, 87, 0.1)", color: "#047857", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, border: "1px solid rgba(4, 120, 87, 0.2)", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                          <CheckCircle2 size={12} /> Institution verification available
+                        </span>
+                      </div>
+                      <p style={{ margin: "4px 0 0", fontSize: "0.83rem", color: "#66564A" }}>
+                        {inst.location} • <span style={{ fontWeight: 600 }}>{inst.type}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" style={{ border: "none", background: "#FFF7E6", color: "#D35400", padding: "8px 14px", borderRadius: "999px", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                    Select <ArrowRight size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 2: INSTITUTION VERIFICATION (SSO GATEWAY) */}
+        {step === 2 && (
+          <div>
+            {/* Conceptual Gateway Header */}
+            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)", padding: "18px 22px", borderRadius: "16px", marginBottom: "24px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span style={{ fontSize: "2.2rem" }}>{selectedInst.logo}</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>{selectedInst.name}</h3>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.8rem", color: "#66564A" }}>Official Identity Gateway (Demo Environment)</p>
+                  </div>
+                </div>
+                <span style={{ fontSize: "0.75rem", background: "#211710", color: "#FF8C42", padding: "4px 10px", borderRadius: "6px", fontWeight: 700 }}>
+                  DEMO OAUTH 2.0
+                </span>
+              </div>
+
+              {/* Conceptual Flow Diagram */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 700, color: "#66564A", borderTop: "1px dashed rgba(196, 154, 108, 0.4)", paddingTop: "12px" }}>
+                <span>Neo Cash AI</span>
+                <span>➔</span>
+                <span>{selectedInst.code} Auth Server</span>
+                <span>➔</span>
+                <span>Identity Verified</span>
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(211, 84, 0, 0.05)", border: "1px solid rgba(211, 84, 0, 0.2)", borderRadius: "12px", padding: "12px 16px", marginBottom: "22px", display: "flex", alignItems: "center", gap: "10px" }}>
+              <ShieldCheck size={20} style={{ color: "#D35400", flexShrink: 0 }} />
+              <p style={{ margin: 0, fontSize: "0.83rem", color: "#241A14" }}>
+                <strong>Security Guarantee:</strong> Neo Cash AI does NOT request or store your institutional password directly. Identity confirmation is handled via official token handshake.
+              </p>
+            </div>
+
+            {!verifying && !verifiedDone && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
+                    Student Roll / ID Number (*)
+                  </label>
+                  <input
+                    type="text"
+                    value={studentIdInput}
+                    onChange={(e) => setStudentIdInput(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "11px 14px",
+                      border: "1px solid rgba(196, 154, 108, 0.4)",
+                      borderRadius: "10px",
+                      fontSize: "0.92rem",
+                      color: "#241A14",
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
+                    Institutional Email Address (*)
+                  </label>
+                  <input
+                    type="email"
+                    value={instEmailInput}
+                    onChange={(e) => setInstEmailInput(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "11px 14px",
+                      border: "1px solid rgba(196, 154, 108, 0.4)",
+                      borderRadius: "10px",
+                      fontSize: "0.92rem",
+                      color: "#241A14",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {verifying && (
+              <div style={{ background: "#FFF7E6", padding: "32px", borderRadius: "16px", textAlign: "center", border: "1px solid rgba(196, 154, 108, 0.4)", marginBottom: "24px" }}>
+                <div style={{ width: "44px", height: "44px", border: "4px solid rgba(211, 84, 0, 0.2)", borderTopColor: "#D35400", borderRadius: "50%", animation: "spin 0.9s linear infinite", margin: "0 auto 16px" }} />
+                <h4 style={{ margin: "0 0 6px", fontSize: "1.05rem", fontWeight: 700, color: "#241A14" }}>Identity Verification in Progress</h4>
+                <p style={{ margin: 0, fontSize: "0.88rem", color: "#66564A", fontWeight: 600 }}>{verifyMessage}</p>
+              </div>
+            )}
+
+            {verifiedDone && (
+              <div style={{ background: "rgba(4, 120, 87, 0.08)", padding: "28px", borderRadius: "16px", textAlign: "center", border: "1px solid rgba(4, 120, 87, 0.3)", marginBottom: "24px" }}>
+                <ShieldCheck size={48} style={{ color: "#047857", margin: "0 auto 12px" }} />
+                <h4 style={{ margin: "0 0 6px", color: "#047857", fontSize: "1.2rem", fontWeight: 700 }}>Identity Verified Successfully!</h4>
+                <p style={{ margin: "0 0 20px", fontSize: "0.88rem", color: "#66564A" }}>
+                  Active registration confirmed for <strong>{studentIdInput}</strong> at {selectedInst.name}.
+                </p>
+                <button type="button" className="auth-primary" onClick={() => setStep(3)} style={{ width: "auto", padding: "11px 24px" }}>
+                  View Verified Identity Data <ArrowRight size={16} />
+                </button>
+              </div>
+            )}
+
+            {!verifying && !verifiedDone && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <button type="button" className="auth-inline-link" onClick={() => setStep(1)}>
+                  ← Choose different institution
+                </button>
+                <button type="button" className="auth-primary" onClick={runVerificationSequence} style={{ width: "auto" }}>
+                  Verify Identity via {selectedInst.code} Gateway <ArrowRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STEP 3: VERIFIED DATA RETURNED */}
+        {step === 3 && (
+          <div>
+            {/* Status Header */}
+            <div style={{ background: "rgba(4, 120, 87, 0.1)", border: "1px solid rgba(4, 120, 87, 0.3)", borderRadius: "16px", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <ShieldCheck size={26} style={{ color: "#047857" }} />
+                <div>
+                  <span style={{ color: "#047857", fontWeight: 800, fontSize: "0.95rem" }}>
+                    Verified by {selectedInst.name}
+                  </span>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.8rem", color: "#66564A" }}>
+                    Verified payload authenticated via institutional database. Fields are locked.
+                  </p>
+                </div>
+              </div>
+              <span style={{ fontSize: "0.75rem", background: "#047857", color: "#FFF", padding: "4px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                STATUS: ACTIVE
+              </span>
+            </div>
+
+            {/* Grid of Locked Verified Fields */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "28px" }}>
+              {[
+                { label: "Institution", value: selectedInst.name },
+                { label: "Verification Status", value: `Verified by ${selectedInst.name}` },
+                { label: "Role", value: "Student" },
+                { label: "Student ID", value: studentIdInput },
+                { label: "Full Name", value: "Ruhan Dash Dibya" },
+                { label: "Department", value: "Computer Science & Engineering" },
+                { label: "Program", value: "B.Sc. in CSE" },
+                { label: "Year & Semester", value: "1st Year (2nd Semester)" },
+                { label: "Academic Session", value: "2024–2025" },
+                { label: "Institutional Email", value: instEmailInput },
+              ].map((item, idx) => (
+                <div key={idx} style={{ background: "#FFF7E6", padding: "12px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", position: "relative" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#8C7A6A", fontWeight: 700 }}>
+                      {item.label}
+                    </span>
+                    <Lock size={12} style={{ color: "#8C7A6A" }} />
+                  </div>
+                  <p style={{ margin: "4px 0 0", fontWeight: 700, fontSize: "0.92rem", color: "#241A14" }}>
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button type="button" className="auth-inline-link" onClick={() => setStep(2)}>
+                ← Back to Verification
+              </button>
+              <button type="button" className="auth-primary" onClick={() => setStep(4)} style={{ width: "auto" }}>
+                Proceed to Profile Setup <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 4: VERIFIED PROFILE SETUP & PROFILE COMPLETION */}
+        {step === 4 && (
+          <div>
+            {/* Completion Progress Bar */}
+            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px 22px", marginBottom: "24px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#241A14" }}>
+                  Profile Completion
+                </span>
+                <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#D35400" }}>
+                  80% Complete
+                </span>
+              </div>
+              <div style={{ width: "100%", height: "8px", background: "#EAD9C6", borderRadius: "999px", overflow: "hidden", marginBottom: "10px" }}>
+                <div style={{ width: "80%", height: "100%", background: "#D35400", borderRadius: "999px" }} />
+              </div>
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "#66564A", fontWeight: 600 }}>
+                Remaining: <span style={{ color: "#D35400" }}>Add profile photo • Confirm phone number</span>
+              </p>
+            </div>
+
+            {/* Editable Profile Inputs */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+              <div style={{ gridColumn: "span 2", display: "flex", alignItems: "center", gap: "16px", background: "#FFF7E6", padding: "14px 18px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                <img
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
+                  alt="Profile Avatar"
+                  style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#FFFFFF", border: "2px solid #D35400" }}
+                />
+                <div>
+                  <h4 style={{ margin: "0 0 4px", fontSize: "0.95rem", fontWeight: 700, color: "#241A14" }}>Choose Profile Avatar</h4>
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {["Ruhan", "Shelly", "Tanzim", "Nusrat"].map((seed) => (
+                      <button
+                        key={seed}
+                        type="button"
+                        onClick={() => setAvatarSeed(seed)}
+                        style={{
+                          border: avatarSeed === seed ? "2px solid #D35400" : "1px solid rgba(196, 154, 108, 0.4)",
+                          background: avatarSeed === seed ? "#FFFFFF" : "#FFF7E6",
+                          padding: "4px 10px",
+                          borderRadius: "999px",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          color: "#241A14",
+                        }}
+                      >
+                        {seed}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
+                  Mobile Phone Number (*)
+                </label>
+                <input
+                  type="text"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    border: "1px solid rgba(196, 154, 108, 0.4)",
+                    borderRadius: "10px",
+                    fontSize: "0.9rem",
+                    color: "#241A14",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
+                  Emergency Contact Name & Phone
+                </label>
+                <input
+                  type="text"
+                  value={emergencyInput}
+                  onChange={(e) => setEmergencyInput(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    border: "1px solid rgba(196, 154, 108, 0.4)",
+                    borderRadius: "10px",
+                    fontSize: "0.9rem",
+                    color: "#241A14",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
+                  Blood Group
+                </label>
+                <select
+                  value={bloodGroup}
+                  onChange={(e) => setBloodGroup(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    border: "1px solid rgba(196, 154, 108, 0.4)",
+                    borderRadius: "10px",
+                    fontSize: "0.9rem",
+                    color: "#241A14",
+                    background: "#FFFFFF",
+                  }}
+                >
+                  <option>B+ (Positive)</option>
+                  <option>A+ (Positive)</option>
+                  <option>O+ (Positive)</option>
+                  <option>AB+ (Positive)</option>
+                  <option>O- (Negative)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#8C7A6A", marginBottom: "6px" }}>
+                  Institutional Status (Locked)
+                </label>
+                <div style={{ background: "#FFF7E6", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.3)", fontSize: "0.88rem", fontWeight: 700, color: "#047857", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span>Verified by {selectedInst.code}</span>
+                  <Lock size={14} />
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button type="button" className="auth-inline-link" onClick={() => setStep(3)}>
+                ← Back to Verified Data
+              </button>
+              <button type="button" className="auth-primary" onClick={handleProfileComplete} style={{ width: "auto" }}>
+                Complete Profile & Create Wallet <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* STEP 5: AUTOMATIC WALLET CREATION */}
+        {step === 5 && (
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ width: "64px", height: "64px", background: "rgba(4, 120, 87, 0.1)", borderRadius: "50%", display: "grid", placeItems: "center", margin: "0 auto 16px", border: "2px solid #047857" }}>
+              <Wallet size={32} style={{ color: "#047857" }} />
+            </div>
+
+            <h3 style={{ fontSize: "1.3rem", fontWeight: 700, color: "#241A14", margin: "0 0 6px" }}>
+              Wallet Created Successfully!
+            </h3>
+            <p style={{ fontSize: "0.88rem", color: "#66564A", margin: "0 0 24px" }}>
+              Your official Neo Cash digital wallet is active and provisioned for Instant Fee Payments.
+            </p>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "28px", textAlign: "left" }}>
+              <div style={{ background: "#FFF7E6", padding: "16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Available Balance</span>
+                <p style={{ margin: "4px 0 0", fontSize: "1.4rem", fontWeight: 800, color: "#241A14" }}>৳0</p>
+              </div>
+
+              <div style={{ background: "#FFF7E6", padding: "16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Wallet Status</span>
+                <p style={{ margin: "4px 0 0", fontSize: "1.1rem", fontWeight: 800, color: "#047857", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <CheckCircle2 size={16} /> Active
+                </p>
+              </div>
+
+              <div style={{ background: "#FFF7E6", padding: "14px 16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Wallet ID</span>
+                <p style={{ margin: "4px 0 0", fontSize: "0.92rem", fontWeight: 700, color: "#241A14" }}>NEO-W-2026-8842</p>
+              </div>
+
+              <div style={{ background: "#FFF7E6", padding: "14px 16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Daily Transaction Limit</span>
+                <p style={{ margin: "4px 0 0", fontSize: "0.92rem", fontWeight: 700, color: "#241A14" }}>৳50,000 / day</p>
+              </div>
+            </div>
+
+            <button type="button" className="auth-primary" onClick={() => setStep(6)} style={{ width: "auto", padding: "12px 28px" }}>
+              Configure Payment Methods <ArrowRight size={16} />
+            </button>
+          </div>
+        )}
+
+        {/* STEP 6: PAYMENT METHODS CONFIGURATION */}
+        {step === 6 && (
+          <div>
+            <p style={{ fontSize: "0.88rem", color: "#66564A", marginBottom: "20px" }}>
+              Link mobile banking accounts or debit cards for 1-click tuition fee settlement.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "28px" }}>
+              {paymentMethods.map((pm) => (
+                <div
+                  key={pm.id}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "14px 18px",
-                    background: "rgba(30, 58, 138, 0.2)",
-                    border: "1px solid var(--ms-border)",
+                    background: pm.status === "Connected" ? "rgba(4, 120, 87, 0.06)" : "#FFFFFF",
+                    border: `1px solid ${pm.status === "Connected" ? "rgba(4, 120, 87, 0.3)" : "rgba(196, 154, 108, 0.3)"}`,
                     borderRadius: "14px",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-                    <span style={{ fontSize: "1.8rem" }}>{inst.logo}</span>
+                    <span style={{ fontSize: "1.8rem" }}>{pm.icon}</span>
                     <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <h4 style={{ margin: 0, color: "#FFF", fontSize: "1rem" }}>{inst.name}</h4>
-                        {inst.verified && (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "3px", fontSize: "0.72rem", background: "rgba(16, 185, 129, 0.15)", color: "#34D399", padding: "2px 8px", borderRadius: "999px" }}>
-                            <CheckCircle2 size={12} /> Verified
-                          </span>
-                        )}
-                      </div>
-                      <p style={{ margin: "3px 0 0", fontSize: "0.8rem", color: "var(--ms-text-muted)" }}>
-                        {inst.type} • {inst.location}
-                      </p>
+                      <h5 style={{ margin: 0, fontSize: "0.98rem", fontWeight: 700, color: "#241A14" }}>{pm.name}</h5>
+                      <p style={{ margin: "2px 0 0", fontSize: "0.8rem", color: "#66564A" }}>{pm.account}</p>
                     </div>
                   </div>
-                  <ArrowRight size={18} style={{ color: "var(--ms-accent)" }} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* STEP 2: SSO VERIFICATION */}
-        {step === 2 && (
-          <div style={{ textAlign: "center", padding: "20px 0" }}>
-            <div style={{ fontSize: "3rem", marginBottom: "16px" }}>{selectedInst?.logo || "🏛️"}</div>
-            <h3 style={{ fontSize: "1.25rem", color: "#FFF", margin: "0 0 8px" }}>{selectedInst?.name || "Institution"}</h3>
-            <p style={{ color: "var(--ms-text-muted)", fontSize: "0.9rem", marginBottom: "24px" }}>
-              Secure Single Sign-On (SSO) & Student Record Sync
-            </p>
-            {verifying ? (
-              <div style={{ background: "rgba(30, 58, 138, 0.3)", padding: "24px", borderRadius: "16px", border: "1px solid var(--ms-border)" }}>
-                <div style={{ width: "48px", height: "48px", border: "4px solid rgba(167, 136, 250, 0.2)", borderTopColor: "var(--ms-accent)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 16px" }} />
-                <p style={{ color: "var(--ms-lavender)", fontWeight: "600", margin: 0 }}>{verifyMessage}</p>
-              </div>
-            ) : verifiedDone ? (
-              <div style={{ background: "rgba(16, 185, 129, 0.12)", padding: "24px", borderRadius: "16px", border: "1px solid rgba(16, 185, 129, 0.3)" }}>
-                <ShieldCheck size={44} style={{ color: "#34D399", margin: "0 auto 12px" }} />
-                <h4 style={{ margin: "0 0 6px", color: "#34D399", fontSize: "1.1rem" }}>Authentication Successful</h4>
-                <p style={{ margin: "0 0 20px", fontSize: "0.85rem", color: "var(--ms-text-muted)" }}>
-                  Verified active status for Student ID: DCC-2024-8842
-                </p>
-                <button type="button" className="ms-btn-primary" onClick={() => setStep(3)}>
-                  View Verified Profile <ArrowRight size={16} />
-                </button>
-              </div>
-            ) : null}
-          </div>
-        )}
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <span
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        padding: "4px 10px",
+                        borderRadius: "999px",
+                        background:
+                          pm.status === "Connected"
+                            ? "rgba(4, 120, 87, 0.15)"
+                            : pm.status === "Available"
+                            ? "rgba(211, 84, 0, 0.12)"
+                            : "rgba(140, 122, 106, 0.12)",
+                        color:
+                          pm.status === "Connected"
+                            ? "#047857"
+                            : pm.status === "Available"
+                            ? "#D35400"
+                            : "#8C7A6A",
+                      }}
+                    >
+                      {pm.status}
+                    </span>
 
-        {/* STEP 3: VERIFIED PROFILE CONFIRMATION */}
-        {step === 3 && (
-          <div>
-            <div style={{ background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "12px", padding: "12px 16px", display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
-              <ShieldCheck size={20} style={{ color: "#34D399" }} />
-              <div>
-                <span style={{ color: "#34D399", fontWeight: "700", fontSize: "0.9rem" }}>
-                  Verified by {store.selectedInstitution.name}
-                </span>
-                <p style={{ margin: "2px 0 0", fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>
-                  Institutional records locked & protected by Neo Cash AI Security.
-                </p>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "24px" }}>
-              <div style={{ background: "rgba(30, 58, 138, 0.25)", padding: "12px 16px", borderRadius: "12px", border: "1px solid var(--ms-border)" }}>
-                <span style={{ fontSize: "0.75rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Full Name</span>
-                <p style={{ margin: "4px 0 0", fontWeight: "700", color: "#FFF" }}>{store.studentProfile.name}</p>
-              </div>
-              <div style={{ background: "rgba(30, 58, 138, 0.25)", padding: "12px 16px", borderRadius: "12px", border: "1px solid var(--ms-border)" }}>
-                <span style={{ fontSize: "0.75rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Student ID</span>
-                <p style={{ margin: "4px 0 0", fontWeight: "700", color: "#FFF" }}>{store.studentProfile.studentId}</p>
-              </div>
-              <div style={{ background: "rgba(30, 58, 138, 0.25)", padding: "12px 16px", borderRadius: "12px", border: "1px solid var(--ms-border)" }}>
-                <span style={{ fontSize: "0.75rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Department</span>
-                <p style={{ margin: "4px 0 0", fontWeight: "700", color: "#FFF" }}>{store.studentProfile.department}</p>
-              </div>
-              <div style={{ background: "rgba(30, 58, 138, 0.25)", padding: "12px 16px", borderRadius: "12px", border: "1px solid var(--ms-border)" }}>
-                <span style={{ fontSize: "0.75rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Class & Section</span>
-                <p style={{ margin: "4px 0 0", fontWeight: "700", color: "#FFF" }}>{store.studentProfile.classSection}</p>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
-              <button type="button" className="ms-btn-primary" onClick={() => setStep(4)}>
-                Proceed to Wallet Setup <ArrowRight size={16} />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: WALLET SETUP */}
-        {step === 4 && (
-          <div>
-            <p style={{ color: "var(--ms-text-muted)", fontSize: "0.9rem", marginBottom: "18px" }}>
-              Select your primary digital wallet or mobile banking account for fast, paperless fee transactions.
-            </p>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px" }}>
-              {store.paymentMethods.map((pm) => (
-                <div
-                  key={pm.id}
-                  onClick={() => setSelectedMethod(pm.id)}
-                  style={{
-                    padding: "16px",
-                    background: selectedMethod === pm.id ? "rgba(79, 70, 229, 0.3)" : "rgba(30, 58, 138, 0.2)",
-                    border: `1px solid ${selectedMethod === pm.id ? "var(--ms-accent)" : "var(--ms-border)"}`,
-                    borderRadius: "14px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                  }}
-                >
-                  <CreditCard size={24} style={{ color: selectedMethod === pm.id ? "var(--ms-accent)" : "var(--ms-text-muted)" }} />
-                  <div>
-                    <h5 style={{ margin: 0, color: "#FFF", fontSize: "0.95rem" }}>{pm.name}</h5>
-                    <p style={{ margin: "2px 0 0", fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>{pm.account}</p>
+                    <button
+                      type="button"
+                      onClick={() => togglePaymentMethod(pm.id)}
+                      style={{
+                        border: "1px solid rgba(196, 154, 108, 0.4)",
+                        background: "#FFF7E6",
+                        color: "#241A14",
+                        padding: "6px 14px",
+                        borderRadius: "8px",
+                        fontSize: "0.8rem",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {pm.status === "Connected" ? "Disconnect" : "Connect"}
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ background: "rgba(167, 136, 250, 0.1)", border: "1px solid rgba(167, 136, 250, 0.25)", padding: "14px 18px", borderRadius: "14px", display: "flex", alignItems: "center", gap: "12px", marginBottom: "24px" }}>
-              <Sparkles size={22} style={{ color: "var(--ms-accent)", flexShrink: 0 }} />
-              <p style={{ margin: 0, fontSize: "0.82rem", color: "var(--ms-lavender)" }}>
-                Your Neo Cash Wallet has been provisioned automatically with ৳4,250.00 initial digital credit.
-              </p>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button type="button" className="ms-btn-primary" onClick={handleFinishOnboarding}>
-                Enter Student Dashboard <ArrowRight size={16} />
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button type="button" className="auth-inline-link" onClick={() => setStep(5)}>
+                ← Back to Wallet Status
+              </button>
+              <button type="button" className="auth-primary" onClick={() => setStep(7)} style={{ width: "auto" }}>
+                Finalize Setup <ArrowRight size={16} />
               </button>
             </div>
+          </div>
+        )}
+
+        {/* STEP 7: SUCCESS STATE */}
+        {step === 7 && (
+          <div style={{ textAlign: "center", padding: "16px 0" }}>
+            <div style={{ width: "72px", height: "72px", background: "rgba(211, 84, 0, 0.1)", borderRadius: "50%", display: "grid", placeItems: "center", margin: "0 auto 16px", border: "2px solid #D35400" }}>
+              <Sparkles size={36} style={{ color: "#D35400" }} />
+            </div>
+
+            <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "0 0 8px", fontFamily: "var(--font-display)", fontStyle: "italic" }}>
+              Your Neo Cash account is ready.
+            </h3>
+            <p style={{ fontSize: "0.92rem", color: "#66564A", margin: "0 0 24px", maxWidth: "480px", marginInline: "auto" }}>
+              Institutional identity verification complete. Your digital wallet and payment methods are active.
+            </p>
+
+            {/* Summary Confirmation Card */}
+            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "18px", padding: "20px 24px", textAlign: "left", marginBottom: "28px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", borderBottom: "1px dashed rgba(196, 154, 108, 0.4)", paddingBottom: "10px" }}>
+                <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#047857" }}>
+                  ✓ VERIFIED STUDENT IDENTITY
+                </span>
+                <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>{selectedInst.name}</span>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "0.88rem" }}>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Student Name</span>
+                  <strong style={{ color: "#241A14" }}>Ruhan Dash Dibya</strong>
+                </div>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Student ID</span>
+                  <strong style={{ color: "#241A14" }}>{studentIdInput}</strong>
+                </div>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Department</span>
+                  <strong style={{ color: "#241A14" }}>Computer Science & Eng</strong>
+                </div>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Wallet Status</span>
+                  <strong style={{ color: "#047857" }}>Active (৳0 Balance)</strong>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" className="auth-primary" onClick={handleFinishOnboarding} style={{ width: "auto", padding: "14px 36px", fontSize: "1.05rem" }}>
+              Go to Dashboard <ArrowRight size={18} />
+            </button>
           </div>
         )}
       </div>
