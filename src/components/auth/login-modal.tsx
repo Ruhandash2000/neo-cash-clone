@@ -257,10 +257,12 @@ export function LoginModal({
     );
   };
 
+  const isBiometricView = view === "biometric" || (view === "signup" && signupStage === "biometric");
+
   return (
     <div className="auth-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
-        className="auth-modal"
+        className={`auth-modal ${isBiometricView ? "auth-modal--single" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={view === "signup" ? "Create an account" : "Login to your Account"}
@@ -270,15 +272,17 @@ export function LoginModal({
           ✕
         </button>
 
-        <aside className="auth-art">
-          <img
-            src={view === "signup" ? signupArt : skeletonArt}
-            alt="Skeleton illustration"
-            loading="lazy"
-            width={1024}
-            height={1024}
-          />
-        </aside>
+        {!isBiometricView && (
+          <aside className="auth-art">
+            <img
+              src={view === "signup" ? signupArt : skeletonArt}
+              alt="Skeleton illustration"
+              loading="lazy"
+              width={1024}
+              height={1024}
+            />
+          </aside>
+        )}
 
         <div className="auth-form-side">
           {view === "signup" ? (

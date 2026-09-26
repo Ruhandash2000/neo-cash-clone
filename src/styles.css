@@ -415,7 +415,16 @@ button { font: inherit; }
   overflow: hidden;
   box-shadow: 0 24px 70px rgba(160, 90, 110, 0.28), 0 0 0 1px rgba(220, 190, 200, 0.4);
 }
-.auth-modal--single { grid-template-columns: 1fr; width: min(460px, 100%); }
+.auth-modal--single {
+  grid-template-columns: 1fr;
+  width: min(480px, 92vw);
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(40, 20, 30, 0.22), 0 0 0 1px rgba(220, 190, 200, 0.4);
+}
+.auth-modal--single .auth-form-side {
+  padding: 36px 36px 32px;
+  justify-content: center;
+}
 .auth-close {
   position: absolute;
   top: 16px;
