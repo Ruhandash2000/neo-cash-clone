@@ -70,7 +70,7 @@ export interface Transaction {
   date: string;
   amount: number;
   type: "fee" | "donation" | "wallet" | "refund";
-  status: "Success" | "Pending" | "Failed";
+  status: "Success" | "Pending" | "Failed" | "Refunded";
   method: string;
   referenceId: string;
   receiptNumber: string;
@@ -361,6 +361,17 @@ const INITIAL_STATE: NeoState = {
       feeId: "fee-4",
     },
     {
+      id: "TXN-88405",
+      title: "Wallet Top-Up via bKash",
+      date: "2026-09-05 09:30 AM",
+      amount: 5000,
+      type: "wallet",
+      status: "Success",
+      method: "bKash Mobile Banking",
+      referenceId: "BK-772019",
+      receiptNumber: "REC-982103",
+    },
+    {
       id: "TXN-88392",
       title: "Student Welfare & Social Impact Donation",
       date: "2026-09-10 11:45 AM",
@@ -369,7 +380,51 @@ const INITIAL_STATE: NeoState = {
       status: "Success",
       method: "City Bank Visa Debit",
       referenceId: "VS-110294",
-      receiptNumber: "DON-448201",
+      receiptNumber: "REC-982102",
+    },
+    {
+      id: "TXN-88380",
+      title: "Duplicate Examination Fee Charge Refund",
+      date: "2026-09-15 03:20 PM",
+      amount: 1500,
+      type: "refund",
+      status: "Refunded",
+      method: "Neo Digital Wallet",
+      referenceId: "RF-401928",
+      receiptNumber: "REC-982101",
+    },
+    {
+      id: "TXN-88375",
+      title: "Midterm Registration Fee Payment",
+      date: "2026-09-22 04:00 PM",
+      amount: 3000,
+      type: "fee",
+      status: "Pending",
+      method: "Dutch-Bangla Rocket",
+      referenceId: "RK-334910",
+      receiptNumber: "REC-982100",
+    },
+    {
+      id: "TXN-88360",
+      title: "Campus Transport Pass Top-Up",
+      date: "2026-09-24 08:15 AM",
+      amount: 2000,
+      type: "wallet",
+      status: "Failed",
+      method: "Mastercard Credit",
+      referenceId: "MC-881029",
+      receiptNumber: "REC-982099",
+    },
+    {
+      id: "TXN-88350",
+      title: "Hostel Utility Excess Adjustment",
+      date: "2026-09-25 01:10 PM",
+      amount: 800,
+      type: "refund",
+      status: "Refunded",
+      method: "bKash Mobile Banking",
+      referenceId: "RF-882910",
+      receiptNumber: "REC-982098",
     },
   ],
   notifications: [

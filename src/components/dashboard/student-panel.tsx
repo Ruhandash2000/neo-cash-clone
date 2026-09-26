@@ -86,6 +86,11 @@ export function StudentPanel({
   const [feeSearchQuery, setFeeSearchQuery] = useState<string>("");
   const [selectedDetailFee, setSelectedDetailFee] = useState<Fee | null>(null);
 
+  // Transactions Filtering, Search & Detail Modal State
+  const [txnFilter, setTxnFilter] = useState<"all" | "paid" | "pending" | "failed" | "refunded" | "donation" | "wallet">("all");
+  const [txnSearchQuery, setTxnSearchQuery] = useState<string>("");
+  const [selectedDetailTxn, setSelectedDetailTxn] = useState<Transaction | null>(null);
+
   // AI Chat Assistant State
   const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string; time: string }>>([
     { sender: "ai", text: "Hello Ruhan! I am your Neo AI Student Financial Assistant. You can ask me about fee deadlines, receipt validation, or applying for partial payments.", time: "10:00 AM" },
@@ -1589,53 +1594,317 @@ export function StudentPanel({
       )}
 
       {/* 4. TRANSACTIONS & RECEIPTS TAB */}
-      {activeTab === "transactions" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-              Transaction History & Digital Receipts
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-              Verified logs of institutional payments with instant PDF receipt download.
-            </p>
-          </div>
+      {activeTab === "transactions" && (() => {
+        // Filter Transactions
+        const filteredTxns = store.transactions.filter((t) => {
+          if (txnFilter === "paid") {
+            if (t.status !== "Success" || (t.type !== "fee" && t.type !== undefined)) return false;
+          } else if (txnFilter === "pending") {
+            if (t.status !== "Pending") return false;
+          } else if (txnFilter === "failed") {
+            if (t.status !== "Failed") return false;
+          } else if (txnFilter === "refunded") {
+            if (t.status !== "Refunded" && t.type !== "refund") return false;
+          } else if (txnFilter === "donation") {
+            if (t.type !== "donation") return false;
+          } else if (txnFilter === "wallet") {
+            if (t.type !== "wallet") return false;
+          }
 
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflow: "hidden" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
-              <thead>
-                <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Transaction ID</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Description</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Date & Time</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Method</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Amount</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {store.transactions.map((txn) => (
-                  <tr key={txn.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#D35400" }}>{txn.id}</td>
-                    <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14" }}>{txn.title}</td>
-                    <td style={{ padding: "14px 18px", color: "#66564A" }}>{txn.date}</td>
-                    <td style={{ padding: "14px 18px", color: "#66564A" }}>{txn.method}</td>
-                    <td style={{ padding: "14px 18px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>{formatTaka(txn.amount, false)}</td>
-                    <td style={{ padding: "14px 18px" }}>
+          if (txnSearchQuery.trim()) {
+            const q = txnSearchQuery.toLowerCase().trim();
+            const matchId = t.id.toLowerCase().includes(q);
+            const matchTitle = t.title.toLowerCase().includes(q);
+            const matchDate = t.date.toLowerCase().includes(q);
+            const matchAmount = t.amount.toString().includes(q) || formatTaka(t.amount, false).toLowerCase().includes(q);
+            const matchMethod = t.method.toLowerCase().includes(q);
+            const matchReceipt = (t.receiptNumber || "").toLowerCase().includes(q);
+
+            if (!matchId && !matchTitle && !matchDate && !matchAmount && !matchMethod && !matchReceipt) {
+              return false;
+            }
+          }
+          return true;
+        });
+
+        const totalTxns = store.transactions.length;
+        const totalSettled = store.transactions.filter(t => t.status === "Success").reduce((sum, t) => sum + t.amount, 0);
+        const totalRefunded = store.transactions.filter(t => t.status === "Refunded" || t.type === "refund").reduce((sum, t) => sum + t.amount, 0);
+        const totalPending = store.transactions.filter(t => t.status === "Pending").length;
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            
+            {/* PAGE HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                  Institutional Transaction History & Digital Receipts
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Real-time ledger of student fee payments, wallet top-ups, refunds, and welfare contributions with cryptographically signed official receipts.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "999px", fontWeight: 700, color: "#241A14", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <ShieldCheck size={14} style={{ color: "#047857" }} /> Verified Audit Ledger
+                </span>
+              </div>
+            </div>
+
+            {/* METRIC SUMMARY CARDS */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Total Logged Transactions</span>
+                <h3 style={{ margin: "4px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>{totalTxns} Record{totalTxns !== 1 ? "s" : ""}</h3>
+              </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Total Paid & Settled</span>
+                <h3 style={{ margin: "4px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#047857", fontFeatureSettings: "'tnum'" }}>{formatTaka(totalSettled, false)}</h3>
+              </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Total Refunded Amount</span>
+                <h3 style={{ margin: "4px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#D35400", fontFeatureSettings: "'tnum'" }}>{formatTaka(totalRefunded, false)}</h3>
+              </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Pending Transactions</span>
+                <h3 style={{ margin: "4px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#9A6600" }}>{totalPending} Item{totalPending !== 1 ? "s" : ""}</h3>
+              </div>
+            </div>
+
+            {/* FILTER PILLS & MULTI-FIELD SEARCH BAR */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "18px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+                
+                {/* FILTER PILLS */}
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
+                  {[
+                    { id: "all", label: "All Transactions", count: store.transactions.length },
+                    { id: "paid", label: "Paid Fees", count: store.transactions.filter(t => t.status === "Success" && (t.type === "fee" || !t.type)).length },
+                    { id: "pending", label: "Pending", count: store.transactions.filter(t => t.status === "Pending").length },
+                    { id: "failed", label: "Failed", count: store.transactions.filter(t => t.status === "Failed").length },
+                    { id: "refunded", label: "Refunded", count: store.transactions.filter(t => t.status === "Refunded" || t.type === "refund").length },
+                    { id: "donation", label: "Donation", count: store.transactions.filter(t => t.type === "donation").length },
+                    { id: "wallet", label: "Wallet Top-up", count: store.transactions.filter(t => t.type === "wallet").length },
+                  ].map((filterTab) => {
+                    const isActive = txnFilter === filterTab.id;
+                    return (
                       <button
+                        key={filterTab.id}
                         type="button"
-                        onClick={() => onOpenReceipt(txn)}
-                        style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "5px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                        onClick={() => setTxnFilter(filterTab.id as any)}
+                        style={{
+                          background: isActive ? "#D35400" : "#FDF9F3",
+                          color: isActive ? "#FFFFFF" : "#241A14",
+                          border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
+                          padding: "6px 14px",
+                          borderRadius: "999px",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          transition: "all 0.15s ease",
+                        }}
                       >
-                        <FileText size={14} /> Receipt
+                        {filterTab.label}
+                        <span
+                          style={{
+                            background: isActive ? "rgba(255, 255, 255, 0.25)" : "rgba(36, 26, 20, 0.08)",
+                            padding: "2px 6px",
+                            borderRadius: "999px",
+                            fontSize: "0.74rem",
+                          }}
+                        >
+                          {filterTab.count}
+                        </span>
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    );
+                  })}
+                </div>
+
+                {/* MULTI-FIELD SEARCH BAR */}
+                <div style={{ position: "relative", minWidth: "260px", flex: "1 1 260px", maxWidth: "380px" }}>
+                  <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
+                  <input
+                    type="text"
+                    placeholder="Search by ID, fee name, date, or amount..."
+                    value={txnSearchQuery}
+                    onChange={(e) => setTxnSearchQuery(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px 8px 34px",
+                      background: "#FDF9F3",
+                      border: "1px solid rgba(196, 154, 108, 0.35)",
+                      borderRadius: "10px",
+                      color: "#241A14",
+                      fontSize: "0.84rem",
+                      outline: "none",
+                    }}
+                  />
+                  {txnSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setTxnSearchQuery("")}
+                      style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#8C7A6A", cursor: "pointer" }}
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+            {/* TRANSACTIONS TABLE LISTING */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
+              {filteredTxns.length === 0 ? (
+                <div style={{ padding: "48px 20px", textAlign: "center", color: "#66564A" }}>
+                  <FileText size={42} style={{ color: "#8C7A6A", marginBottom: "12px" }} />
+                  <h4 style={{ margin: "0 0 6px", color: "#241A14", fontSize: "1.1rem" }}>No matching transactions found</h4>
+                  <p style={{ margin: 0, fontSize: "0.86rem" }}>Try clearing search criteria or selecting a different filter tab.</p>
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                    <thead>
+                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Transaction ID</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Date & Time</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Description / Fee Name</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Type</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Payment Method</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Amount</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Status</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700, textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTxns.map((txn) => {
+                        const isSuccess = txn.status === "Success";
+                        const isPending = txn.status === "Pending";
+                        const isFailed = txn.status === "Failed";
+                        const isRefunded = txn.status === "Refunded";
+
+                        return (
+                          <tr key={txn.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                            {/* Transaction ID */}
+                            <td style={{ padding: "14px 18px", fontWeight: 800, color: "#D35400" }}>
+                              {txn.id}
+                            </td>
+
+                            {/* Date & Time */}
+                            <td style={{ padding: "14px 18px", color: "#66564A", whiteSpace: "nowrap" }}>
+                              {txn.date}
+                            </td>
+
+                            {/* Description / Fee Name */}
+                            <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14" }}>
+                              {txn.title}
+                              {txn.receiptNumber && (
+                                <div style={{ fontSize: "0.75rem", color: "#8C7A6A", fontWeight: 500, marginTop: "2px" }}>
+                                  Receipt #: {txn.receiptNumber}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Type Pill */}
+                            <td style={{ padding: "14px 18px" }}>
+                              <span
+                                style={{
+                                  background: "#FFF7E6",
+                                  border: "1px solid rgba(196, 154, 108, 0.3)",
+                                  color: "#241A14",
+                                  padding: "3px 10px",
+                                  borderRadius: "6px",
+                                  fontSize: "0.76rem",
+                                  fontWeight: 700,
+                                  textTransform: "capitalize",
+                                }}
+                              >
+                                {txn.type === "fee" ? "Fee Payment" : txn.type === "wallet" ? "Wallet Top-up" : txn.type === "refund" ? "Refund" : "Donation"}
+                              </span>
+                            </td>
+
+                            {/* Payment Method */}
+                            <td style={{ padding: "14px 18px", color: "#66564A" }}>
+                              {txn.method}
+                            </td>
+
+                            {/* Amount */}
+                            <td style={{ padding: "14px 18px", fontWeight: 800, color: isRefunded ? "#047857" : "#241A14", fontFeatureSettings: "'tnum'" }}>
+                              {formatTaka(txn.amount, false)}
+                            </td>
+
+                            {/* Status Badge */}
+                            <td style={{ padding: "14px 18px" }}>
+                              <StatusBadge
+                                status={isSuccess ? "paid" : isPending ? "pending" : isFailed ? "failed" : "approved"}
+                                customLabel={isRefunded ? "Refunded" : txn.status}
+                              />
+                            </td>
+
+                            {/* Actions */}
+                            <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                              <div style={{ display: "inline-flex", gap: "8px", alignItems: "center", justifyContent: "flex-end" }}>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedDetailTxn(txn)}
+                                  style={{
+                                    background: "#FDF9F3",
+                                    color: "#241A14",
+                                    border: "1px solid rgba(196, 154, 108, 0.4)",
+                                    padding: "6px 12px",
+                                    borderRadius: "8px",
+                                    fontSize: "0.8rem",
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  <Info size={14} /> Detail
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => onOpenReceipt(txn)}
+                                  style={{
+                                    background: "rgba(16, 185, 129, 0.1)",
+                                    color: "#047857",
+                                    border: "1px solid rgba(16, 185, 129, 0.3)",
+                                    padding: "6px 12px",
+                                    borderRadius: "8px",
+                                    fontSize: "0.8rem",
+                                    fontWeight: 700,
+                                    cursor: "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                  }}
+                                >
+                                  Receipt 🧾
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* 5. DARK FEATURED SECTION — AI FINANCIAL ASSISTANT TAB */}
       {activeTab === "ai" && (
@@ -2045,6 +2314,154 @@ export function StudentPanel({
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* TRANSACTION DETAIL DOSSIER MODAL */}
+      {selectedDetailTxn && (
+        <div className="ms-modal-overlay">
+          <div className="ms-modal" style={{ maxWidth: "600px" }}>
+            {/* Modal Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "12px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 800 }}>
+                    Transaction #{selectedDetailTxn.id}
+                  </h3>
+                  <StatusBadge
+                    status={selectedDetailTxn.status === "Success" ? "paid" : selectedDetailTxn.status === "Pending" ? "pending" : selectedDetailTxn.status === "Failed" ? "failed" : "approved"}
+                    customLabel={selectedDetailTxn.status}
+                  />
+                </div>
+                <p style={{ margin: 0, color: "#66564A", fontSize: "0.82rem" }}>
+                  Logged: {selectedDetailTxn.date} • Reference ID: <code>{selectedDetailTxn.referenceId}</code>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedDetailTxn(null)}
+                style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body Grid */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              
+              {/* Highlight Amount Banner */}
+              <div
+                style={{
+                  background: "#FFF7E6",
+                  border: "1.5px solid rgba(211, 84, 0, 0.3)",
+                  borderRadius: "14px",
+                  padding: "16px 20px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>
+                    TRANSACTION AMOUNT
+                  </span>
+                  <h2 style={{ margin: "2px 0 0", color: "#241A14", fontSize: "1.8rem", fontWeight: 800, fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(selectedDetailTxn.amount, false)}
+                  </h2>
+                </div>
+
+                <div style={{ textAlign: "right" }}>
+                  <span style={{ fontSize: "0.74rem", color: "#8C7A6A", display: "block" }}>Receipt Designation</span>
+                  <strong style={{ color: "#241A14", fontSize: "0.95rem" }}>{selectedDetailTxn.receiptNumber || "REC-982104"}</strong>
+                </div>
+              </div>
+
+              {/* Student Identity Dossier */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+                <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#241A14", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Student & Institution Dossier
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "0.85rem" }}>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Student Name</span>
+                    <strong style={{ color: "#241A14" }}>{store.studentProfile.name}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Student ID</span>
+                    <strong style={{ color: "#241A14" }}>{store.studentProfile.studentId}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Institution</span>
+                    <strong style={{ color: "#241A14" }}>{store.studentProfile.institution}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Department / Section</span>
+                    <strong style={{ color: "#241A14" }}>{store.studentProfile.classSection}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Details Dossier */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+                <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#241A14", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Payment Method & Gateway Specification
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "0.85rem" }}>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Payment Source</span>
+                    <strong style={{ color: "#241A14" }}>{selectedDetailTxn.method}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Gateway Ref ID</span>
+                    <strong style={{ color: "#D35400", fontWeight: 700 }}>{selectedDetailTxn.referenceId}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Fee / Description</span>
+                    <strong style={{ color: "#241A14" }}>{selectedDetailTxn.title}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Fee Type</span>
+                    <strong style={{ color: "#241A14", textTransform: "capitalize" }}>{selectedDetailTxn.type}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Security Seal Note */}
+              <div style={{ fontSize: "0.78rem", color: "#66564A", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <ShieldCheck size={16} style={{ color: "#047857" }} />
+                <span>
+                  This transaction is cryptographically timestamped and verified by <strong>Neo Cash AI Institutional Ledger</strong>.
+                </span>
+              </div>
+
+              {/* Actions Footer */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedDetailTxn(null)}
+                  style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}
+                >
+                  Close
+                </button>
+
+                <button
+                  type="button"
+                  className="ms-btn-primary"
+                  onClick={() => {
+                    const txn = selectedDetailTxn;
+                    setSelectedDetailTxn(null);
+                    onOpenReceipt(txn);
+                  }}
+                  style={{ background: "#047857", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <FileText size={16} /> View Official Receipt 🧾
+                </button>
+              </div>
+
             </div>
           </div>
         </div>
