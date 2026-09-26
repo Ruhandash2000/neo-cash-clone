@@ -766,6 +766,247 @@ export function StudentPanel({
         </div>
       )}
 
+      {/* 2.5. MY WALLET & PAYMENT METHODS TAB */}
+      {activeTab === "wallet" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                My Neo Digital Wallet & Payment Hub
+              </h1>
+              <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                Manage your digital balances, connected mobile banking accounts, payment security, and instant fee settlements.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                type="button"
+                className="ms-btn-primary"
+                onClick={() => setShowTopUpModal(true)}
+                style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
+              >
+                <PlusCircle size={16} /> Add Money (Top Up)
+              </button>
+            </div>
+          </div>
+
+          {/* BANKING-STYLE BALANCE & WALLET STATUS HERO GRID */}
+          <div className="ms-grid-2">
+            
+            {/* HERO BALANCE CARD */}
+            <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "18px", padding: "24px", boxShadow: "0 8px 24px rgba(211, 84, 0, 0.08)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                    TOTAL AVAILABLE BALANCE
+                  </span>
+                  <span style={{ fontSize: "0.72rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <ShieldCheck size={13} /> Active & Secured
+                  </span>
+                </div>
+
+                <div style={{ margin: "10px 0 16px" }}>
+                  <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(store.balances.availableBalance, false)}
+                  </span>
+                </div>
+
+                <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "0.85rem" }}>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.74rem", display: "block" }}>Neo Digital Wallet</span>
+                    <strong style={{ color: "#241A14", fontSize: "1rem" }}>{formatTaka(store.balances.walletBalance, false)}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.74rem", display: "block" }}>Linked Banking Funds</span>
+                    <strong style={{ color: "#241A14", fontSize: "1rem" }}>{formatTaka(Math.max(0, store.balances.availableBalance - store.balances.walletBalance), false)}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "12px", marginTop: "20px" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowTopUpModal(true)}
+                  style={{ flex: 1, background: "#D35400", color: "#FFFFFF", border: "none", padding: "11px", borderRadius: "10px", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                >
+                  <PlusCircle size={16} /> Add Money
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("fees")}
+                  style={{ flex: 1, background: "#FFF7E6", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "11px", borderRadius: "10px", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                >
+                  <CreditCard size={16} style={{ color: "#D35400" }} /> Pay Assigned Fees
+                </button>
+              </div>
+            </div>
+
+            {/* WALLET IDENTITY & DAILY LIMIT CARD */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", borderBottom: "1px dashed rgba(196, 154, 108, 0.3)", paddingBottom: "10px" }}>
+                  <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase" }}>
+                    INSTITUTIONAL WALLET SPECIFICATION
+                  </span>
+                  <span style={{ fontSize: "0.75rem", color: "#8C7A6A", fontWeight: 600 }}>{store.studentProfile.institution}</span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "18px", fontSize: "0.88rem" }}>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Wallet Account ID</span>
+                    <strong style={{ color: "#D35400", fontWeight: 800 }}>NEO-W-2026-8842</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Account Holder</span>
+                    <strong style={{ color: "#241A14" }}>{store.studentProfile.name}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Student ID</span>
+                    <strong style={{ color: "#241A14" }}>{store.studentProfile.studentId}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Account Status</span>
+                    <strong style={{ color: "#047857" }}>Active & Verified</strong>
+                  </div>
+                </div>
+
+                {/* Daily Spending Limit Bar */}
+                <div style={{ background: "#FFF7E6", padding: "14px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px", color: "#66564A" }}>
+                    <span>Daily Transaction Limit</span>
+                    <span>৳12,000 / ৳50,000 used today</span>
+                  </div>
+                  <div style={{ width: "100%", height: "6px", background: "#EAD9C6", borderRadius: "999px", overflow: "hidden" }}>
+                    <div style={{ width: "24%", height: "100%", background: "#D35400", borderRadius: "999px" }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Subtle Security & Privacy Card */}
+              <div style={{ marginTop: "16px", background: "#FDF9F3", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", color: "#66564A" }}>
+                <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <ShieldCheck size={14} style={{ color: "#047857" }} /> Biometric WebAuthn Active
+                </span>
+                <span>Last login: Today 04:12 PM</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* CONNECTED PAYMENT METHODS & MOBILE BANKING */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>
+                  Connected Payment Methods & Mobile Banking
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: "0.85rem", color: "#66564A" }}>
+                  Supported gateways for fee payments and instant wallet top-ups.
+                </p>
+              </div>
+
+              <span style={{ fontSize: "0.78rem", color: "#8C7A6A", background: "#FFF7E6", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)", fontWeight: 600 }}>
+                {store.paymentMethods.length} Methods Configured
+              </span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px" }}>
+              {store.paymentMethods.map((pm) => (
+                <div
+                  key={pm.id}
+                  style={{
+                    background: "#FDF9F3",
+                    border: "1px solid rgba(196, 154, 108, 0.3)",
+                    borderRadius: "14px",
+                    padding: "16px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", display: "grid", placeItems: "center", fontSize: "1.2rem" }}>
+                      {pm.type === "bkash" ? "📱" : pm.type === "rocket" ? "🚀" : pm.type === "visa" ? "💳" : "💳"}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "#241A14" }}>
+                        {pm.name}
+                      </h4>
+                      <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{pm.account}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <span style={{ fontSize: "0.72rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "2px 8px", borderRadius: "999px", fontWeight: 700, display: "block", marginBottom: "4px" }}>
+                      Connected
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => alert(`Manage payment method for ${pm.name}`)}
+                      style={{ background: "none", border: "none", color: "#D35400", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0 }}
+                    >
+                      Manage
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* WALLET RECENT ACTIVITY TABLE */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", overflow: "hidden" }}>
+            <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                Recent Wallet Activity
+              </h3>
+              <button
+                type="button"
+                onClick={() => setActiveTab("transactions")}
+                style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
+              >
+                Full History →
+              </button>
+            </div>
+
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+              <thead>
+                <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Transaction ID</th>
+                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Description</th>
+                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Date & Time</th>
+                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Payment Source</th>
+                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Amount</th>
+                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {store.transactions.map((txn) => (
+                  <tr key={txn.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#D35400" }}>{txn.id}</td>
+                    <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14" }}>{txn.title}</td>
+                    <td style={{ padding: "14px 18px", color: "#66564A" }}>{txn.date}</td>
+                    <td style={{ padding: "14px 18px", color: "#66564A" }}>{txn.method}</td>
+                    <td style={{ padding: "14px 18px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>{formatTaka(txn.amount, false)}</td>
+                    <td style={{ padding: "14px 18px" }}>
+                      <button
+                        type="button"
+                        onClick={() => onOpenReceipt(txn)}
+                        style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "5px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                      >
+                        <FileText size={14} /> Receipt
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      )}
+
       {/* 3. DONATION & SOCIAL IMPACT TAB */}
       {activeTab === "donation" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>

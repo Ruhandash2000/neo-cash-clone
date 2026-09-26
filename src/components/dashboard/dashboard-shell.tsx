@@ -20,7 +20,7 @@ import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
   ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X, Palette
+  LogOut, Layers, AlertCircle, X, Palette, Wallet
 } from "lucide-react";
 
 export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
@@ -138,6 +138,11 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 <li className="ms-nav-item">
                   <button className={activeTab === "fees" ? "is-active" : ""} onClick={() => setActiveTab("fees")}>
                     <CreditCard size={18} /> Fees & Dues
+                  </button>
+                </li>
+                <li className="ms-nav-item">
+                  <button className={activeTab === "wallet" ? "is-active" : ""} onClick={() => setActiveTab("wallet")}>
+                    <Wallet size={18} /> My Wallet & Payment Methods
                   </button>
                 </li>
                 <li className="ms-nav-item">
