@@ -235,7 +235,27 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 </li>
                 <li className="ms-nav-item">
                   <button className={activeTab === "approvals" ? "is-active" : ""} onClick={() => setActiveTab("approvals")}>
-                    <CheckCircle2 size={18} /> Executive Approvals
+                    <ShieldCheck size={18} /> Approval Center
+                    {(store.partialApplications?.filter((a) => a.status === "forwarded_head").length || 0) > 0 && (
+                      <span style={{ background: "#D35400", color: "#FFFFFF", padding: "2px 6px", borderRadius: "999px", fontSize: "0.72rem", marginLeft: "6px", fontWeight: 700 }}>
+                        {store.partialApplications?.filter((a) => a.status === "forwarded_head").length}
+                      </span>
+                    )}
+                  </button>
+                </li>
+                <li className="ms-nav-item">
+                  <button className={activeTab === "students" ? "is-active" : ""} onClick={() => setActiveTab("students")}>
+                    <Users size={18} /> Student Directory
+                  </button>
+                </li>
+                <li className="ms-nav-item">
+                  <button className={activeTab === "financial" ? "is-active" : ""} onClick={() => setActiveTab("financial")}>
+                    <Activity size={18} /> Financial Solvency
+                  </button>
+                </li>
+                <li className="ms-nav-item">
+                  <button className={activeTab === "audit" ? "is-active" : ""} onClick={() => setActiveTab("audit")}>
+                    <FileText size={18} /> Admin Activity & Audit
                   </button>
                 </li>
                 <li className="ms-nav-item">
