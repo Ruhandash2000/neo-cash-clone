@@ -189,6 +189,13 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 </li>
               </>
             )}
+
+            {/* COMMON LOGOUT ITEM IN SIDEBAR NAV */}
+            <li className="ms-nav-item" style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--ms-border)" }}>
+              <button type="button" onClick={onSignOut} style={{ color: "#EF4444" }}>
+                <LogOut size={18} /> Logout
+              </button>
+            </li>
           </ul>
 
           <div className="ms-user-area">
@@ -200,8 +207,25 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 {store.role === "student" ? "Student" : store.role === "admin" ? "Financial Admin" : "Director & Executive"}
               </span>
             </div>
-            <button type="button" onClick={onSignOut} style={{ background: "none", border: "none", color: "var(--ms-text-dim)", cursor: "pointer" }} title="Sign Out">
-              <LogOut size={18} />
+            <button
+              type="button"
+              onClick={onSignOut}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "6px 10px",
+                background: "rgba(239, 68, 68, 0.15)",
+                border: "1px solid rgba(239, 68, 68, 0.35)",
+                borderRadius: "8px",
+                color: "#FCA5A5",
+                fontSize: "0.78rem",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+              title="Sign Out"
+            >
+              <LogOut size={14} /> Exit
             </button>
           </div>
         </aside>
@@ -219,7 +243,7 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
               </span>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
               {/* Notification Bell */}
               <button
                 type="button"
@@ -238,6 +262,28 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <img src={store.studentProfile.avatar} alt="Profile" style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--ms-surface-blue)" }} />
               </div>
+
+              {/* Header Logout Button */}
+              <button
+                type="button"
+                onClick={onSignOut}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "7px 14px",
+                  background: "rgba(239, 68, 68, 0.15)",
+                  border: "1px solid rgba(239, 68, 68, 0.35)",
+                  borderRadius: "10px",
+                  color: "#FCA5A5",
+                  fontSize: "0.82rem",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                <LogOut size={15} /> Logout
+              </button>
             </div>
           </header>
 
