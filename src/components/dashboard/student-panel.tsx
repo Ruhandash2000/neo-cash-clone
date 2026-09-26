@@ -21,7 +21,8 @@ import { formatTaka, StatusType } from "@/components/design-system/tokens";
 import {
   Wallet, CreditCard, DollarSign, ArrowUpRight, ArrowDownLeft, ShieldCheck,
   FileText, Sparkles, AlertCircle, HeartHandshake, Award, TrendingUp, Download,
-  CheckCircle2, Clock, Send, MessageSquare, PlusCircle, Eye, X
+  CheckCircle2, Clock, Send, MessageSquare, PlusCircle, Eye, X, Search, Filter,
+  Calendar, Info, AlertTriangle, ChevronRight
 } from "lucide-react";
 
 function mapFeeStatus(status: string): StatusType {
@@ -78,6 +79,12 @@ export function StudentPanel({
   // Top Up Wallet Modal State
   const [topUpAmount, setTopUpAmount] = useState<number>(1000);
   const [showTopUpModal, setShowTopUpModal] = useState(false);
+
+  // Fees & Dues Filtering & Detail Modal State
+  const [feeFilter, setFeeFilter] = useState<"all" | "due" | "paid" | "overdue" | "pending_partial" | "partial_approved">("all");
+  const [feeCategoryFilter, setFeeCategoryFilter] = useState<string>("all");
+  const [feeSearchQuery, setFeeSearchQuery] = useState<string>("");
+  const [selectedDetailFee, setSelectedDetailFee] = useState<Fee | null>(null);
 
   // AI Chat Assistant State
   const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string; time: string }>>([
@@ -628,143 +635,590 @@ export function StudentPanel({
       )}
 
       {/* 2. FEES & DUES TAB */}
-      {activeTab === "fees" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
-            <div>
-              <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-                Assigned Fees & Dues
-              </h1>
-              <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-                Pay institutional fees directly or submit a partial payment application for administrative approval.
-              </p>
+      {activeTab === "fees" && (() => {
+        // Dynamic metrics calculations
+        const totalOutstanding = store.fees
+          .filter((f) => f.status !== "paid")
+          .reduce((acc, f) => acc + (f.approvedPartialAmount || f.amount), 0);
+
+        const paidThisTerm = store.fees
+          .filter((f) => f.status === "paid")
+          .reduce((acc, f) => acc + f.originalAmount, 0);
+
+        const upcomingFeesList = store.fees.filter(
+          (f) => f.status === "due" || f.status === "partial_approved"
+        );
+        const upcomingCount = upcomingFeesList.length;
+        const upcomingAmount = upcomingFeesList.reduce(
+          (acc, f) => acc + (f.approvedPartialAmount || f.amount),
+          0
+        );
+
+        const overdueFeesList = store.fees.filter((f) => f.status === "overdue");
+        const overdueCount = overdueFeesList.length;
+        const overdueAmount = overdueFeesList.reduce((acc, f) => acc + f.amount, 0);
+
+        const filterCounts = {
+          all: store.fees.length,
+          due: store.fees.filter((f) => f.status === "due").length,
+          paid: store.fees.filter((f) => f.status === "paid").length,
+          overdue: store.fees.filter((f) => f.status === "overdue").length,
+          pending_partial: store.fees.filter((f) => f.status === "pending_partial").length,
+          partial_approved: store.fees.filter((f) => f.status === "partial_approved").length,
+        };
+
+        const filteredFeesList = store.fees.filter((fee) => {
+          if (feeFilter !== "all" && fee.status !== feeFilter) return false;
+          if (feeCategoryFilter !== "all" && fee.category !== feeCategoryFilter) return false;
+          if (feeSearchQuery.trim()) {
+            const q = feeSearchQuery.toLowerCase();
+            const matchTitle = fee.title.toLowerCase().includes(q);
+            const matchCategory = fee.category.toLowerCase().includes(q);
+            const matchDesc = fee.description.toLowerCase().includes(q);
+            if (!matchTitle && !matchCategory && !matchDesc) return false;
+          }
+          return true;
+        });
+
+        const paidFeesHistory = store.fees.filter((f) => f.status === "paid");
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            
+            {/* PAGE TITLE & SUBTITLE */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: "1.65rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.01em" }}>
+                  Institutional Fees & Dues
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.92rem", color: "#66564A" }}>
+                  Track what you owe, payment deadlines, past receipts, and approved partial payment installment plans.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontSize: "0.82rem", color: "#66564A" }}>
+                <ShieldCheck size={16} style={{ color: "#D35400" }} />
+                <span>Fee Amounts Assigned by <strong>{store.studentProfile.institution}</strong></span>
+              </div>
             </div>
 
-            <div style={{ background: "rgba(225, 29, 72, 0.1)", border: "1px solid rgba(225, 29, 72, 0.25)", padding: "8px 16px", borderRadius: "10px", color: "#BE123C", fontWeight: 700, fontSize: "0.9rem" }}>
-              Total Dues Pending: {formatTaka(store.balances.totalDue, false)}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            {store.fees.map((fee) => (
-              <div
-                key={fee.id}
-                style={{
-                  background: "#FFFFFF",
-                  border: "1px solid rgba(196, 154, 108, 0.3)",
-                  borderRadius: "14px",
-                  padding: "20px",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "16px",
-                  boxShadow: "0 3px 10px rgba(36, 26, 20, 0.02)",
-                }}
-              >
-                <div style={{ flex: "1 1 320px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                    <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
-                      {fee.title}
-                    </h3>
-                    <StatusBadge status={mapFeeStatus(fee.status)} />
-                  </div>
-
-                  <p style={{ margin: "0 0 10px", fontSize: "0.88rem", color: "#66564A" }}>
-                    {fee.description}
-                  </p>
-
-                  <div style={{ display: "flex", gap: "16px", fontSize: "0.8rem", color: "#8C7A6A" }}>
-                    <span>Category: <strong style={{ color: "#241A14" }}>{fee.category}</strong></span>
-                    <span>Deadline: <strong style={{ color: fee.status === "overdue" ? "#BE123C" : "#241A14" }}>{fee.dueDate}</strong></span>
+            {/* SUMMARY CARDS (4 METRICS) */}
+            <div className="ms-grid-4">
+              {/* Card 1: Total Outstanding */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px 20px", display: "flex", flexDirection: "column", gap: "8px", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.02)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Total Outstanding
+                  </span>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(225, 29, 72, 0.1)", display: "grid", placeItems: "center", color: "#BE123C" }}>
+                    <AlertTriangle size={17} />
                   </div>
                 </div>
+                <div style={{ fontSize: "1.6rem", fontWeight: 800, color: totalOutstanding > 0 ? "#BE123C" : "#047857", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(totalOutstanding, false)}
+                </div>
+                <div style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
+                  Remaining dues payable across all assigned items
+                </div>
+              </div>
 
-                <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "10px" }}>
-                  <div>
-                    {fee.approvedPartialAmount ? (
-                      <div>
-                        <span style={{ textDecoration: "line-through", color: "#8C7A6A", fontSize: "0.85rem", marginRight: "8px" }}>
-                          {formatTaka(fee.originalAmount, false)}
-                        </span>
-                        <span style={{ fontSize: "1.35rem", fontWeight: 800, color: "#047857" }}>
-                          {formatTaka(fee.approvedPartialAmount, false)}
-                        </span>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: "1.35rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
-                        {formatTaka(fee.amount, false)}
-                      </span>
-                    )}
+              {/* Card 2: Paid This Term */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px 20px", display: "flex", flexDirection: "column", gap: "8px", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.02)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Paid This Term
+                  </span>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(16, 185, 129, 0.12)", display: "grid", placeItems: "center", color: "#047857" }}>
+                    <CheckCircle2 size={17} />
                   </div>
+                </div>
+                <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#047857", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(paidThisTerm, false)}
+                </div>
+                <div style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
+                  Total cleared institutional payments
+                </div>
+              </div>
 
-                  {fee.status === "paid" ? (
-                    <div style={{ color: "#047857", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px", fontSize: "0.9rem" }}>
-                      <CheckCircle2 size={16} /> Paid in Full
-                    </div>
-                  ) : (
-                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                      {fee.status !== "pending_partial" && (
-                        <button
-                          type="button"
-                          className="ms-btn-secondary"
-                          onClick={() => setSelectedPartialFee(fee)}
-                          style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "8px 14px", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 600 }}
-                        >
-                          Apply Partial Payment
-                        </button>
-                      )}
+              {/* Card 3: Upcoming Fees */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px 20px", display: "flex", flexDirection: "column", gap: "8px", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.02)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Upcoming Fees
+                  </span>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(37, 99, 235, 0.1)", display: "grid", placeItems: "center", color: "#2563EB" }}>
+                    <Calendar size={17} />
+                  </div>
+                </div>
+                <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                  {upcomingCount} <span style={{ fontSize: "0.95rem", fontWeight: 600, color: "#66564A" }}>({formatTaka(upcomingAmount, false)})</span>
+                </div>
+                <div style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
+                  Due in upcoming days
+                </div>
+              </div>
+
+              {/* Card 4: Overdue Fees */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px 20px", display: "flex", flexDirection: "column", gap: "8px", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.02)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                    Overdue Dues
+                  </span>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(225, 29, 72, 0.15)", display: "grid", placeItems: "center", color: "#BE123C" }}>
+                    <AlertCircle size={17} />
+                  </div>
+                </div>
+                <div style={{ fontSize: "1.6rem", fontWeight: 800, color: overdueCount > 0 ? "#BE123C" : "#047857", fontFeatureSettings: "'tnum'" }}>
+                  {overdueCount} <span style={{ fontSize: "0.95rem", fontWeight: 600, color: "#66564A" }}>({formatTaka(overdueAmount, false)})</span>
+                </div>
+                <div style={{ fontSize: "0.78rem", color: overdueCount > 0 ? "#BE123C" : "#8C7A6A", fontWeight: overdueCount > 0 ? 700 : 400 }}>
+                  {overdueCount > 0 ? "Requires immediate resolution" : "No overdue items"}
+                </div>
+              </div>
+            </div>
+
+            {/* FILTER & CONTROL TOOLBAR */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                
+                {/* Filter Pills */}
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center" }}>
+                  {[
+                    { id: "all", label: "All", count: filterCounts.all },
+                    { id: "due", label: "Due", count: filterCounts.due },
+                    { id: "paid", label: "Paid", count: filterCounts.paid },
+                    { id: "overdue", label: "Overdue", count: filterCounts.overdue },
+                    { id: "pending_partial", label: "Under Review", count: filterCounts.pending_partial },
+                    { id: "partial_approved", label: "Partial Approved", count: filterCounts.partial_approved },
+                  ].map((tab) => {
+                    const isActive = feeFilter === tab.id;
+                    return (
                       <button
+                        key={tab.id}
                         type="button"
-                        className="ms-btn-primary"
-                        onClick={() => setSelectedPayFee(fee)}
-                        style={{ background: "#D35400", color: "#FFFFFF", padding: "8px 16px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 700 }}
+                        onClick={() => setFeeFilter(tab.id as any)}
+                        style={{
+                          background: isActive ? "#D35400" : "#FDF9F3",
+                          color: isActive ? "#FFFFFF" : "#241A14",
+                          border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
+                          padding: "6px 14px",
+                          borderRadius: "999px",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                          transition: "all 0.15s ease",
+                        }}
                       >
-                        Pay {fee.approvedPartialAmount ? "Approved Amount" : "Full Amount"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* PARTIAL PAYMENT APPLICATIONS TRACK RECORD */}
-          {store.partialApplications.length > 0 && (
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-              <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
-                Submitted Partial Payment Applications
-              </h3>
-              
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {store.partialApplications.map((app) => (
-                  <div key={app.id} style={{ padding: "14px", background: "#FDF9F3", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <span style={{ fontWeight: 700, color: "#241A14", fontSize: "0.92rem" }}>
-                          {app.id} — {app.feeTitle}
+                        {tab.label}
+                        <span
+                          style={{
+                            background: isActive ? "rgba(255, 255, 255, 0.25)" : "rgba(36, 26, 20, 0.08)",
+                            padding: "2px 6px",
+                            borderRadius: "999px",
+                            fontSize: "0.74rem",
+                          }}
+                        >
+                          {tab.count}
                         </span>
-                        <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#66564A" }}>
-                          Requested: {formatTaka(app.requestedAmount, false)} (Original: {formatTaka(app.originalAmount, false)}) • Submitted {app.submittedAt}
-                        </p>
-                      </div>
-                      <StatusBadge
-                        status={app.status.startsWith("approved") ? "approved" : app.status.startsWith("rejected") ? "rejected" : "under_review"}
-                      />
-                    </div>
-                    <div style={{ marginTop: "8px", fontSize: "0.78rem", color: "#66564A", display: "flex", gap: "14px" }}>
-                      <span>Reason: "{app.reason}"</span>
-                      <span>AI Signature Score: <strong style={{ color: "#047857" }}>96% High Match</strong></span>
-                    </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Search & Category Dropdown */}
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                  <div style={{ position: "relative", minWidth: "180px" }}>
+                    <select
+                      value={feeCategoryFilter}
+                      onChange={(e) => setFeeCategoryFilter(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px",
+                        background: "#FDF9F3",
+                        border: "1px solid rgba(196, 154, 108, 0.35)",
+                        borderRadius: "10px",
+                        color: "#241A14",
+                        fontSize: "0.84rem",
+                        fontWeight: 600,
+                        outline: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <option value="all">All Categories</option>
+                      <option value="Tuition">Tuition</option>
+                      <option value="Lab & Tech">Lab & Tech</option>
+                      <option value="Library">Library</option>
+                      <option value="Exam">Exam</option>
+                      <option value="Hostel">Hostel</option>
+                      <option value="Transport">Transport</option>
+                    </select>
                   </div>
-                ))}
+
+                  <div style={{ position: "relative", minWidth: "220px" }}>
+                    <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
+                    <input
+                      type="text"
+                      placeholder="Search fee title..."
+                      value={feeSearchQuery}
+                      onChange={(e) => setFeeSearchQuery(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "8px 12px 8px 34px",
+                        background: "#FDF9F3",
+                        border: "1px solid rgba(196, 154, 108, 0.35)",
+                        borderRadius: "10px",
+                        color: "#241A14",
+                        fontSize: "0.84rem",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
-          )}
 
-        </div>
-      )}
+            {/* FEE CARDS LISTING */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {filteredFeesList.length === 0 ? (
+                <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "40px", textAlign: "center", color: "#66564A" }}>
+                  <FileText size={38} style={{ color: "#8C7A6A", marginBottom: "10px" }} />
+                  <h4 style={{ margin: "0 0 4px", color: "#241A14", fontSize: "1.1rem" }}>No matching fee items found</h4>
+                  <p style={{ margin: 0, fontSize: "0.85rem" }}>Try clearing search filters or selecting another fee tab.</p>
+                </div>
+              ) : (
+                filteredFeesList.map((fee) => {
+                  const isPaid = fee.status === "paid";
+                  const isPartialApproved = fee.status === "partial_approved";
+                  const isPendingPartial = fee.status === "pending_partial";
+                  const isOverdue = fee.status === "overdue";
+
+                  return (
+                    <div
+                      key={fee.id}
+                      style={{
+                        background: "#FFFFFF",
+                        border: isPartialApproved
+                          ? "1.5.px solid #047857"
+                          : isOverdue
+                          ? "1.5px solid rgba(225, 29, 72, 0.4)"
+                          : "1px solid rgba(196, 154, 108, 0.3)",
+                        borderRadius: "14px",
+                        padding: "20px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                        gap: "18px",
+                        boxShadow: "0 3px 10px rgba(36, 26, 20, 0.02)",
+                        position: "relative",
+                      }}
+                    >
+                      {/* Left Side Info */}
+                      <div style={{ flex: "1 1 340px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px", flexWrap: "wrap" }}>
+                          <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                            {fee.title}
+                          </h3>
+                          <StatusBadge status={mapFeeStatus(fee.status)} />
+                          <span
+                            style={{
+                              background: "#FDF9F3",
+                              border: "1px solid rgba(196, 154, 108, 0.25)",
+                              color: "#66564A",
+                              padding: "2px 8px",
+                              borderRadius: "6px",
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {fee.category}
+                          </span>
+                        </div>
+
+                        <p style={{ margin: "0 0 10px", fontSize: "0.88rem", color: "#66564A" }}>
+                          {fee.description}
+                        </p>
+
+                        <div style={{ display: "flex", gap: "18px", fontSize: "0.82rem", color: "#8C7A6A", flexWrap: "wrap" }}>
+                          <span>Issued: <strong style={{ color: "#241A14" }}>{fee.issuedDate || "2026-08-15"}</strong></span>
+                          <span>Deadline: <strong style={{ color: isOverdue ? "#BE123C" : "#241A14" }}>{fee.dueDate}</strong></span>
+                        </div>
+
+                        {/* Approved Partial Banner */}
+                        {isPartialApproved && (
+                          <div
+                            style={{
+                              marginTop: "12px",
+                              background: "rgba(16, 185, 129, 0.1)",
+                              border: "1px solid rgba(16, 185, 129, 0.3)",
+                              borderRadius: "10px",
+                              padding: "8px 12px",
+                              fontSize: "0.82rem",
+                              color: "#047857",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <CheckCircle2 size={16} />
+                            <span>
+                              <strong>Partial Payment Approved:</strong> Pay approved installment of <strong>{formatTaka(fee.approvedPartialAmount || 0, false)}</strong> (Remaining: {formatTaka((fee.originalAmount || 0) - (fee.approvedPartialAmount || 0), false)})
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Under Review Banner */}
+                        {isPendingPartial && (
+                          <div
+                            style={{
+                              marginTop: "12px",
+                              background: "rgba(247, 183, 51, 0.12)",
+                              border: "1px solid rgba(247, 183, 51, 0.4)",
+                              borderRadius: "10px",
+                              padding: "8px 12px",
+                              fontSize: "0.82rem",
+                              color: "#9A6600",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "8px",
+                            }}
+                          >
+                            <Clock size={16} />
+                            <span>
+                              <strong>Under Admin Review:</strong> Your application for partial payment is currently being processed.
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right Side Amounts & Actions */}
+                      <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "12px" }}>
+                        <div>
+                          {isPartialApproved ? (
+                            <div>
+                              <span style={{ textDecoration: "line-through", color: "#8C7A6A", fontSize: "0.85rem", marginRight: "8px" }}>
+                                {formatTaka(fee.originalAmount, false)}
+                              </span>
+                              <span style={{ fontSize: "1.4rem", fontWeight: 800, color: "#047857", fontFeatureSettings: "'tnum'" }}>
+                                {formatTaka(fee.approvedPartialAmount || fee.amount, false)}
+                              </span>
+                            </div>
+                          ) : isPaid ? (
+                            <div>
+                              <span style={{ fontSize: "1.35rem", fontWeight: 800, color: "#047857", fontFeatureSettings: "'tnum'" }}>
+                                {formatTaka(fee.originalAmount, false)}
+                              </span>
+                              <div style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>Paid on {fee.paidDate || "Sep 12, 2026"}</div>
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: "1.4rem", fontWeight: 800, color: isOverdue ? "#BE123C" : "#241A14", fontFeatureSettings: "'tnum'" }}>
+                              {formatTaka(fee.amount, false)}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                          
+                          {/* View Details Button */}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedDetailFee(fee)}
+                            style={{
+                              background: "#FDF9F3",
+                              color: "#241A14",
+                              border: "1px solid rgba(196, 154, 108, 0.4)",
+                              padding: "8px 14px",
+                              borderRadius: "10px",
+                              fontSize: "0.82rem",
+                              fontWeight: 600,
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "5px",
+                            }}
+                          >
+                            <Info size={14} /> Detail Info
+                          </button>
+
+                          {isPaid ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const matchingTxn = store.transactions.find((t) => t.feeId === fee.id || t.title === fee.title) || {
+                                  id: "TXN-" + Math.floor(10000 + Math.random() * 90000),
+                                  title: fee.title,
+                                  date: fee.paidDate || "2026-09-12 02:15 PM",
+                                  amount: fee.originalAmount,
+                                  type: "fee" as const,
+                                  status: "Success" as const,
+                                  method: "bKash Mobile Banking",
+                                  referenceId: "BK-904821",
+                                  receiptNumber: "REC-982104",
+                                };
+                                onOpenReceipt(matchingTxn);
+                              }}
+                              style={{
+                                background: "rgba(16, 185, 129, 0.12)",
+                                color: "#047857",
+                                border: "1px solid rgba(16, 185, 129, 0.3)",
+                                padding: "8px 14px",
+                                borderRadius: "10px",
+                                fontSize: "0.82rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              View Receipt 🧾
+                            </button>
+                          ) : (
+                            <>
+                              {!isPendingPartial && !isPartialApproved && (
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedPartialFee(fee)}
+                                  style={{
+                                    background: "#FDF9F3",
+                                    color: "#D35400",
+                                    border: "1px solid rgba(211, 84, 0, 0.4)",
+                                    padding: "8px 14px",
+                                    borderRadius: "10px",
+                                    fontSize: "0.82rem",
+                                    fontWeight: 700,
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Apply Partial Payment
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                className="ms-btn-primary"
+                                onClick={() => setSelectedPayFee(fee)}
+                                style={{
+                                  background: "#D35400",
+                                  color: "#FFFFFF",
+                                  padding: "8px 16px",
+                                  borderRadius: "10px",
+                                  fontSize: "0.85rem",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Pay {isPartialApproved ? "Approved Amount" : "Full Amount"}
+                              </button>
+                            </>
+                          )}
+
+                        </div>
+
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* SUBMITTED PARTIAL PAYMENT APPLICATIONS TRACK RECORD */}
+            {store.partialApplications.length > 0 && (
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                  Submitted Partial Payment Applications Log
+                </h3>
+                
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {store.partialApplications.map((app) => (
+                    <div key={app.id} style={{ padding: "14px", background: "#FDF9F3", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                        <div>
+                          <span style={{ fontWeight: 700, color: "#241A14", fontSize: "0.92rem" }}>
+                            Application {app.id} — {app.feeTitle}
+                          </span>
+                          <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#66564A" }}>
+                            Requested: {formatTaka(app.requestedAmount, false)} (Original: {formatTaka(app.originalAmount, false)}) • Submitted {app.submittedAt}
+                          </p>
+                        </div>
+                        <StatusBadge
+                          status={app.status.startsWith("approved") ? "approved" : app.status.startsWith("rejected") ? "rejected" : "under_review"}
+                        />
+                      </div>
+                      <div style={{ marginTop: "8px", fontSize: "0.78rem", color: "#66564A", display: "flex", gap: "14px", flexWrap: "wrap" }}>
+                        <span>Reason: "{app.reason}"</span>
+                        <span>Guardian: <strong>{app.guardianName} ({app.guardianPhone})</strong></span>
+                        <span>AI Signature Match: <strong style={{ color: "#047857" }}>{app.aiMatchScore}% Similarity</strong></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* PAST PAID FEES SECTION */}
+            {paidFeesHistory.length > 0 && (
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                  Past Paid Fees Archive
+                </h3>
+                
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.86rem" }}>
+                    <thead>
+                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Fee Title</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Category</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Payment Date</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Amount Paid</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paidFeesHistory.map((pf) => (
+                        <tr key={pf.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                          <td style={{ padding: "12px 14px", fontWeight: 700, color: "#241A14" }}>{pf.title}</td>
+                          <td style={{ padding: "12px 14px", color: "#66564A" }}>{pf.category}</td>
+                          <td style={{ padding: "12px 14px", color: "#66564A" }}>{pf.paidDate || "2026-09-12"}</td>
+                          <td style={{ padding: "12px 14px", fontWeight: 800, color: "#047857" }}>{formatTaka(pf.originalAmount, false)}</td>
+                          <td style={{ padding: "12px 14px" }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const matchingTxn = store.transactions.find((t) => t.feeId === pf.id || t.title === pf.title) || {
+                                  id: "TXN-" + Math.floor(10000 + Math.random() * 90000),
+                                  title: pf.title,
+                                  date: pf.paidDate || "2026-09-12 02:15 PM",
+                                  amount: pf.originalAmount,
+                                  type: "fee" as const,
+                                  status: "Success" as const,
+                                  method: "bKash Mobile Banking",
+                                  referenceId: "BK-904821",
+                                  receiptNumber: "REC-982104",
+                                };
+                                onOpenReceipt(matchingTxn);
+                              }}
+                              style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", padding: 0 }}
+                            >
+                              Download Receipt 🧾
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+          </div>
+        );
+      })()}
 
       {/* 2.5. MY WALLET & PAYMENT METHODS TAB */}
       {activeTab === "wallet" && (
@@ -1467,6 +1921,131 @@ export function StudentPanel({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* FEE DETAIL MODAL */}
+      {selectedDetailFee && (
+        <div className="ms-modal-overlay">
+          <div className="ms-modal" style={{ maxWidth: "580px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "14px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.25rem", fontWeight: 800 }}>
+                    {selectedDetailFee.title}
+                  </h3>
+                  <StatusBadge status={mapFeeStatus(selectedDetailFee.status)} />
+                </div>
+                <span style={{ fontSize: "0.82rem", color: "#66564A" }}>
+                  Category: <strong>{selectedDetailFee.category}</strong> • ID: <code>{selectedDetailFee.id}</code>
+                </span>
+              </div>
+              <button type="button" onClick={() => setSelectedDetailFee(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <p style={{ margin: 0, fontSize: "0.9rem", color: "#66564A", lineHeight: 1.5 }}>
+                {selectedDetailFee.description}
+              </p>
+
+              {/* Financial Breakdown Card */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+                <h4 style={{ margin: "0 0 10px", fontSize: "0.92rem", fontWeight: 700, color: "#241A14" }}>
+                  Financial Specification
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.88rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#66564A" }}>Assigned Original Fee (Admin):</span>
+                    <strong style={{ color: "#241A14" }}>{formatTaka(selectedDetailFee.originalAmount, false)}</strong>
+                  </div>
+                  {selectedDetailFee.approvedPartialAmount && (
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#047857" }}>
+                      <span>Approved Installment 1 Amount:</span>
+                      <strong>{formatTaka(selectedDetailFee.approvedPartialAmount, false)}</strong>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid rgba(196, 154, 108, 0.3)", paddingTop: "8px", fontWeight: 800 }}>
+                    <span style={{ color: "#241A14" }}>Current Payable Balance:</span>
+                    <span style={{ color: selectedDetailFee.status === "paid" ? "#047857" : "#D35400", fontSize: "1.1rem" }}>
+                      {formatTaka(selectedDetailFee.status === "paid" ? 0 : selectedDetailFee.approvedPartialAmount || selectedDetailFee.amount, false)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Timeline Dates */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "0.85rem" }}>
+                <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.25)", padding: "12px", borderRadius: "10px" }}>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem", display: "block" }}>Issued Date</span>
+                  <strong style={{ color: "#241A14" }}>{selectedDetailFee.issuedDate || "2026-08-15"}</strong>
+                </div>
+                <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.25)", padding: "12px", borderRadius: "10px" }}>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem", display: "block" }}>Deadline / Due Date</span>
+                  <strong style={{ color: selectedDetailFee.status === "overdue" ? "#BE123C" : "#241A14" }}>{selectedDetailFee.dueDate}</strong>
+                </div>
+              </div>
+
+              {/* Administrative Policy Note */}
+              <div style={{ background: "rgba(211, 84, 0, 0.08)", border: "1px solid rgba(211, 84, 0, 0.25)", padding: "12px", borderRadius: "10px", fontSize: "0.82rem", color: "#66564A", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                <Info size={18} style={{ color: "#D35400", flexShrink: 0, marginTop: "2px" }} />
+                <div>
+                  <strong>Administrative Policy:</strong> Fee amounts and payment deadlines are set by institution financial controllers. Students pay the exact assigned amounts or approved partial installments.
+                </div>
+              </div>
+
+              {/* Actions Footer */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
+                <button
+                  type="button"
+                  className="ms-btn-secondary"
+                  onClick={() => setSelectedDetailFee(null)}
+                  style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}
+                >
+                  Close
+                </button>
+
+                {selectedDetailFee.status === "paid" ? (
+                  <button
+                    type="button"
+                    className="ms-btn-primary"
+                    onClick={() => {
+                      const matchingTxn = store.transactions.find((t) => t.feeId === selectedDetailFee.id || t.title === selectedDetailFee.title) || {
+                        id: "TXN-" + Math.floor(10000 + Math.random() * 90000),
+                        title: selectedDetailFee.title,
+                        date: selectedDetailFee.paidDate || "2026-09-12 02:15 PM",
+                        amount: selectedDetailFee.originalAmount,
+                        type: "fee" as const,
+                        status: "Success" as const,
+                        method: "bKash Mobile Banking",
+                        referenceId: "BK-904821",
+                        receiptNumber: "REC-982104",
+                      };
+                      onOpenReceipt(matchingTxn);
+                      setSelectedDetailFee(null);
+                    }}
+                    style={{ background: "#047857", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}
+                  >
+                    View Receipt 🧾
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="ms-btn-primary"
+                    onClick={() => {
+                      const target = selectedDetailFee;
+                      setSelectedDetailFee(null);
+                      setSelectedPayFee(target);
+                    }}
+                    style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}
+                  >
+                    Proceed to Pay {formatTaka(selectedDetailFee.approvedPartialAmount || selectedDetailFee.amount, false)}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}

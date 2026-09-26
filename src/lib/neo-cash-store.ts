@@ -17,11 +17,13 @@ export interface Fee {
   amount: number;
   originalAmount: number;
   dueDate: string;
+  issuedDate?: string;
+  paidDate?: string;
   status: "due" | "paid" | "overdue" | "pending_partial" | "partial_approved";
   partialAllowed?: boolean;
   approvedPartialAmount?: number;
   description: string;
-  category: "Tuition" | "Lab & Tech" | "Library" | "Exam" | "Hostel";
+  category: "Tuition" | "Lab & Tech" | "Library" | "Exam" | "Hostel" | "Transport";
 }
 
 export interface PartialApplication {
@@ -182,42 +184,70 @@ const INITIAL_STATE: NeoState = {
     {
       id: "fee-1",
       title: "Semester Tuition Fee (Fall 2026)",
-      amount: 6000,
-      originalAmount: 6000,
-      dueDate: "2026-10-15",
+      amount: 20000,
+      originalAmount: 20000,
+      dueDate: "2026-09-30",
+      issuedDate: "2026-08-15",
       status: "due",
       category: "Tuition",
-      description: "Core academic tuition for CSE 3rd Semester modules.",
+      description: "Core academic tuition for CSE 3rd Semester modules assigned by Administration.",
     },
     {
       id: "fee-2",
-      title: "Lab & Technology Equipment Charge",
+      title: "Library & Digital Resources Fee",
       amount: 1500,
       originalAmount: 1500,
-      dueDate: "2026-10-20",
+      dueDate: "2026-10-05",
+      issuedDate: "2026-08-20",
       status: "due",
-      category: "Lab & Tech",
-      description: "Access to High-Performance Computing & Robotics Labs.",
+      category: "Library",
+      description: "Annual access to IEEE Xplore, ACM Digital Library & Campus Physical Library.",
     },
     {
       id: "fee-3",
-      title: "Midterm Exam & Assessment Fee",
-      amount: 1000,
-      originalAmount: 1000,
-      dueDate: "2026-09-20",
-      status: "overdue",
-      category: "Exam",
-      description: "Mid-semester examination hall ticket and answer script evaluation.",
+      title: "Transport & Campus Shuttle Fee",
+      amount: 3000,
+      originalAmount: 3000,
+      dueDate: "2026-09-12",
+      issuedDate: "2026-08-01",
+      paidDate: "2026-09-12",
+      status: "paid",
+      category: "Transport",
+      description: "Semester-wise campus bus route pass for Mirpur - Dhanmondi route.",
     },
     {
       id: "fee-4",
-      title: "Library & Digital Resources Dues",
-      amount: 1000,
-      originalAmount: 1000,
-      dueDate: "2026-09-01",
-      status: "paid",
-      category: "Library",
-      description: "Annual subscription to IEEE Xplore & ACM Digital Library.",
+      title: "Midterm Examination Assessment Fee",
+      amount: 2500,
+      originalAmount: 2500,
+      dueDate: "2026-09-15",
+      issuedDate: "2026-08-10",
+      status: "overdue",
+      category: "Exam",
+      description: "Mid-semester examination admit card issuance & answer script grading.",
+    },
+    {
+      id: "fee-5",
+      title: "Advanced Computing Lab & Tech Charge",
+      amount: 5000,
+      originalAmount: 10000,
+      approvedPartialAmount: 5000,
+      dueDate: "2026-10-15",
+      issuedDate: "2026-08-18",
+      status: "partial_approved",
+      category: "Lab & Tech",
+      description: "High-performance AI GPU workstation allocation & Robotics lab usage.",
+    },
+    {
+      id: "fee-6",
+      title: "Hostel & Hall Utility Charge",
+      amount: 4500,
+      originalAmount: 4500,
+      dueDate: "2026-10-25",
+      issuedDate: "2026-09-01",
+      status: "pending_partial",
+      category: "Hostel",
+      description: "Monthly hall dining & utility electricity allocation (Under Admin review).",
     },
   ],
   partialApplications: [
