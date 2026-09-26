@@ -1,21 +1,23 @@
 /**
- * Admin Panel Component — Professional Institutional Financial Operations Center
+ * Admin Panel Component — Refined Institutional Operations Center
  * 
- * Features:
- * 1. Financial Operations Overview & Collection Analytics
- * 2. Student Directory, Search, Filter, & Class Promotion
- * 3. Class & Section Management
- * 4. Bulk Fee Assignment (Excel-like Grid)
- * 5. Excel Student Data Import Preview & Validation
- * 6. Partial Payment Application Review & Forwarding to Head
- * 7. Real-Time Audit Logs & Institutional System Alerts
+ * Visual System & Hierarchy Guidelines:
+ * - Primary Text: #241A14 (Dark Warm Charcoal)
+ * - Secondary Text: #66564A (Lighter Warm Charcoal)
+ * - Muted Text: #8C7A6A (Timestamps & Metadata)
+ * - Canvas Background: #FFF7E6 (Warm Ivory)
+ * - Level 1 Surface: #FFFFFF (Clean White)
+ * - Level 2 Subtle Surface: #FDF9F3 (Warm Beige)
+ * - Primary Action: #D35400 (Burnt Orange)
  */
 
 import { useState } from "react";
 import { useNeoStore, PartialApplication } from "@/lib/neo-cash-store";
+import { StatusBadge } from "@/components/design-system/status-badge";
+import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
-  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw
+  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X
 } from "lucide-react";
 
 export function AdminPanel({
@@ -62,7 +64,7 @@ export function AdminPanel({
       targetSection,
       description: `Institutional fee assigned to ${targetClass} (${targetSection}).`,
     });
-    alert(`Successfully assigned "${bulkTitle}" (৳${bulkAmount}) to ${targetClass} (${targetSection})!`);
+    alert(`Successfully assigned "${bulkTitle}" (${formatTaka(bulkAmount)}) to ${targetClass} (${targetSection})!`);
   };
 
   const handleExcelImportConfirm = () => {
@@ -92,78 +94,186 @@ export function AdminPanel({
   );
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
       {/* 1. ADMIN OVERVIEW */}
       {activeTab === "overview" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Operations Header */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          
+          {/* LEVEL 1: OPEN OPERATIONS HERO (NO CARD CONTAINER) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
             <div>
-              <h2 style={{ fontSize: "1.4rem", margin: 0, color: "#FFF" }}>Institutional Financial Operations</h2>
-              <p style={{ margin: "4px 0 0", color: "var(--ms-text-muted)", fontSize: "0.88rem" }}>
-                Dhaka City College Operations Center • Real-time fee collections & applications tracking
+              <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
+                Institutional Financial Operations
+              </h1>
+              <p style={{ margin: "4px 0 0", fontSize: "0.95rem", color: "#66564A" }}>
+                Dhaka City College Operations Center • Real-time fee collections & application tracking
               </p>
             </div>
-            <button type="button" className="ms-btn-primary" onClick={() => setActiveTab("bulk")}>
+
+            <button
+              type="button"
+              className="ms-btn-primary"
+              onClick={() => setActiveTab("bulk")}
+              style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
+            >
               <Plus size={16} /> Bulk Fee Assignment
             </button>
           </div>
 
-          {/* Operational Metrics Cards */}
+          {/* LEVEL 2: OPERATIONAL METRIC CARDS */}
           <div className="ms-grid-3">
-            <div className="ms-card" style={{ background: "linear-gradient(135deg, #1E3A8A 0%, #0D182A 100%)" }}>
-              <span style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Total Students Enrolled</span>
-              <h3 style={{ fontSize: "1.8rem", color: "#FFF", margin: "8px 0 4px" }}>{store.students.length * 320 + 840}</h3>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "#34D399" }}>98.4% Verified Profiles</p>
+            
+            {/* TOTAL STUDENTS CARD */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid rgba(196, 154, 108, 0.3)",
+                borderRadius: "14px",
+                padding: "24px",
+                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                TOTAL STUDENTS ENROLLED
+              </span>
+
+              <div style={{ margin: "14px 0 8px" }}>
+                <span style={{ fontSize: "2.25rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em" }}>
+                  2,120
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.8rem", color: "#047857", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+                <CheckCircle2 size={14} />
+                <span>98.4% Verified Student Profiles</span>
+              </div>
             </div>
-            <div className="ms-card">
-              <span style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Total Collections (Fall 2026)</span>
-              <h3 style={{ fontSize: "1.8rem", color: "#34D399", margin: "8px 0 4px" }}>৳4,820,000</h3>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>82% Collection Rate</p>
+
+            {/* TOTAL COLLECTIONS CARD */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "2px solid #D35400",
+                borderRadius: "14px",
+                padding: "24px",
+                boxShadow: "0 6px 20px rgba(211, 84, 0, 0.06)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  TOTAL COLLECTIONS (SPRING 2027)
+                </span>
+                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "3px 8px", borderRadius: "6px", fontWeight: 700 }}>
+                  PRIMARY
+                </span>
+              </div>
+
+              <div style={{ margin: "14px 0 8px" }}>
+                <span style={{ fontSize: "2.25rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(4820000, false)}
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.8rem", color: "#66564A" }}>
+                Collection Rate: <strong style={{ color: "#241A14" }}>82% On-Time</strong>
+              </div>
             </div>
-            <div className="ms-card">
-              <span style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Pending Partial Applications</span>
-              <h3 style={{ fontSize: "1.8rem", color: "var(--ms-accent)", margin: "8px 0 4px" }}>
-                {store.partialApplications.filter((a) => a.status === "pending_admin").length} Pending
-              </h3>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--ms-lavender)" }}>Requires Admin & Head Review</p>
+
+            {/* PENDING APPLICATIONS CARD */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid rgba(196, 154, 108, 0.3)",
+                borderRadius: "14px",
+                padding: "24px",
+                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                PENDING APPLICATIONS
+              </span>
+
+              <div style={{ margin: "14px 0 8px" }}>
+                <span style={{ fontSize: "1.85rem", fontWeight: 800, color: "#D35400" }}>
+                  {store.partialApplications.filter((a) => a.status === "pending_admin").length} Pending
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>
+                Requires Executive Sign-Off
+              </div>
             </div>
+
           </div>
 
-          {/* Pending Applications & Alerts Split View */}
+          {/* LEVEL 3: QUEUE & ALERTS SPLIT VIEW */}
           <div className="ms-grid-2">
-            {/* Partial Applications Review Card */}
-            <div className="ms-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#FFF" }}>Partial Payment Review Queue</h3>
-                <button type="button" style={{ background: "none", border: "none", color: "var(--ms-accent)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }} onClick={() => setActiveTab("applications")}>
+            
+            {/* PARTIAL PAYMENT REVIEW QUEUE */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>
+                  Partial Payment Review Queue
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("applications")}
+                  style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
+                >
                   View Queue →
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {store.partialApplications.map((app) => (
-                  <div key={app.id} style={{ padding: "14px", background: "rgba(30, 58, 138, 0.2)", borderRadius: "12px", border: "1px solid var(--ms-border)" }}>
+                  <div
+                    key={app.id}
+                    style={{
+                      background: "#FFFFFF",
+                      border: "1px solid rgba(196, 154, 108, 0.25)",
+                      borderRadius: "12px",
+                      padding: "16px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                    }}
+                  >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
-                        <h4 style={{ margin: 0, fontSize: "0.92rem", color: "#FFF" }}>{app.studentName} ({app.studentId})</h4>
-                        <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>Fee: {app.feeTitle}</span>
+                        <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "#241A14" }}>
+                          {app.studentName} ({app.studentId})
+                        </h4>
+                        <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
+                          Target Fee: {app.feeTitle}
+                        </span>
                       </div>
-                      <span className={`ms-badge ms-badge--${app.status.startsWith("approved") ? "paid" : "pending_partial"}`}>
-                        {app.status.replace("_", " ")}
-                      </span>
+                      <StatusBadge status={app.status.startsWith("approved") ? "approved" : "under_review"} />
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
-                      <span style={{ fontSize: "0.8rem", color: "var(--ms-lavender)" }}>
-                        Req: ৳{app.requestedAmount.toLocaleString()} / ৳{app.originalAmount.toLocaleString()}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "8px", borderTop: "1px dashed rgba(196, 154, 108, 0.2)" }}>
+                      <span style={{ fontSize: "0.82rem", color: "#66564A" }}>
+                        Requested: <strong style={{ color: "#241A14" }}>{formatTaka(app.requestedAmount, false)}</strong> / {formatTaka(app.originalAmount, false)}
                       </span>
                       {app.status === "pending_admin" ? (
-                        <button type="button" className="ms-btn-primary" style={{ padding: "4px 12px", fontSize: "0.78rem" }} onClick={() => setReviewApp(app)}>
+                        <button
+                          type="button"
+                          className="ms-btn-primary"
+                          onClick={() => setReviewApp(app)}
+                          style={{ background: "#D35400", color: "#FFFFFF", padding: "4px 12px", fontSize: "0.78rem", borderRadius: "8px" }}
+                        >
                           Review & Forward
                         </button>
                       ) : (
-                        <span style={{ fontSize: "0.75rem", color: "var(--ms-text-dim)" }}>Already Reviewed</span>
+                        <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>Reviewed</span>
                       )}
                     </div>
                   </div>
@@ -171,56 +281,74 @@ export function AdminPanel({
               </div>
             </div>
 
-            {/* Institutional System Alerts */}
-            <div className="ms-card">
-              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", color: "#FFF" }}>System Operational Alerts</h3>
+            {/* SOPHISTICATED SYSTEM OPERATIONAL ALERTS */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <h2 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>
+                System Operational Alerts
+              </h2>
+
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div style={{ padding: "12px 14px", background: "rgba(245, 158, 11, 0.12)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: "10px", color: "#FBBF24", fontSize: "0.85rem" }}>
-                  <strong>Overdue Warning:</strong> 23 students in CSE 3rd Semester have midterm exam fee overdue.
+                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderLeft: "4px solid #BE123C", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", borderLeftWidth: "4px" }}>
+                  <h5 style={{ margin: "0 0 2px", color: "#BE123C", fontSize: "0.88rem", fontWeight: 700 }}>OVERDUE NOTICE</h5>
+                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#66564A" }}>
+                    23 students in CSE 3rd Semester have midterm exam fees overdue.
+                  </p>
                 </div>
-                <div style={{ padding: "12px 14px", background: "rgba(59, 130, 246, 0.12)", border: "1px solid rgba(59, 130, 246, 0.3)", borderRadius: "10px", color: "#60A5FA", fontSize: "0.85rem" }}>
-                  <strong>Upcoming Deadline:</strong> Semester Tuition Fee deadline is in 19 days (Oct 15, 2026).
+
+                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderLeft: "4px solid #D35400", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", borderLeftWidth: "4px" }}>
+                  <h5 style={{ margin: "0 0 2px", color: "#D35400", fontSize: "0.88rem", fontWeight: 700 }}>UPCOMING DEADLINE</h5>
+                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#66564A" }}>
+                    Semester Tuition Fee deadline in 19 days (Oct 15, 2026).
+                  </p>
                 </div>
-                <div style={{ padding: "12px 14px", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "10px", color: "#34D399", fontSize: "0.85rem" }}>
-                  <strong>Bulk Sync Complete:</strong> 420 student digital wallets provisioned successfully.
+
+                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderLeft: "4px solid #047857", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", borderLeftWidth: "4px" }}>
+                  <h5 style={{ margin: "0 0 2px", color: "#047857", fontSize: "0.88rem", fontWeight: 700 }}>SYSTEM PROVISIONING</h5>
+                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#66564A" }}>
+                    420 student digital wallets provisioned successfully.
+                  </p>
                 </div>
               </div>
             </div>
+
           </div>
+
         </div>
       )}
 
       {/* 2. STUDENTS DIRECTORY TAB */}
       {activeTab === "students" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
             <div>
-              <h2 style={{ fontSize: "1.4rem", margin: 0, color: "#FFF" }}>Student Directory & Class Promotion</h2>
-              <p style={{ margin: "4px 0 0", color: "var(--ms-text-muted)", fontSize: "0.88rem" }}>
-                Manage institutional student records, departments, sections, and annual promotion.
+              <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                Student Directory & Class Promotion
+              </h1>
+              <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                Manage institutional student profiles, department rosters, and promotion queues.
               </p>
             </div>
-            <button type="button" className="ms-btn-primary" onClick={() => setActiveTab("import")}>
+            <button type="button" className="ms-btn-primary" onClick={() => setActiveTab("import")} style={{ background: "#D35400", color: "#FFFFFF", padding: "8px 16px", borderRadius: "10px" }}>
               <Upload size={16} /> Import Excel
             </button>
           </div>
 
-          {/* Search & Filter Bar */}
+          {/* SEARCH & FILTER BAR */}
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
             <div style={{ position: "relative", flex: "1 1 260px" }}>
-              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--ms-text-muted)" }} />
+              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
               <input
                 type="text"
-                placeholder="Search by student name or ID..."
+                placeholder="Search student name or ID..."
                 value={studentSearch}
                 onChange={(e) => setStudentSearch(e.target.value)}
-                style={{ width: "100%", padding: "8px 12px 8px 36px", background: "rgba(30, 58, 138, 0.3)", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none", fontSize: "0.88rem" }}
+                style={{ width: "100%", padding: "8px 12px 8px 36px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem" }}
               />
             </div>
             <select
               value={filterDept}
               onChange={(e) => setFilterDept(e.target.value)}
-              style={{ padding: "8px 14px", background: "#132238", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none", fontSize: "0.88rem" }}
+              style={{ padding: "8px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem" }}
             >
               <option value="all">All Departments</option>
               <option value="CSE">CSE</option>
@@ -229,35 +357,39 @@ export function AdminPanel({
             </select>
           </div>
 
-          {/* Directory Table */}
-          <div className="ms-card" style={{ padding: 0, overflow: "hidden" }}>
+          {/* DIRECTORY TABLE */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflow: "hidden" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
               <thead>
-                <tr style={{ background: "rgba(30, 58, 138, 0.3)", textAlign: "left", color: "var(--ms-text-muted)" }}>
-                  <th style={{ padding: "12px 18px" }}>Student Name</th>
-                  <th style={{ padding: "12px 18px" }}>Student ID</th>
-                  <th style={{ padding: "12px 18px" }}>Class & Section</th>
-                  <th style={{ padding: "12px 18px" }}>Email</th>
-                  <th style={{ padding: "12px 18px" }}>Status</th>
-                  <th style={{ padding: "12px 18px" }}>Dues</th>
-                  <th style={{ padding: "12px 18px" }}>Actions</th>
+                <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Student Name</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Student ID</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Class & Section</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Email</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Status</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Dues</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStudents.map((s) => (
-                  <tr key={s.id} style={{ borderBottom: "1px solid rgba(30, 58, 138, 0.3)" }}>
-                    <td style={{ padding: "12px 18px", fontWeight: "700", color: "#FFF" }}>{s.name}</td>
-                    <td style={{ padding: "12px 18px", color: "var(--ms-accent)" }}>{s.studentId}</td>
-                    <td style={{ padding: "12px 18px", color: "var(--ms-text-muted)" }}>{s.classSection}</td>
-                    <td style={{ padding: "12px 18px", color: "var(--ms-lavender)" }}>{s.email}</td>
+                  <tr key={s.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#241A14" }}>{s.name}</td>
+                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#D35400" }}>{s.studentId}</td>
+                    <td style={{ padding: "12px 18px", color: "#66564A" }}>{s.classSection}</td>
+                    <td style={{ padding: "12px 18px", color: "#66564A" }}>{s.email}</td>
                     <td style={{ padding: "12px 18px" }}>
-                      <span className={`ms-badge ms-badge--${s.status === "Active" ? "paid" : "overdue"}`}>{s.status}</span>
+                      <StatusBadge status={s.status === "Active" ? "verified" : "overdue"} customLabel={s.status} />
                     </td>
-                    <td style={{ padding: "12px 18px", fontWeight: "700", color: s.totalDues > 0 ? "#F87171" : "#34D399" }}>
-                      ৳{s.totalDues.toLocaleString()}
+                    <td style={{ padding: "12px 18px", fontWeight: 800, color: s.totalDues > 0 ? "#BE123C" : "#047857", fontFeatureSettings: "'tnum'" }}>
+                      {formatTaka(s.totalDues, false)}
                     </td>
                     <td style={{ padding: "12px 18px" }}>
-                      <button type="button" className="ms-btn-secondary" style={{ padding: "4px 10px", fontSize: "0.75rem" }} onClick={() => alert(`Promoting ${s.name} to next semester/year.`)}>
+                      <button
+                        type="button"
+                        onClick={() => alert(`Promoting ${s.name} to next semester/year.`)}
+                        style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "4px 10px", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                      >
                         <RefreshCw size={12} /> Promote
                       </button>
                     </td>
@@ -269,55 +401,57 @@ export function AdminPanel({
         </div>
       )}
 
-      {/* 3. BULK FEE ASSIGNMENT (EXCEL GRID INTERFACE) */}
+      {/* 3. BULK FEE ASSIGNMENT */}
       {activeTab === "bulk" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
-            <h2 style={{ fontSize: "1.4rem", margin: 0, color: "#FFF" }}>Bulk Fee Assignment</h2>
-            <p style={{ margin: "4px 0 0", color: "var(--ms-text-muted)", fontSize: "0.88rem" }}>
-              Excel-like batch assignment tool. Assign fees to entire classes, departments, or sections simultaneously.
+            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+              Bulk Fee Assignment
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+              Batch fee creation tool. Assign fees to entire cohorts, departments, or sections simultaneously.
             </p>
           </div>
 
-          <div className="ms-card">
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
             <form onSubmit={handleBulkAssign} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
                 <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", display: "block", marginBottom: "4px" }}>Fee Title</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Fee Title</label>
                   <input
                     type="text"
                     value={bulkTitle}
                     onChange={(e) => setBulkTitle(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "rgba(30, 58, 138, 0.3)", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none" }}
+                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", display: "block", marginBottom: "4px" }}>Amount (৳)</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Amount (৳)</label>
                   <input
                     type="number"
                     value={bulkAmount}
                     onChange={(e) => setBulkAmount(Number(e.target.value))}
-                    style={{ width: "100%", padding: "10px 12px", background: "rgba(30, 58, 138, 0.3)", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none", fontWeight: "700" }}
+                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontWeight: 800 }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", display: "block", marginBottom: "4px" }}>Due Date</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Due Date</label>
                   <input
                     type="date"
                     value={bulkDueDate}
                     onChange={(e) => setBulkDueDate(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#132238", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none" }}
+                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
                   />
                 </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
                 <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", display: "block", marginBottom: "4px" }}>Category</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Category</label>
                   <select
                     value={bulkCategory}
                     onChange={(e) => setBulkCategory(e.target.value as any)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#132238", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none" }}
+                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
                   >
                     <option value="Tuition">Tuition</option>
                     <option value="Lab & Tech">Lab & Tech</option>
@@ -325,11 +459,11 @@ export function AdminPanel({
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", display: "block", marginBottom: "4px" }}>Target Class / Year</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Target Class / Year</label>
                   <select
                     value={targetClass}
                     onChange={(e) => setTargetClass(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#132238", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none" }}
+                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
                   >
                     <option value="CSE 3rd Semester">CSE 3rd Semester</option>
                     <option value="Inter 1st Year">Inter 1st Year</option>
@@ -338,11 +472,11 @@ export function AdminPanel({
                   </select>
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)", display: "block", marginBottom: "4px" }}>Target Section</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Target Section</label>
                   <select
                     value={targetSection}
                     onChange={(e) => setTargetSection(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#132238", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none" }}
+                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
                   >
                     <option value="Sec A">Sec A</option>
                     <option value="Sec B">Sec B</option>
@@ -351,7 +485,7 @@ export function AdminPanel({
                 </div>
               </div>
 
-              <button type="submit" className="ms-btn-primary" style={{ alignSelf: "flex-end", marginTop: "10px" }}>
+              <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "12px 20px", borderRadius: "10px", fontWeight: 700, alignSelf: "flex-end", marginTop: "8px" }}>
                 <CheckCircle2 size={18} /> Apply Fee Assignment to Selected Cohort
               </button>
             </form>
@@ -361,53 +495,55 @@ export function AdminPanel({
 
       {/* 4. EXCEL IMPORT TAB */}
       {activeTab === "import" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
-            <h2 style={{ fontSize: "1.4rem", margin: 0, color: "#FFF" }}>Excel Student Roster Import</h2>
-            <p style={{ margin: "4px 0 0", color: "var(--ms-text-muted)", fontSize: "0.88rem" }}>
-              Upload Excel (.xlsx, .csv) student files with automated column validation and preview.
+            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+              Excel Student Roster Import
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+              Upload Excel (.xlsx, .csv) student files with automated column validation.
             </p>
           </div>
 
-          <div className="ms-card" style={{ textAlign: "center", border: "2px dashed var(--ms-border)", padding: "40px" }}>
-            <FileSpreadsheet size={48} style={{ color: "var(--ms-accent)", margin: "0 auto 12px" }} />
-            <h3 style={{ margin: "0 0 6px", color: "#FFF" }}>Drag & Drop Excel Roster File Here</h3>
-            <p style={{ color: "var(--ms-text-muted)", fontSize: "0.85rem", margin: "0 0 16px" }}>
-              Supported formats: .xlsx, .xls, .csv (Columns: Name, StudentID, Department, ClassSection, Email)
+          <div style={{ background: "#FFFFFF", border: "2px dashed rgba(196, 154, 108, 0.4)", borderRadius: "14px", padding: "40px", textAlign: "center" }}>
+            <FileSpreadsheet size={48} style={{ color: "#D35400", margin: "0 auto 12px" }} />
+            <h3 style={{ margin: "0 0 6px", color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Drag & Drop Excel Roster File Here</h3>
+            <p style={{ color: "#66564A", fontSize: "0.85rem", margin: "0 0 16px" }}>
+              Supported formats: .xlsx, .csv (Columns: Name, StudentID, Department, ClassSection, Email)
             </p>
-            <button type="button" className="ms-btn-secondary" onClick={() => setImportFileName("DCC-CSE-2026-Roster.xlsx")}>
+            <button type="button" className="ms-btn-secondary" onClick={() => setImportFileName("DCC-CSE-2026-Roster.xlsx")} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
               Select Sample Excel File
             </button>
           </div>
 
           {importFileName && (
-            <div className="ms-card">
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#FFF" }}>
-                  File Preview: <span style={{ color: "var(--ms-accent)" }}>{importFileName}</span> ({importRows.length} Records Validated)
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                  File Preview: <span style={{ color: "#D35400" }}>{importFileName}</span> ({importRows.length} Records Validated)
                 </h3>
-                <span className="ms-badge ms-badge--paid">Validation Passed</span>
+                <StatusBadge status="verified" customLabel="Validation Passed" />
               </div>
 
-              <div style={{ padding: 0, overflow: "hidden", marginBottom: "16px" }}>
+              <div style={{ border: "1px solid rgba(196, 154, 108, 0.2)", borderRadius: "10px", overflow: "hidden", marginBottom: "16px" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
                   <thead>
-                    <tr style={{ background: "rgba(30, 58, 138, 0.3)", color: "var(--ms-text-muted)" }}>
-                      <th style={{ padding: "8px 12px", textAlign: "left" }}>Name</th>
-                      <th style={{ padding: "8px 12px", textAlign: "left" }}>Student ID</th>
-                      <th style={{ padding: "8px 12px", textAlign: "left" }}>Department</th>
-                      <th style={{ padding: "8px 12px", textAlign: "left" }}>Class & Section</th>
-                      <th style={{ padding: "8px 12px", textAlign: "left" }}>Email</th>
+                    <tr style={{ background: "#FDF9F3", color: "#66564A" }}>
+                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Name</th>
+                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Student ID</th>
+                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Department</th>
+                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Class & Section</th>
+                      <th style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700 }}>Email</th>
                     </tr>
                   </thead>
                   <tbody>
                     {importRows.map((row, idx) => (
-                      <tr key={idx} style={{ borderBottom: "1px solid rgba(30, 58, 138, 0.3)" }}>
-                        <td style={{ padding: "8px 12px", color: "#FFF" }}>{row.name}</td>
-                        <td style={{ padding: "8px 12px", color: "var(--ms-accent)" }}>{row.studentId}</td>
-                        <td style={{ padding: "8px 12px" }}>{row.department}</td>
-                        <td style={{ padding: "8px 12px" }}>{row.classSection}</td>
-                        <td style={{ padding: "8px 12px", color: "var(--ms-lavender)" }}>{row.email}</td>
+                      <tr key={idx} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.15)" }}>
+                        <td style={{ padding: "10px 14px", fontWeight: 700, color: "#241A14" }}>{row.name}</td>
+                        <td style={{ padding: "10px 14px", fontWeight: 700, color: "#D35400" }}>{row.studentId}</td>
+                        <td style={{ padding: "10px 14px", color: "#66564A" }}>{row.department}</td>
+                        <td style={{ padding: "10px 14px", color: "#66564A" }}>{row.classSection}</td>
+                        <td style={{ padding: "10px 14px", color: "#66564A" }}>{row.email}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -415,8 +551,10 @@ export function AdminPanel({
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-                <button type="button" className="ms-btn-secondary" onClick={() => setImportFileName(null)}>Cancel</button>
-                <button type="button" className="ms-btn-primary" onClick={handleExcelImportConfirm}>
+                <button type="button" className="ms-btn-secondary" onClick={() => setImportFileName(null)} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
+                  Cancel
+                </button>
+                <button type="button" className="ms-btn-primary" onClick={handleExcelImportConfirm} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
                   Confirm & Import All Records
                 </button>
               </div>
@@ -427,37 +565,39 @@ export function AdminPanel({
 
       {/* 5. AUDIT LOGS TAB */}
       {activeTab === "audit" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
-            <h2 style={{ fontSize: "1.4rem", margin: 0, color: "#FFF" }}>Institutional Audit Logs</h2>
-            <p style={{ margin: "4px 0 0", color: "var(--ms-text-muted)", fontSize: "0.88rem" }}>
+            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+              Institutional Audit Logs
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
               Immutable audit trail tracking all fee assignments, student approvals, and payment actions.
             </p>
           </div>
 
-          <div className="ms-card" style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflow: "hidden" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
               <thead>
-                <tr style={{ background: "rgba(30, 58, 138, 0.3)", textAlign: "left", color: "var(--ms-text-muted)" }}>
-                  <th style={{ padding: "12px 18px" }}>Actor</th>
-                  <th style={{ padding: "12px 18px" }}>Role</th>
-                  <th style={{ padding: "12px 18px" }}>Action</th>
-                  <th style={{ padding: "12px 18px" }}>Details</th>
-                  <th style={{ padding: "12px 18px" }}>Timestamp</th>
+                <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Actor</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Role</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Action</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Details</th>
+                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Timestamp</th>
                 </tr>
               </thead>
               <tbody>
                 {store.auditLogs.map((log) => (
-                  <tr key={log.id} style={{ borderBottom: "1px solid rgba(30, 58, 138, 0.3)" }}>
-                    <td style={{ padding: "12px 18px", fontWeight: "700", color: "#FFF" }}>{log.actor}</td>
+                  <tr key={log.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#241A14" }}>{log.actor}</td>
                     <td style={{ padding: "12px 18px" }}>
-                      <span className={`ms-badge ms-badge--${log.role === "Admin" ? "pending_partial" : log.role === "Head" ? "partial_approved" : "paid"}`}>
+                      <span style={{ padding: "3px 8px", borderRadius: "6px", fontSize: "0.75rem", fontWeight: 700, background: "rgba(211, 84, 0, 0.1)", color: "#D35400" }}>
                         {log.role}
                       </span>
                     </td>
-                    <td style={{ padding: "12px 18px", color: "var(--ms-lavender)" }}>{log.action}</td>
-                    <td style={{ padding: "12px 18px", color: "var(--ms-text-muted)" }}>{log.details}</td>
-                    <td style={{ padding: "12px 18px", color: "var(--ms-text-dim)" }}>{log.timestamp}</td>
+                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#241A14" }}>{log.action}</td>
+                    <td style={{ padding: "12px 18px", color: "#66564A" }}>{log.details}</td>
+                    <td style={{ padding: "12px 18px", color: "#8C7A6A" }}>{log.timestamp}</td>
                   </tr>
                 ))}
               </tbody>
@@ -470,34 +610,40 @@ export function AdminPanel({
       {reviewApp && (
         <div className="ms-modal-overlay">
           <div className="ms-modal" style={{ maxWidth: "600px" }}>
-            <h3 style={{ margin: "0 0 6px", color: "#FFF" }}>Review Partial Payment Request</h3>
-            <p style={{ margin: "0 0 16px", color: "var(--ms-text-muted)", fontSize: "0.85rem" }}>
-              Application ID: <strong style={{ color: "var(--ms-accent)" }}>{reviewApp.id}</strong> • Submitted: {reviewApp.submittedAt}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Review Partial Payment Request</h3>
+              <button type="button" onClick={() => setReviewApp(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <p style={{ margin: "0 0 16px", color: "#66564A", fontSize: "0.88rem" }}>
+              Application ID: <strong style={{ color: "#D35400" }}>{reviewApp.id}</strong> • Submitted: {reviewApp.submittedAt}
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "rgba(30, 58, 138, 0.25)", padding: "16px", borderRadius: "12px", border: "1px solid var(--ms-border)", fontSize: "0.88rem", marginBottom: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FDF9F3", padding: "16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", fontSize: "0.88rem", marginBottom: "16px" }}>
               <div>
-                <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>Student Info</span>
-                <p style={{ margin: "2px 0 0", fontWeight: "700", color: "#FFF" }}>{reviewApp.studentName} ({reviewApp.studentId})</p>
+                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Student Info</span>
+                <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.studentName} ({reviewApp.studentId})</p>
               </div>
               <div>
-                <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>Requested Amount</span>
-                <p style={{ margin: "2px 0 0", fontWeight: "800", color: "#34D399", fontSize: "1.1rem" }}>
-                  ৳{reviewApp.requestedAmount.toLocaleString()} <span style={{ fontSize: "0.8rem", color: "var(--ms-text-dim)", textDecoration: "line-through" }}>৳{reviewApp.originalAmount.toLocaleString()}</span>
+                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Requested Amount</span>
+                <p style={{ margin: "2px 0 0", fontWeight: 800, color: "#047857", fontSize: "1.1rem" }}>
+                  {formatTaka(reviewApp.requestedAmount, false)} <span style={{ fontSize: "0.8rem", color: "#8C7A6A", textDecoration: "line-through" }}>{formatTaka(reviewApp.originalAmount, false)}</span>
                 </p>
               </div>
               <div>
-                <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>Stated Reason</span>
-                <p style={{ margin: "2px 0 0", color: "var(--ms-light)" }}>"{reviewApp.reason}"</p>
+                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Stated Reason</span>
+                <p style={{ margin: "2px 0 0", color: "#241A14" }}>"{reviewApp.reason}"</p>
               </div>
               <div>
-                <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>AI Signature Verification Score</span>
-                <p style={{ margin: "2px 0 0", color: "#34D399", fontWeight: "700" }}>{reviewApp.aiMatchScore}% Match (High Similarity)</p>
+                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>AI Signature Verification Score</span>
+                <p style={{ margin: "2px 0 0", color: "#047857", fontWeight: 700 }}>{reviewApp.aiMatchScore}% Match (High Similarity)</p>
               </div>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button type="button" className="ms-btn-primary" onClick={() => handleForwardToHead(reviewApp.id)}>
+              <button type="button" className="ms-btn-primary" onClick={() => handleForwardToHead(reviewApp.id)} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontWeight: 700 }}>
                 <CheckCircle2 size={16} /> Approve & Forward to Head / Director
               </button>
 
@@ -507,9 +653,9 @@ export function AdminPanel({
                   placeholder="Reason for declining..."
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
-                  style={{ flex: 1, padding: "8px 12px", background: "rgba(30, 58, 138, 0.3)", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none", fontSize: "0.82rem" }}
+                  style={{ flex: 1, padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.82rem" }}
                 />
-                <button type="button" className="ms-btn-secondary" style={{ color: "#F87171" }} onClick={() => handleRejectByAdmin(reviewApp.id)}>
+                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600 }} onClick={() => handleRejectByAdmin(reviewApp.id)}>
                   Reject
                 </button>
               </div>

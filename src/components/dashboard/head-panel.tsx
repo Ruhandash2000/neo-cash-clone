@@ -1,17 +1,20 @@
 /**
  * Head / Authority Panel Component — Executive Institutional Command Center
  * 
- * Feel: Executive, spacious, decision-focused (Reads → Reviews → Decides)
- * Features:
- * 1. Executive Financial Overview & Institutional Health Metrics
- * 2. Approval Center (Final executive sign-off on forwarded partial payment requests)
- * 3. Impact Center & Head Trophy 🏆 (Institution-wide donation ranking & social impact metrics)
- * 4. Executive Reports & Audit Logs
- * 5. Strict Permission Enforcement (Head cannot alter raw fee records or bulk edit students)
+ * Visual System & Hierarchy Guidelines:
+ * - Primary Text: #241A14 (Dark Warm Charcoal)
+ * - Secondary Text: #66564A (Lighter Warm Charcoal)
+ * - Muted Text: #8C7A6A (Timestamps & Metadata)
+ * - Canvas Background: #FFF7E6 (Warm Ivory)
+ * - Level 1 Surface: #FFFFFF (Clean White)
+ * - Level 2 Subtle Surface: #FDF9F3 (Warm Beige)
+ * - Primary Action: #D35400 (Burnt Orange)
  */
 
 import { useState } from "react";
 import { useNeoStore, PartialApplication } from "@/lib/neo-cash-store";
+import { StatusBadge } from "@/components/design-system/status-badge";
+import { formatTaka } from "@/components/design-system/tokens";
 import {
   Trophy, Award, ShieldCheck, CheckCircle2, XCircle, AlertCircle, FileText,
   TrendingUp, Users, DollarSign, Building2, Check, X, Sparkles
@@ -35,7 +38,7 @@ export function HeadPanel({
   const handleExecutiveApprove = (appId: string) => {
     actions.headApprovePartial(appId);
     setExecApp(null);
-    alert(`Executive Approval granted for Application ${appId}! Partial payment of ৳${execApp?.requestedAmount.toLocaleString()} is now unlocked for the student.`);
+    alert(`Executive Approval granted for Application ${appId}! Partial payment of ${formatTaka(execApp?.requestedAmount || 0)} is now unlocked for the student.`);
   };
 
   const handleExecutiveDecline = (appId: string) => {
@@ -47,89 +50,162 @@ export function HeadPanel({
   };
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
       {/* 1. EXECUTIVE COMMAND CENTER OVERVIEW */}
       {activeTab === "overview" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Executive Header Banner */}
-          <div style={{ background: "linear-gradient(135deg, rgba(79, 70, 229, 0.3) 0%, rgba(30, 58, 138, 0.5) 100%)", border: "1px solid var(--ms-accent)", borderRadius: "18px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          
+          {/* LEVEL 1: OPEN HERO (NO CLUTTERED GRADIENTS) */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span className="ms-role-badge" style={{ background: "rgba(167, 136, 250, 0.2)", color: "var(--ms-accent)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "3px 8px", borderRadius: "6px", fontWeight: 700, textTransform: "uppercase" }}>
                   Executive Sign-Off Authority
                 </span>
-                <span style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)" }}>Dhaka City College</span>
+                <span style={{ fontSize: "0.82rem", color: "#66564A" }}>Dhaka City College</span>
               </div>
-              <h2 style={{ fontSize: "1.5rem", margin: "6px 0 2px", color: "#FFF" }}>
-                Executive Command Center • Director Office
-              </h2>
-              <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--ms-lavender)" }}>
+              <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
+                Executive Command Center
+              </h1>
+              <p style={{ margin: "4px 0 0", fontSize: "0.92rem", color: "#66564A" }}>
                 Prof. Dr. M. A. Karim • Director & Financial Oversight Authority
               </p>
             </div>
 
-            <button type="button" className="ms-btn-primary" style={{ background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)" }} onClick={() => setActiveTab("trophy")}>
+            <button
+              type="button"
+              className="ms-btn-primary"
+              onClick={() => setActiveTab("trophy")}
+              style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}
+            >
               <Trophy size={18} /> Impact Center 🏆
             </button>
           </div>
 
-          {/* Executive Key Performance Metrics */}
+          {/* LEVEL 2: EXECUTIVE METRICS CARDS */}
           <div className="ms-grid-3">
-            <div className="ms-card" style={{ background: "linear-gradient(135deg, #1E3A8A 0%, #0D182A 100%)" }}>
-              <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Pending Executive Approvals</span>
-              <h3 style={{ fontSize: "2.2rem", color: pendingHeadApps.length > 0 ? "#FBBF24" : "#34D399", margin: "8px 0 4px" }}>
-                {pendingHeadApps.length}
-              </h3>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid rgba(196, 154, 108, 0.3)",
+                borderRadius: "14px",
+                padding: "24px",
+                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                PENDING EXECUTIVE APPROVALS
+              </span>
+
+              <div style={{ margin: "14px 0 8px" }}>
+                <span style={{ fontSize: "2.25rem", fontWeight: 800, color: pendingHeadApps.length > 0 ? "#D35400" : "#241A14" }}>
+                  {pendingHeadApps.length}
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>
                 {pendingHeadApps.length > 0 ? "Requires Executive Action" : "All Applications Decisioned"}
-              </p>
+              </div>
             </div>
 
-            <div className="ms-card">
-              <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Total Institutional Solvency</span>
-              <h3 style={{ fontSize: "2.2rem", color: "#34D399", margin: "8px 0 4px" }}>৳4.82M</h3>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "#34D399" }}>+12.4% vs Previous Term</p>
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "2px solid #D35400",
+                borderRadius: "14px",
+                padding: "24px",
+                boxShadow: "0 6px 20px rgba(211, 84, 0, 0.06)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  INSTITUTIONAL SOLVENCY
+                </span>
+                <span style={{ fontSize: "0.72rem", background: "rgba(16, 185, 129, 0.1)", color: "#047857", padding: "3px 8px", borderRadius: "6px", fontWeight: 700 }}>
+                  HEALTHY
+                </span>
+              </div>
+
+              <div style={{ margin: "14px 0 8px" }}>
+                <span style={{ fontSize: "2.25rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(4820000, false)}
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.8rem", color: "#047857", fontWeight: 600 }}>
+                +12.4% vs Previous Term
+              </div>
             </div>
 
-            <div className="ms-card">
-              <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)", textTransform: "uppercase" }}>Institution Social Impact</span>
-              <h3 style={{ fontSize: "2.2rem", color: "var(--ms-accent)", margin: "8px 0 4px" }}>৳84,500</h3>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--ms-lavender)" }}>Rank #2 Institutionally in BD</p>
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid rgba(196, 154, 108, 0.3)",
+                borderRadius: "14px",
+                padding: "24px",
+                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                WELFARE FUND IMPACT
+              </span>
+
+              <div style={{ margin: "14px 0 8px" }}>
+                <span style={{ fontSize: "2.25rem", fontWeight: 800, color: "#D35400", letterSpacing: "-0.03em" }}>
+                  {formatTaka(84500, false)}
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>
+                Rank #2 Institutionally in Bangladesh
+              </div>
             </div>
           </div>
 
-          {/* Pending Approval Center & Executive Audit Split View */}
+          {/* LEVEL 3: APPROVAL CENTER & AUDIT SPLIT VIEW */}
           <div className="ms-grid-2">
-            {/* Approval Center Box */}
-            <div className="ms-card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#FFF" }}>Executive Approval Center</h3>
-                <span className="ms-badge ms-badge--pending_partial">{pendingHeadApps.length} Action Needed</span>
+            
+            {/* EXECUTIVE APPROVAL CENTER */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>
+                  Executive Approval Queue
+                </h2>
+                <StatusBadge status={pendingHeadApps.length > 0 ? "action_required" : "verified"} customLabel={`${pendingHeadApps.length} Action Needed`} />
               </div>
 
               {pendingHeadApps.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "32px", background: "rgba(30, 58, 138, 0.15)", borderRadius: "14px" }}>
-                  <CheckCircle2 size={42} style={{ color: "#34D399", margin: "0 auto 10px" }} />
-                  <p style={{ margin: 0, color: "var(--ms-text-muted)", fontSize: "0.9rem" }}>No pending partial payment requests awaiting executive sign-off.</p>
+                <div style={{ textAlign: "center", padding: "32px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px" }}>
+                  <CheckCircle2 size={42} style={{ color: "#047857", margin: "0 auto 10px" }} />
+                  <p style={{ margin: 0, color: "#66564A", fontSize: "0.9rem" }}>No pending partial payment requests awaiting executive sign-off.</p>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {pendingHeadApps.map((app) => (
-                    <div key={app.id} style={{ padding: "16px", background: "rgba(30, 58, 138, 0.25)", borderRadius: "14px", border: "1px solid var(--ms-border)" }}>
+                    <div key={app.id} style={{ padding: "16px", background: "#FFFFFF", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.02)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div>
-                          <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#FFF" }}>{app.studentName} ({app.studentId})</h4>
-                          <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>Fee: {app.feeTitle}</span>
+                          <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "#241A14" }}>{app.studentName} ({app.studentId})</h4>
+                          <span style={{ fontSize: "0.78rem", color: "#66564A" }}>Fee: {app.feeTitle}</span>
                         </div>
-                        <span className="ms-badge ms-badge--pending_partial">Forwarded by Admin</span>
+                        <StatusBadge status="under_review" customLabel="Forwarded by Admin" />
                       </div>
 
-                      <div style={{ margin: "10px 0", padding: "8px 12px", background: "rgba(167, 136, 250, 0.1)", borderRadius: "8px", fontSize: "0.82rem", color: "var(--ms-lavender)" }}>
-                        <span>Req: <strong>৳{app.requestedAmount.toLocaleString()}</strong> / Orig: ৳{app.originalAmount.toLocaleString()}</span> • AI Match: <strong style={{ color: "#34D399" }}>{app.aiMatchScore}% Similarity</strong>
+                      <div style={{ margin: "10px 0", padding: "8px 12px", background: "#FDF9F3", borderRadius: "8px", fontSize: "0.82rem", color: "#66564A" }}>
+                        <span>Req: <strong style={{ color: "#047857" }}>{formatTaka(app.requestedAmount, false)}</strong> / Orig: {formatTaka(app.originalAmount, false)}</span> • AI Signature: <strong style={{ color: "#047857" }}>{app.aiMatchScore}% Match</strong>
                       </div>
 
                       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <button type="button" className="ms-btn-primary" style={{ padding: "6px 14px", fontSize: "0.82rem" }} onClick={() => setExecApp(app)}>
+                        <button type="button" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "6px 14px", fontSize: "0.82rem", borderRadius: "8px" }} onClick={() => setExecApp(app)}>
                           Executive Review & Decide →
                         </button>
                       </div>
@@ -139,65 +215,70 @@ export function HeadPanel({
               )}
             </div>
 
-            {/* Executive Audit Activity */}
-            <div className="ms-card">
-              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", color: "#FFF" }}>Recent Operational Audit Trail</h3>
+            {/* EXECUTIVE AUDIT ACTIVITY */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <h2 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>
+                Recent Operational Audit Trail
+              </h2>
+
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {store.auditLogs.slice(0, 4).map((log) => (
-                  <div key={log.id} style={{ padding: "10px 12px", background: "rgba(30, 58, 138, 0.2)", borderRadius: "10px", border: "1px solid var(--ms-border)", fontSize: "0.82rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", color: "var(--ms-lavender)" }}>
+                  <div key={log.id} style={{ padding: "12px", background: "#FFFFFF", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", fontSize: "0.85rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#D35400" }}>
                       <strong>{log.actor} ({log.role})</strong>
-                      <span style={{ color: "var(--ms-text-dim)", fontSize: "0.75rem" }}>{log.timestamp}</span>
+                      <span style={{ color: "#8C7A6A", fontSize: "0.75rem" }}>{log.timestamp}</span>
                     </div>
-                    <p style={{ margin: "2px 0 0", color: "#FFF" }}>{log.action}: {log.details}</p>
+                    <p style={{ margin: "2px 0 0", color: "#241A14" }}>{log.action}: {log.details}</p>
                   </div>
                 ))}
               </div>
             </div>
+
           </div>
+
         </div>
       )}
 
       {/* 2. APPROVAL CENTER TAB */}
       {activeTab === "approvals" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
-            <h2 style={{ fontSize: "1.4rem", margin: 0, color: "#FFF" }}>Executive Approval Center</h2>
-            <p style={{ margin: "4px 0 0", color: "var(--ms-text-muted)", fontSize: "0.88rem" }}>
+            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+              Executive Approval Center
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
               Final institutional sign-off for financial hardship and partial payment requests.
             </p>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {store.partialApplications.map((app) => (
-              <div key={app.id} className="ms-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+              <div key={app.id} style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                    <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#FFF" }}>{app.studentName} ({app.studentId})</h3>
-                    <span className={`ms-badge ms-badge--${app.status.startsWith("approved") ? "paid" : app.status.startsWith("rejected") ? "overdue" : "pending_partial"}`}>
-                      {app.status.replace("_", " ")}
-                    </span>
+                    <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>{app.studentName} ({app.studentId})</h3>
+                    <StatusBadge status={app.status.startsWith("approved") ? "approved" : app.status.startsWith("rejected") ? "rejected" : "under_review"} />
                   </div>
-                  <p style={{ margin: "0 0 6px", fontSize: "0.85rem", color: "var(--ms-text-muted)" }}>
+                  <p style={{ margin: "0 0 6px", fontSize: "0.85rem", color: "#66564A" }}>
                     Fee: {app.feeTitle} • Reason: "{app.reason}"
                   </p>
-                  <div style={{ fontSize: "0.78rem", color: "var(--ms-accent)" }}>
+                  <div style={{ fontSize: "0.78rem", color: "#047857" }}>
                     AI Signature Validation Match: <strong>{app.aiMatchScore}% (High Similarity)</strong>
                   </div>
                 </div>
 
                 <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
                   <div>
-                    <span style={{ fontSize: "0.85rem", color: "var(--ms-text-dim)", textDecoration: "line-through", marginRight: "6px" }}>৳{app.originalAmount.toLocaleString()}</span>
-                    <span style={{ fontSize: "1.3rem", fontWeight: "800", color: "#34D399" }}>৳{app.requestedAmount.toLocaleString()}</span>
+                    <span style={{ fontSize: "0.85rem", color: "#8C7A6A", textDecoration: "line-through", marginRight: "6px" }}>{formatTaka(app.originalAmount, false)}</span>
+                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "#047857" }}>{formatTaka(app.requestedAmount, false)}</span>
                   </div>
 
                   {app.status === "forwarded_head" ? (
-                    <button type="button" className="ms-btn-primary" style={{ padding: "8px 16px", fontSize: "0.85rem" }} onClick={() => setExecApp(app)}>
+                    <button type="button" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "8px 16px", fontSize: "0.85rem", borderRadius: "10px", fontWeight: 700 }} onClick={() => setExecApp(app)}>
                       Decide Application
                     </button>
                   ) : (
-                    <span style={{ fontSize: "0.8rem", color: "var(--ms-text-muted)" }}>Decision Rendered</span>
+                    <span style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>Decision Rendered</span>
                   )}
                 </div>
               </div>
@@ -209,62 +290,62 @@ export function HeadPanel({
       {/* 3. HEAD TROPHY & IMPACT CENTER TAB 🏆 */}
       {activeTab === "trophy" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          {/* Trophy Banner */}
-          <div style={{ background: "linear-gradient(135deg, #F59E0B 0%, #B45309 100%)", borderRadius: "18px", padding: "24px", color: "#FFF", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <div style={{ width: "64px", height: "64px", background: "rgba(255,255,255,0.2)", borderRadius: "50%", display: "grid", placeItems: "center", fontSize: "2.2rem" }}>
+              <div style={{ width: "56px", height: "56px", background: "rgba(211, 84, 0, 0.1)", borderRadius: "50%", display: "grid", placeItems: "center", fontSize: "2rem" }}>
                 🏆
               </div>
               <div>
-                <h2 style={{ margin: "0 0 4px", fontSize: "1.5rem" }}>Dhaka City College Impact Center</h2>
-                <p style={{ margin: 0, fontSize: "0.9rem", opacity: 0.9 }}>
+                <h1 style={{ margin: "0 0 2px", fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>Dhaka City College Impact Center</h1>
+                <p style={{ margin: 0, fontSize: "0.9rem", color: "#66564A" }}>
                   Institutional Philanthropy & Student Welfare Leaderboard
                 </p>
               </div>
             </div>
 
             <div style={{ textAlign: "right" }}>
-              <span style={{ fontSize: "0.8rem", textTransform: "uppercase", opacity: 0.8 }}>National Ranking</span>
-              <h3 style={{ margin: "2px 0 0", fontSize: "2rem" }}>#2 Overall</h3>
+              <span style={{ fontSize: "0.78rem", textTransform: "uppercase", color: "#66564A", fontWeight: 700 }}>National Ranking</span>
+              <h2 style={{ margin: "2px 0 0", fontSize: "1.8rem", fontWeight: 800, color: "#D35400" }}>#2 Overall</h2>
             </div>
           </div>
 
-          {/* Department Rankings Grid */}
           <div className="ms-grid-2">
-            <div className="ms-card">
-              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", color: "#FFF" }}>Top Donating Departments</h3>
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
+              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>Top Donating Departments</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   { rank: "1st", dept: "Computer Science & Engineering", amount: 42000, points: 420, icon: "🥇" },
                   { rank: "2nd", dept: "Business Administration (BBA)", amount: 26500, points: 265, icon: "🥈" },
                   { rank: "3rd", dept: "Electrical & Electronic Eng", amount: 16000, points: 160, icon: "🥉" },
                 ].map((item, idx) => (
-                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "rgba(30, 58, 138, 0.25)", borderRadius: "12px", border: "1px solid var(--ms-border)" }}>
+                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#FDF9F3", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span style={{ fontSize: "1.5rem" }}>{item.icon}</span>
+                      <span style={{ fontSize: "1.4rem" }}>{item.icon}</span>
                       <div>
-                        <h4 style={{ margin: 0, color: "#FFF", fontSize: "0.92rem" }}>{item.dept}</h4>
-                        <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>{item.points} Total Points</span>
+                        <h4 style={{ margin: 0, color: "#241A14", fontSize: "0.92rem", fontWeight: 700 }}>{item.dept}</h4>
+                        <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{item.points} Total Points</span>
                       </div>
                     </div>
-                    <span style={{ fontWeight: "800", color: "var(--ms-accent)", fontSize: "1rem" }}>৳{item.amount.toLocaleString()}</span>
+                    <span style={{ fontWeight: 800, color: "#D35400", fontSize: "1rem" }}>{formatTaka(item.amount, false)}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="ms-card">
-              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", color: "#FFF" }}>Welfare Fund Utilization</h3>
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
+              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>Welfare Fund Utilization</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div style={{ padding: "12px", background: "rgba(16, 185, 129, 0.12)", borderRadius: "10px", border: "1px solid rgba(16, 185, 129, 0.3)", color: "#34D399" }}>
-                  <strong>Emergency Medical Support:</strong> ৳35,000 disbursed to 7 students.
+                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #047857", color: "#241A14", fontSize: "0.88rem" }}>
+                  <strong style={{ color: "#047857" }}>Emergency Medical Support:</strong> ৳35,000 disbursed to 7 students.
                 </div>
-                <div style={{ padding: "12px", background: "rgba(79, 70, 229, 0.12)", borderRadius: "10px", border: "1px solid var(--ms-border)", color: "var(--ms-lavender)" }}>
-                  <strong>Partial Fee Subsidy:</strong> ৳49,500 offset for hardship cases.
+                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #D35400", color: "#241A14", fontSize: "0.88rem" }}>
+                  <strong style={{ color: "#D35400" }}>Partial Fee Subsidy:</strong> ৳49,500 offset for hardship cases.
                 </div>
               </div>
             </div>
           </div>
+
         </div>
       )}
 
@@ -272,35 +353,40 @@ export function HeadPanel({
       {execApp && (
         <div className="ms-modal-overlay">
           <div className="ms-modal" style={{ maxWidth: "600px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-              <ShieldCheck size={28} style={{ color: "var(--ms-accent)" }} />
-              <div>
-                <h3 style={{ margin: 0, color: "#FFF" }}>Executive Sign-Off & Approval</h3>
-                <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>Application {execApp.id}</span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <ShieldCheck size={28} style={{ color: "#D35400" }} />
+                <div>
+                  <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Executive Sign-Off & Approval</h3>
+                  <span style={{ fontSize: "0.78rem", color: "#66564A" }}>Application {execApp.id}</span>
+                </div>
               </div>
+              <button type="button" onClick={() => setExecApp(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
+                <X size={18} />
+              </button>
             </div>
 
-            <div style={{ background: "rgba(30, 58, 138, 0.25)", padding: "16px", borderRadius: "14px", border: "1px solid var(--ms-border)", display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.88rem", marginBottom: "16px" }}>
-              <p style={{ margin: 0, color: "var(--ms-text-muted)" }}>
-                Student: <strong style={{ color: "#FFF" }}>{execApp.studentName} ({execApp.studentId})</strong>
+            <div style={{ background: "#FDF9F3", padding: "16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.88rem", marginBottom: "16px" }}>
+              <p style={{ margin: 0, color: "#66564A" }}>
+                Student: <strong style={{ color: "#241A14" }}>{execApp.studentName} ({execApp.studentId})</strong>
               </p>
-              <p style={{ margin: 0, color: "var(--ms-text-muted)" }}>
-                Fee Item: <strong style={{ color: "#FFF" }}>{execApp.feeTitle}</strong>
+              <p style={{ margin: 0, color: "#66564A" }}>
+                Fee Item: <strong style={{ color: "#241A14" }}>{execApp.feeTitle}</strong>
               </p>
-              <p style={{ margin: 0, color: "var(--ms-text-muted)" }}>
-                Requested Partial Payment: <strong style={{ color: "#34D399", fontSize: "1.1rem" }}>৳{execApp.requestedAmount.toLocaleString()}</strong> (Original: ৳{execApp.originalAmount.toLocaleString()})
+              <p style={{ margin: 0, color: "#66564A" }}>
+                Requested Partial Payment: <strong style={{ color: "#047857", fontSize: "1.1rem" }}>{formatTaka(execApp.requestedAmount, false)}</strong> (Original: {formatTaka(execApp.originalAmount, false)})
               </p>
-              <p style={{ margin: 0, color: "var(--ms-text-muted)" }}>
-                Stated Hardship Reason: <span style={{ color: "var(--ms-light)" }}>"{execApp.reason}"</span>
+              <p style={{ margin: 0, color: "#66564A" }}>
+                Stated Hardship Reason: <span style={{ color: "#241A14" }}>"{execApp.reason}"</span>
               </p>
-              <div style={{ background: "rgba(16, 185, 129, 0.15)", padding: "8px 12px", borderRadius: "8px", color: "#34D399", fontSize: "0.8rem", display: "flex", justifyContent: "space-between" }}>
+              <div style={{ background: "rgba(16, 185, 129, 0.12)", padding: "8px 12px", borderRadius: "8px", color: "#047857", fontSize: "0.8rem", display: "flex", justifyContent: "space-between" }}>
                 <span>AI Signature Match Score: <strong>96% Similarity</strong></span>
                 <span>Guardian NID & Signature Verified</span>
               </div>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <button type="button" className="ms-btn-primary" style={{ background: "linear-gradient(135deg, #10B981 0%, #059669 100%)" }} onClick={() => handleExecutiveApprove(execApp.id)}>
+              <button type="button" className="ms-btn-primary" style={{ background: "#047857", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontWeight: 700, fontSize: "0.92rem" }} onClick={() => handleExecutiveApprove(execApp.id)}>
                 <CheckCircle2 size={18} /> Executive Approve & Unlock Partial Payment
               </button>
 
@@ -310,9 +396,9 @@ export function HeadPanel({
                   placeholder="Reason if declining..."
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
-                  style={{ flex: 1, padding: "8px 12px", background: "rgba(30, 58, 138, 0.3)", border: "1px solid var(--ms-border)", borderRadius: "10px", color: "#FFF", outline: "none", fontSize: "0.82rem" }}
+                  style={{ flex: 1, padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.82rem" }}
                 />
-                <button type="button" className="ms-btn-secondary" style={{ color: "#F87171" }} onClick={() => handleExecutiveDecline(execApp.id)}>
+                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600 }} onClick={() => handleExecutiveDecline(execApp.id)}>
                   Decline
                 </button>
               </div>
