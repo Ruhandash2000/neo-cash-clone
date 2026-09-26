@@ -72,6 +72,64 @@ export function AdminPanel({
   const [reviewApp, setReviewApp] = useState<PartialApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+    // Phase 14 — Excel-Like Bulk Fee Assignment State
+  const [bulkInstitution, setBulkInstitution] = useState("Dhaka City College");
+  const [bulkDept, setBulkDept] = useState("CSE");
+  const [bulkClassYear, setBulkClassYear] = useState("1st Year");
+  const [bulkSection, setBulkSection] = useState("Sec A");
+  const [bulkSemester, setBulkSemester] = useState("1st Sem");
+  const [bulkIssueDate, setBulkIssueDate] = useState("2026-09-26");
+  const [showBulkConfirmModal, setShowBulkConfirmModal] = useState(false);
+  const [selectedBulkStudentIds, setSelectedBulkStudentIds] = useState<string[]>([]);
+
+  const handleOpenBulkConfirm = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkTitle.trim()) return alert("Please enter fee title.");
+    if (bulkAmount <= 0) return alert("Please enter valid fee amount.");
+    if (!bulkDueDate) return alert("Please enter deadline due date.");
+
+    // Populate targeted students
+    const targeted = store.students.filter((s) => {
+      const matchDept = bulkDept === "all" || s.department === bulkDept;
+      const matchClass = bulkClassYear === "all" || s.classYear === bulkClassYear;
+      const matchSection = bulkSection === "all" || s.section === bulkSection;
+      const matchSemester = bulkSemester === "all" || s.semester === bulkSemester;
+      return matchDept && matchClass && matchSection && matchSemester;
+    });
+
+    if (targeted.length === 0) {
+      return alert("No students found matching the selected Department, Class, Section, and Semester criteria.");
+    }
+
+    if (selectedBulkStudentIds.length === 0) {
+      setSelectedBulkStudentIds(targeted.map(s => s.id));
+    }
+
+    setShowBulkConfirmModal(true);
+  };
+
+  const handleConfirmFinalBulkAssign = () => {
+    const res = actions.bulkAssignFee({
+      title: bulkTitle,
+      amount: Number(bulkAmount),
+      issueDate: bulkIssueDate,
+      dueDate: bulkDueDate,
+      category: bulkCategory,
+      institution: bulkInstitution,
+      department: bulkDept,
+      classYear: bulkClassYear,
+      section: bulkSection,
+      semester: bulkSemester,
+      targetStudentIds: selectedBulkStudentIds,
+      description: `Institutional bulk fee assigned to ${bulkDept} ${bulkClassYear} (${bulkSection}) for ${bulkSemester}.`,
+    });
+
+    if (res && res.ok) {
+      setShowBulkConfirmModal(false);
+      alert(`Successfully assigned "${bulkTitle}" (${formatTaka(bulkAmount)}) to ${res.count} students! Deadline: ${bulkDueDate}.`);
+    }
+  };
+
   // Phase 13 — Academic Structure Management State
   const [academicSubTab, setAcademicSubTab] = useState<"structure" | "promotion" | "sections">("structure");
 
@@ -1800,96 +1858,312 @@ export function AdminPanel({
 
       {activeTab === "bulk" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-              Bulk Fee Assignment
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-              Batch fee creation tool. Assign fees to entire cohorts, departments, or sections simultaneously.
-            </p>
+          {/* HEADER BAR */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "#241A14" }}>
+                Excel-Like Bulk Fee Assignment Interface
+              </h2>
+              <p style={{ margin: "4px 0 0", fontSize: "0.88rem", color: "#66564A" }}>
+                Batch fee creation tool. Select target cohort, enter fee amount ONCE, preview matching students, and execute safe bulk assignment.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <span style={{ fontSize: "0.82rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "8px", fontWeight: 700, color: "#D35400" }}>
+                Single Amount Rule: Admin Enters Amount ONCE
+              </span>
+            </div>
           </div>
 
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
-            <form onSubmit={handleBulkAssign} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Fee Title</label>
-                  <input
-                    type="text"
-                    value={bulkTitle}
-                    onChange={(e) => setBulkTitle(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Amount (৳)</label>
-                  <input
-                    type="number"
-                    value={bulkAmount}
-                    onChange={(e) => setBulkAmount(Number(e.target.value))}
-                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontWeight: 800 }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Due Date</label>
-                  <input
-                    type="date"
-                    value={bulkDueDate}
-                    onChange={(e) => setBulkDueDate(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
-                  />
-                </div>
+          {/* EXCEL-LIKE FEE CONFIGURATION FORM */}
+          <form onSubmit={handleOpenBulkConfirm} style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "18px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <FileSpreadsheet size={18} color="#D35400" />
+              <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
+                1. Target Cohort & Fee Parameters
+              </h3>
+            </div>
+
+            {/* ROW 1: SCOPE SELECTORS */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "14px" }}>
+              {/* INSTITUTION */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Institution</label>
+                <select
+                  value={bulkInstitution}
+                  onChange={(e) => setBulkInstitution(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                >
+                  <option value="Dhaka City College">Dhaka City College</option>
+                  <option value="Dhaka University">Dhaka University</option>
+                  <option value="BUET">BUET</option>
+                  <option value="NSU">NSU</option>
+                </select>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Category</label>
-                  <select
-                    value={bulkCategory}
-                    onChange={(e) => setBulkCategory(e.target.value as any)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
-                  >
-                    <option value="Tuition">Tuition</option>
-                    <option value="Lab & Tech">Lab & Tech</option>
-                    <option value="Exam">Exam</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Target Class / Year</label>
-                  <select
-                    value={targetClass}
-                    onChange={(e) => setTargetClass(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
-                  >
-                    <option value="CSE 3rd Semester">CSE 3rd Semester</option>
-                    <option value="Inter 1st Year">Inter 1st Year</option>
-                    <option value="Inter 2nd Year">Inter 2nd Year</option>
-                    <option value="EEE 1st Semester">EEE 1st Semester</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>Target Section</label>
-                  <select
-                    value={targetSection}
-                    onChange={(e) => setTargetSection(e.target.value)}
-                    style={{ width: "100%", padding: "10px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none" }}
-                  >
-                    <option value="Sec A">Sec A</option>
-                    <option value="Sec B">Sec B</option>
-                    <option value="All Sections">All Sections</option>
-                  </select>
-                </div>
+              {/* DEPARTMENT */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department</label>
+                <select
+                  value={bulkDept}
+                  onChange={(e) => setBulkDept(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                >
+                  <option value="all">All Departments</option>
+                  <option value="CSE">CSE</option>
+                  <option value="EEE">EEE</option>
+                  <option value="BBA">BBA</option>
+                  <option value="Civil">Civil</option>
+                </select>
               </div>
 
-              <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "12px 20px", borderRadius: "10px", fontWeight: 700, alignSelf: "flex-end", marginTop: "8px" }}>
-                <CheckCircle2 size={18} /> Apply Fee Assignment to Selected Cohort
+              {/* CLASS / YEAR */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Class / Year</label>
+                <select
+                  value={bulkClassYear}
+                  onChange={(e) => setBulkClassYear(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                >
+                  <option value="all">All Classes</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+              </div>
+
+              {/* SECTION */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Section</label>
+                <select
+                  value={bulkSection}
+                  onChange={(e) => setBulkSection(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                >
+                  <option value="all">All Sections</option>
+                  <option value="Sec A">Sec A</option>
+                  <option value="Sec B">Sec B</option>
+                  <option value="Sec C">Sec C</option>
+                </select>
+              </div>
+
+              {/* SEMESTER */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Semester</label>
+                <select
+                  value={bulkSemester}
+                  onChange={(e) => setBulkSemester(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                >
+                  <option value="all">All Semesters</option>
+                  <option value="1st Sem">1st Sem</option>
+                  <option value="2nd Sem">2nd Sem</option>
+                  <option value="3rd Sem">3rd Sem</option>
+                  <option value="4th Sem">4th Sem</option>
+                  <option value="5th Sem">5th Sem</option>
+                  <option value="6th Sem">6th Sem</option>
+                  <option value="7th Sem">7th Sem</option>
+                  <option value="8th Sem">8th Sem</option>
+                </select>
+              </div>
+            </div>
+
+            {/* ROW 2: FEE DETAILS - ADMIN ENTERS AMOUNT ONCE */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+              {/* FEE CATEGORY */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Fee Type / Category</label>
+                <select
+                  value={bulkCategory}
+                  onChange={(e) => setBulkCategory(e.target.value as any)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                >
+                  <option value="Tuition">Tuition</option>
+                  <option value="Lab & Tech">Lab & Tech</option>
+                  <option value="Exam">Exam</option>
+                  <option value="Library">Library</option>
+                  <option value="Welfare">Welfare</option>
+                  <option value="Admission">Admission</option>
+                </select>
+              </div>
+
+              {/* FEE TITLE */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Fee Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Semester Tuition Fee"
+                  value={bulkTitle}
+                  onChange={(e) => setBulkTitle(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+
+              {/* AMOUNT - ENTERED ONCE */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#D35400", marginBottom: "4px" }}>
+                  Fee Amount (৳) — Enters ONCE
+                </label>
+                <input
+                  type="number"
+                  placeholder="20000"
+                  value={bulkAmount}
+                  onChange={(e) => setBulkAmount(Number(e.target.value))}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "8px", fontSize: "0.92rem", fontWeight: 800, color: "#D35400", outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+
+              {/* ISSUE DATE */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Issue Date</label>
+                <input
+                  type="date"
+                  value={bulkIssueDate}
+                  onChange={(e) => setBulkIssueDate(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+
+              {/* DEADLINE */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#BE123C", marginBottom: "4px" }}>Deadline (Due Date)</label>
+                <input
+                  type="date"
+                  value={bulkDueDate}
+                  onChange={(e) => setBulkDueDate(e.target.value)}
+                  style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1.5px solid rgba(190, 18, 60, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 700, color: "#BE123C", outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+            </div>
+
+            {/* EXCEL-LIKE PREVIEW STUDENT MATRIX */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "10px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
+                  2. Targeted Student Preview Matrix
+                </h3>
+                <span style={{ fontSize: "0.8rem", color: "#66564A" }}>
+                  Targeted Students: <strong style={{ color: "#D35400" }}>
+                    {store.students.filter((s) => {
+                      const matchDept = bulkDept === "all" || s.department === bulkDept;
+                      const matchClass = bulkClassYear === "all" || s.classYear === bulkClassYear;
+                      const matchSection = bulkSection === "all" || s.section === bulkSection;
+                      const matchSemester = bulkSemester === "all" || s.semester === bulkSemester;
+                      return matchDept && matchClass && matchSection && matchSemester;
+                    }).length}
+                  </strong>
+                </span>
+              </div>
+
+              <div style={{ border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.86rem" }}>
+                  <thead>
+                    <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <th style={{ padding: "10px 14px", width: "40px" }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedBulkStudentIds.length > 0}
+                          onChange={() => {
+                            const targeted = store.students.filter((s) => {
+                              const matchDept = bulkDept === "all" || s.department === bulkDept;
+                              const matchClass = bulkClassYear === "all" || s.classYear === bulkClassYear;
+                              const matchSection = bulkSection === "all" || s.section === bulkSection;
+                              const matchSemester = bulkSemester === "all" || s.semester === bulkSemester;
+                              return matchDept && matchClass && matchSection && matchSemester;
+                            });
+                            if (selectedBulkStudentIds.length === targeted.length) {
+                              setSelectedBulkStudentIds([]);
+                            } else {
+                              setSelectedBulkStudentIds(targeted.map(s => s.id));
+                            }
+                          }}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </th>
+                      <th style={{ padding: "10px 14px", fontWeight: 700 }}>Student</th>
+                      <th style={{ padding: "10px 14px", fontWeight: 700 }}>ID</th>
+                      <th style={{ padding: "10px 14px", fontWeight: 700 }}>Placement</th>
+                      <th style={{ padding: "10px 14px", fontWeight: 700 }}>Current Status</th>
+                      <th style={{ padding: "10px 14px", fontWeight: 700, textAlign: "right" }}>Fee Amount (Single Amount)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {store.students.filter((s) => {
+                      const matchDept = bulkDept === "all" || s.department === bulkDept;
+                      const matchClass = bulkClassYear === "all" || s.classYear === bulkClassYear;
+                      const matchSection = bulkSection === "all" || s.section === bulkSection;
+                      const matchSemester = bulkSemester === "all" || s.semester === bulkSemester;
+                      return matchDept && matchClass && matchSection && matchSemester;
+                    }).length === 0 ? (
+                      <tr>
+                        <td colSpan={6} style={{ padding: "24px", textAlign: "center", color: "#8C7A6A" }}>
+                          No students match the selected target cohort criteria. Adjust department, class, section, or semester selectors.
+                        </td>
+                      </tr>
+                    ) : (
+                      store.students.filter((s) => {
+                        const matchDept = bulkDept === "all" || s.department === bulkDept;
+                        const matchClass = bulkClassYear === "all" || s.classYear === bulkClassYear;
+                        const matchSection = bulkSection === "all" || s.section === bulkSection;
+                        const matchSemester = bulkSemester === "all" || s.semester === bulkSemester;
+                        return matchDept && matchClass && matchSection && matchSemester;
+                      }).map((s) => (
+                        <tr key={s.id} style={{ borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                          <td style={{ padding: "10px 14px" }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedBulkStudentIds.includes(s.id)}
+                              onChange={() => {
+                                if (selectedBulkStudentIds.includes(s.id)) {
+                                  setSelectedBulkStudentIds(selectedBulkStudentIds.filter(id => id !== s.id));
+                                } else {
+                                  setSelectedBulkStudentIds([...selectedBulkStudentIds, s.id]);
+                                }
+                              }}
+                              style={{ cursor: "pointer" }}
+                            />
+                          </td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <strong style={{ color: "#241A14", display: "block" }}>{s.name}</strong>
+                            <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{s.email}</span>
+                          </td>
+                          <td style={{ padding: "10px 14px", fontFamily: "monospace", fontWeight: 700, color: "#D35400" }}>
+                            {s.studentId}
+                          </td>
+                          <td style={{ padding: "10px 14px", color: "#66564A" }}>
+                            {s.department} {s.classYear} ({s.section})
+                          </td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{ padding: "2px 8px", borderRadius: "999px", fontSize: "0.74rem", fontWeight: 800, background: "rgba(4, 120, 87, 0.12)", color: "#047857" }}>
+                              {s.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px 14px", textAlign: "right", fontWeight: 800, color: "#D35400", fontFeatureSettings: "'tnum'" }}>
+                            {formatTaka(bulkAmount, false)}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* SUBMIT BUTTON */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+              <button
+                type="submit"
+                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "12px 28px", borderRadius: "10px", fontWeight: 800, fontSize: "0.92rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", boxShadow: "0 4px 14px rgba(211, 84, 0, 0.3)" }}
+              >
+                <CheckCircle2 size={18} /> Preview & Assign Fee
               </button>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* 4. EXCEL IMPORT TAB */}
       {activeTab === "import" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
@@ -3090,6 +3364,65 @@ export function AdminPanel({
                 </div>
               )}
 
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* PHASE 14 — SAFETY BULK ASSIGNMENT CONFIRMATION MODAL */}
+      {showBulkConfirmModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
+          <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "560px", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
+            
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "#FFF7E6", border: "1.5px solid #D35400", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <AlertTriangle size={22} color="#D35400" />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, color: "#241A14" }}>
+                  Safety Assignment Confirmation
+                </h3>
+                <span style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>
+                  Please verify bulk assignment parameters before final commit.
+                </span>
+              </div>
+            </div>
+
+            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px", display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.88rem" }}>
+              <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#241A14" }}>
+                You are about to assign: <strong style={{ color: "#D35400", fontFeatureSettings: "'tnum'" }}>{formatTaka(bulkAmount)}</strong>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px", color: "#66564A", borderTop: "1px solid rgba(196, 154, 108, 0.2)", paddingTop: "10px" }}>
+                <div><strong>Fee Title:</strong> {bulkTitle} ({bulkCategory})</div>
+                <div><strong>Target Cohort:</strong> {bulkDept} {bulkClassYear} ({bulkSection}) — {bulkSemester}</div>
+                <div><strong>Targeted Students:</strong> <strong style={{ color: "#241A14" }}>{selectedBulkStudentIds.length} students</strong></div>
+                <div><strong>Issue Date:</strong> {bulkIssueDate}</div>
+                <div><strong>Deadline:</strong> <strong style={{ color: "#BE123C" }}>{bulkDueDate}</strong></div>
+              </div>
+            </div>
+
+            <p style={{ margin: 0, fontSize: "0.78rem", color: "#8C7A6A", lineHeight: 1.4 }}>
+              Confirming will generate fee obligations, update student balances, transmit real-time alerts, and log an official audit record.
+            </p>
+
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "4px" }}>
+              <button
+                type="button"
+                onClick={() => setShowBulkConfirmModal(false)}
+                style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#66564A", padding: "10px 18px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 700, cursor: "pointer" }}
+              >
+                Cancel / Edit
+              </button>
+
+              <button
+                type="button"
+                onClick={handleConfirmFinalBulkAssign}
+                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 22px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.3)", display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <CheckCircle2 size={16} /> Confirm Assignment
+              </button>
             </div>
           </div>
         </div>

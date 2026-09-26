@@ -1555,12 +1555,23 @@ export const storeActions = {
   bulkAssignFee(data: {
     title: string;
     amount: number;
+    issueDate?: string;
     dueDate: string;
     category: Fee["category"];
-    targetClass: string;
-    targetSection: string;
+    institution?: string;
+    department?: string;
+    classYear?: string;
+    section?: string;
+    semester?: string;
+    targetClass?: string;
+    targetSection?: string;
+    targetStudentIds?: string[];
     description: string;
   }) {
+    let issuedDateStr = new Date().toISOString().split("T")[0];
+    if (data.issueDate && data.issueDate.trim() !== "") {
+      issuedDateStr = data.issueDate;
+    }
     const newFeeId = "fee-" + Date.now();
     const newFee: Fee = {
       id: newFeeId,
@@ -1568,34 +1579,50 @@ export const storeActions = {
       amount: data.amount,
       originalAmount: data.amount,
       dueDate: data.dueDate,
+      ...(issuedDateStr ? { issuedDate: issuedDateStr } : {}),
       status: "due",
       category: data.category,
       description: data.description,
     };
 
     currentState.fees.unshift(newFee);
-    currentState.balances.totalDue += data.amount;
+
+    let count = 0;
+    currentState.students.forEach((s) => {
+      const matchId = !data.targetStudentIds || data.targetStudentIds.length === 0 || data.targetStudentIds.includes(s.id);
+      const matchDept = !data.department || data.department === "all" || s.department === data.department;
+      const matchClass = !data.classYear || data.classYear === "all" || s.classYear === data.classYear;
+      const matchSection = !data.section || data.section === "all" || s.section === data.section;
+      const matchSemester = !data.semester || data.semester === "all" || s.semester === data.semester;
+
+      if (matchId && matchDept && matchClass && matchSection && matchSemester) {
+        s.totalDues += data.amount;
+        s.feeStatus = "Pending";
+        count++;
+      }
+    });
 
     currentState.notifications.unshift({
-      id: "notif-" + Date.now(),
-      title: "New Fee Assigned",
-      message: `New institutional fee "${data.title}" (৳${data.amount.toLocaleString()}) assigned to ${data.targetClass} (${data.targetSection}).`,
-      date: "Just now",
+      id: "notif-bulk-" + Date.now(),
+      title: `New Fee Issued: ${data.title}`,
+      message: `${data.title} of ৳${data.amount.toLocaleString()} has been assigned to your account. Due date: ${data.dueDate}.`,
+      date: new Date().toLocaleDateString(),
       type: "warning",
       read: false,
+      category: "fee",
     });
 
     currentState.auditLogs.unshift({
       id: "log-" + Date.now(),
       actor: "Admin (Refat Rahman)",
       role: "Admin",
-      action: "Bulk Fee Assignment",
-      details: `Assigned "${data.title}" (৳${data.amount}) to ${data.targetClass} ${data.targetSection}`,
+      action: "Bulk Fee Assigned",
+      details: `Assigned "${data.title}" (৳${data.amount.toLocaleString()}) to ${count} students. Due Date: ${data.dueDate}.`,
       timestamp: new Date().toLocaleString(),
     });
 
     saveState();
-    return { ok: true };
+    return { ok: true, count, fee: newFee };
   },
 
   /** Bulk import students from Excel file preview */
