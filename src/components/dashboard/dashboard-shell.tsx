@@ -28,7 +28,8 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [receiptTxn, setReceiptTxn] = useState<Transaction | null>(null);
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
-  const [notifTab, setNotifTab] = useState<"unread" | "all" | "payment" | "fee" | "application" | "institution">("all");
+  const [notifTab, setNotifTab] = useState<"unread" | "all" | "payment" | "fee" | "application" | "institution" | "emails">("all");
+  const [testEventType, setTestEventType] = useState<any>("login");
 
   const unreadCount = store.notifications.filter((n) => !n.read).length;
 
@@ -491,6 +492,7 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                   { id: "fee", label: "Fees", count: feesList.length },
                   { id: "application", label: "Applications", count: appsList.length },
                   { id: "institution", label: "Institution", count: instList.length },
+                  { id: "emails", label: "📧 Email Logs (" + (store.demoEmailLogs?.length || 0) + ")", count: store.demoEmailLogs?.length || 0 },
                 ].map((tab) => {
                   const isActive = notifTab === tab.id;
                   return (
@@ -521,13 +523,113 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 })}
               </div>
 
-              {/* NOTIFICATION ITEM LIST */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "360px", overflowY: "auto", paddingRight: "4px" }}>
-                {filteredNotifs.length === 0 ? (
-                  <div style={{ padding: "32px 16px", textAlign: "center", color: "#66564A", fontSize: "0.86rem" }}>
-                    No notifications in this category.
+              {/* EMAIL SERVICE ABSTRACTION & EVENT SIMULATOR (PHASE 23) */}
+              {notifTab === "emails" ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
+                  
+                  {/* SERVICE ABSTRACTION BANNER */}
+                  <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "10px", padding: "10px 14px", fontSize: "0.8rem", color: "#241A14" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                      <strong>Email Service Abstraction Status:</strong>
+                      <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
+                        Demo Mode (Provider Not Connected)
+                      </span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.76rem", color: "#66564A" }}>
+                      When Supabase/SMTP is unconfigured, all 12 institutional notification events are logged locally without false delivery claims.
+                    </p>
                   </div>
-                ) : (
+
+                  {/* EVENT DISPATCH SIMULATOR */}
+                  <div style={{ background: "#FFF7E6", border: "1.5px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "12px 14px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                      ⚡ Test Notification Event Simulator (12 Events)
+                    </div>
+
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <select
+                        value={testEventType}
+                        onChange={(e) => setTestEventType(e.target.value)}
+                        style={{ flex: 1, padding: "6px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, color: "#241A14", outline: "none" }}
+                      >
+                        <option value="login">🔐 login (Security Login Alert)</option>
+                        <option value="fee_assigned">📋 fee assigned (New Fee Obligation)</option>
+                        <option value="fee_reminder">⏰ fee reminder (Weekly Scheduled Notice)</option>
+                        <option value="payment_success">✅ payment success (Receipt & Clearance)</option>
+                        <option value="payment_failure">❌ payment failure (Transaction Declined)</option>
+                        <option value="deadline_approaching">⚠️ deadline approaching (Near-Due Warning)</option>
+                        <option value="deadline_missed">🚨 deadline missed (Overdue Notice)</option>
+                        <option value="partial_payment_submitted">📝 partial payment submitted (Student App)</option>
+                        <option value="admin_reviewed">👨‍💼 admin reviewed (Forwarded to Head)</option>
+                        <option value="head_approved">🏆 head approved (Installment Unlocked)</option>
+                        <option value="head_rejected">🚫 head rejected (Decline Notice)</option>
+                        <option value="donation_completed">❤️ donation completed (Welfare Contribution)</option>
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const eventTitles: Record<string, string> = {
+                            login: "Security Alert: Login Detected",
+                            fee_assigned: "New Fee Assigned: Semester Tuition",
+                            fee_reminder: "Weekly Reminder: Upcoming Dues",
+                            payment_success: "Payment Success Confirmation",
+                            payment_failure: "Payment Attempt Failed",
+                            deadline_approaching: "Deadline Approaching Alert",
+                            deadline_missed: "Missed Payment Deadline Notice",
+                            partial_payment_submitted: "Partial Payment Application Received",
+                            admin_reviewed: "Admin Review Completed",
+                            head_approved: "Head Approval Granted",
+                            head_rejected: "Partial Payment Application Rejected",
+                            donation_completed: "Welfare Donation Contribution Completed",
+                          };
+                          const title = eventTitles[testEventType] || "Notification Event";
+                          actions.dispatchNotificationEvent({
+                            eventType: testEventType,
+                            title,
+                            message: `Test execution of [${testEventType}] event. Logged to local email audit logs.`,
+                            emailAlert: true,
+                          });
+                        }}
+                        style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 14px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}
+                      >
+                        Dispatch Event
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* DEMO EMAIL LOG LIST */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {(!store.demoEmailLogs || store.demoEmailLogs.length === 0) ? (
+                      <div style={{ padding: "20px", textAlign: "center", color: "#8C7A6A", fontSize: "0.82rem" }}>
+                        No email logs generated yet.
+                      </div>
+                    ) : (
+                      store.demoEmailLogs.map((log) => (
+                        <div key={log.id} style={{ padding: "10px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", fontSize: "0.8rem" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                            <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", background: "rgba(211, 84, 0, 0.1)", padding: "2px 6px", borderRadius: "4px" }}>
+                              {log.eventType}
+                            </span>
+                            <span style={{ fontSize: "0.72rem", color: "#8C7A6A" }}>{log.timestamp}</span>
+                          </div>
+                          <div style={{ fontWeight: 700, color: "#241A14" }}>To: {log.recipientName} ({log.to})</div>
+                          <div style={{ fontSize: "0.78rem", color: "#66564A", margin: "2px 0" }}>Subject: {log.subject}</div>
+                          <div style={{ fontSize: "0.72rem", color: "#8C7A6A", fontStyle: "italic" }}>Status: {log.providerStatus}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                </div>
+              ) : (
+                /* NOTIFICATION ITEM LIST */
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "360px", overflowY: "auto", paddingRight: "4px" }}>
+                  {filteredNotifs.length === 0 ? (
+                    <div style={{ padding: "32px 16px", textAlign: "center", color: "#66564A", fontSize: "0.86rem" }}>
+                      No notifications in this category.
+                    </div>
+                  ) : (
                   filteredNotifs.map((n) => {
                     const isEmail = n.emailAlert || n.category === "email";
                     return (
@@ -571,6 +673,7 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                   })
                 )}
               </div>
+              )}
 
               {/* FOOTER ACTIONS */}
               <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

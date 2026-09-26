@@ -194,6 +194,31 @@ export interface StudentRecord {
   lastActivity: string;
 }
 
+export type NotificationEventType =
+  | "login"
+  | "fee_assigned"
+  | "fee_reminder"
+  | "payment_success"
+  | "payment_failure"
+  | "deadline_approaching"
+  | "deadline_missed"
+  | "partial_payment_submitted"
+  | "admin_reviewed"
+  | "head_approved"
+  | "head_rejected"
+  | "donation_completed";
+
+export interface DemoEmailLog {
+  id: string;
+  to: string;
+  recipientName: string;
+  subject: string;
+  body: string;
+  eventType: NotificationEventType;
+  timestamp: string;
+  providerStatus: "Demo Logged (Provider Not Connected)" | "Sent via Provider";
+}
+
 export interface NeoState {
   role: Role;
   isOnboarded: boolean;
@@ -243,6 +268,7 @@ export interface NeoState {
   };
   transactions: Transaction[];
   notifications: NotificationItem[];
+  demoEmailLogs: DemoEmailLog[];
   auditLogs: AuditLog[];
   escalations: EscalationTicket[];
   students: StudentRecord[];
@@ -553,6 +579,28 @@ const INITIAL_STATE: NeoState = {
     finalDayAlertEnabled: true,
     overduePenaltyNotice: true,
   },
+  demoEmailLogs: [
+    {
+      id: "email-init-1",
+      to: "student@neocash.ai",
+      recipientName: "Ruhan Dash Dibya",
+      subject: "[Neo Cash AI Notice] Security Email Alert: New Login Detected",
+      body: "Dear Ruhan Dash Dibya,\n\nNew Neo Cash AI login detected from Chrome on Windows (Dhaka, BD).\n\nEvent Type: LOGIN\n\nRegards,\nNeo Cash AI Notification Engine",
+      eventType: "login",
+      timestamp: "Just now",
+      providerStatus: "Demo Logged (Provider Not Connected)",
+    },
+    {
+      id: "email-init-2",
+      to: "student@neocash.ai",
+      recipientName: "Ruhan Dash Dibya",
+      subject: "[Neo Cash AI Notice] Payment Successful Confirmation",
+      body: "Dear Ruhan Dash Dibya,\n\nSemester Tuition Fee (৳20,000) cleared via bKash Mobile Banking. Receipt #REC-982104 generated.\n\nEvent Type: PAYMENT_SUCCESS\n\nRegards,\nNeo Cash AI Notification Engine",
+      eventType: "payment_success",
+      timestamp: "10 mins ago",
+      providerStatus: "Demo Logged (Provider Not Connected)",
+    },
+  ],
   notifications: [
     {
       id: "notif-email-1",
@@ -2144,6 +2192,66 @@ export const storeActions = {
     }
   },
 
+  dispatchNotificationEvent(payload: {
+    eventType: NotificationEventType;
+    title: string;
+    message: string;
+    targetRole?: "student" | "admin" | "head" | "all";
+    recipientName?: string;
+    recipientEmail?: string;
+    type?: "info" | "success" | "warning" | "error";
+    category?: "payment" | "fee" | "application" | "institution" | "email";
+    emailAlert?: boolean;
+  }) {
+    const notifId = "notif-ev-" + Date.now() + "-" + Math.floor(Math.random() * 1000);
+    const timeNow = new Date().toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+
+    // 1. Add notification to in-app drawer
+    const newNotif: NotificationItem = {
+      id: notifId,
+      title: payload.title,
+      message: payload.message,
+      date: "Just now",
+      type: payload.type || "info",
+      read: false,
+      category: payload.category || "institution",
+      emailAlert: payload.emailAlert,
+    };
+    currentState.notifications.unshift(newNotif);
+
+    // 2. Email Service Abstraction (Log demo fallback if provider not connected)
+    const emailTo = payload.recipientEmail || currentState.studentProfile.email || "student@neocash.ai";
+    const emailName = payload.recipientName || currentState.studentProfile.name || "Student";
+    const emailLog: DemoEmailLog = {
+      id: "email-" + Date.now() + "-" + Math.floor(Math.random() * 100),
+      to: emailTo,
+      recipientName: emailName,
+      subject: `[Neo Cash AI Notice] ${payload.title}`,
+      body: `Dear ${emailName},\n\n${payload.message}\n\nEvent Type: ${payload.eventType.toUpperCase()}\nIssued: ${timeNow}\n\nRegards,\nNeo Cash AI Notification Engine`,
+      eventType: payload.eventType,
+      timestamp: timeNow,
+      providerStatus: "Demo Logged (Provider Not Connected)",
+    };
+
+    if (!currentState.demoEmailLogs) {
+      currentState.demoEmailLogs = [];
+    }
+    currentState.demoEmailLogs.unshift(emailLog);
+
+    // 3. Log event to Audit Trail
+    currentState.auditLogs.unshift({
+      id: "log-ev-" + Date.now() + "-" + Math.floor(Math.random() * 100),
+      actor: "System Notification Engine",
+      role: "System",
+      action: `Event Dispatched: ${payload.eventType.toUpperCase()}`,
+      details: `${payload.title} -> ${emailTo} (${emailLog.providerStatus})`,
+      timestamp: timeNow,
+    });
+
+    saveState();
+    return { notification: newNotif, emailLog };
+  },
+
   updateReminderRules(newRules: Partial<ReminderRules>) {
     currentState.reminderRules = { ...currentState.reminderRules, ...newRules };
     currentState.auditLogs.unshift({
@@ -2169,47 +2277,43 @@ export const storeActions = {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays < 0 && rules.overduePenaltyNotice) {
-          currentState.notifications.unshift({
-            id: "notif-missed-" + Date.now() + "-" + Math.random(),
-            title: "Missed Deadline / Overdue Alert",
-            message: `Overdue Notice: ${fee.title} (${fee.amount.toLocaleString()} ৳) passed due date (${fee.dueDate}). Please settle immediately.`,
-            date: "Just now",
+          storeActions.dispatchNotificationEvent({
+            eventType: "deadline_missed",
+            title: `Missed Deadline Alert: ${fee.title}`,
+            message: `Overdue Notice: Payment deadline for ${fee.title} (৳${fee.amount.toLocaleString()}) passed on ${fee.dueDate}. Please settle immediately to avoid late fees.`,
             type: "error",
-            read: false,
             category: "fee",
+            emailAlert: true,
           });
           generatedCount++;
         } else if (diffDays === 0 && rules.finalDayAlertEnabled) {
-          currentState.notifications.unshift({
-            id: "notif-final-" + Date.now() + "-" + Math.random(),
-            title: "Final-Day Deadline Notice",
-            message: `Emergency Alert: Today is the final payment deadline for ${fee.title} (${fee.amount.toLocaleString()} ৳).`,
-            date: "Just now",
+          storeActions.dispatchNotificationEvent({
+            eventType: "deadline_approaching",
+            title: `Final-Day Payment Notice: ${fee.title}`,
+            message: `Emergency Alert: Today is the final payment deadline for ${fee.title} (৳${fee.amount.toLocaleString()}).`,
             type: "error",
-            read: false,
             category: "fee",
+            emailAlert: true,
           });
           generatedCount++;
         } else if (diffDays > 0 && diffDays <= rules.nearDeadlineDays) {
-          currentState.notifications.unshift({
-            id: "notif-near-" + Date.now() + "-" + Math.random(),
-            title: "Near-Deadline Alert",
+          storeActions.dispatchNotificationEvent({
+            eventType: "deadline_approaching",
+            title: `Near-Deadline Alert: ${fee.title}`,
             message: `Upcoming Deadline: ${fee.title} is due in ${diffDays} day(s) on ${fee.dueDate}.`,
-            date: "Just now",
             type: "warning",
-            read: false,
             category: "fee",
+            emailAlert: true,
           });
           generatedCount++;
         } else if (rules.weeklyReminderEnabled) {
-          currentState.notifications.unshift({
-            id: "notif-weekly-" + Date.now() + "-" + Math.random(),
-            title: "Weekly Fee Reminder",
-            message: `Automated Weekly Reminder: ${fee.title} (${fee.amount.toLocaleString()} ৳) due on ${fee.dueDate}.`,
-            date: "Just now",
+          storeActions.dispatchNotificationEvent({
+            eventType: "fee_reminder",
+            title: `Weekly Fee Reminder: ${fee.title}`,
+            message: `Automated Weekly Reminder: ${fee.title} (৳${fee.amount.toLocaleString()}) due on ${fee.dueDate}.`,
             type: "info",
-            read: false,
             category: "fee",
+            emailAlert: true,
           });
           generatedCount++;
         }
