@@ -1,3 +1,31 @@
+
+export interface AcademicDepartment {
+  id: string;
+  code: string;
+  name: string;
+  headName: string;
+  totalStudents: number;
+}
+
+export interface AcademicClass {
+  id: string;
+  name: string;
+  department: string;
+  year: string;
+  semester: string;
+  totalSections: number;
+  totalStudents: number;
+}
+
+export interface AcademicSection {
+  id: string;
+  name: string;
+  department: string;
+  classYear: string;
+  capacity: number;
+  currentCount: number;
+}
+
 /**
  * Neo Cash AI — Central Reactive State Engine
  * 
@@ -199,6 +227,11 @@ export interface NeoState {
   auditLogs: AuditLog[];
   escalations: EscalationTicket[];
   students: StudentRecord[];
+  academicStructure: {
+    departments: AcademicDepartment[];
+    classes: AcademicClass[];
+    sections: AcademicSection[];
+  };
   reminderRules: ReminderRules;
 }
 
@@ -467,6 +500,27 @@ const INITIAL_STATE: NeoState = {
       receiptNumber: "REC-982098",
     },
   ],
+  academicStructure: {
+    departments: [
+      { id: "dept-1", code: "CSE", name: "Computer Science & Engineering", headName: "Prof. Dr. A. K. Azad", totalStudents: 4 },
+      { id: "dept-2", code: "EEE", name: "Electrical & Electronic Engineering", headName: "Dr. Syeda Nasrin", totalStudents: 1 },
+      { id: "dept-3", code: "BBA", name: "Business Administration", headName: "Prof. M. Rahman", totalStudents: 1 },
+      { id: "dept-4", code: "Civil", name: "Civil Engineering", headName: "Engr. Faisal Ahmed", totalStudents: 1 },
+    ],
+    classes: [
+      { id: "cls-1", name: "CSE 1st Year", department: "CSE", year: "1st Year", semester: "1st Sem", totalSections: 2, totalStudents: 2 },
+      { id: "cls-2", name: "CSE 2nd Year", department: "CSE", year: "2nd Year", semester: "3rd Sem", totalSections: 2, totalStudents: 2 },
+      { id: "cls-3", name: "CSE 3rd Year", department: "CSE", year: "3rd Year", semester: "5th Sem", totalSections: 1, totalStudents: 1 },
+      { id: "cls-4", name: "EEE 1st Year", department: "EEE", year: "1st Year", semester: "1st Sem", totalSections: 1, totalStudents: 1 },
+      { id: "cls-5", name: "BBA 1st Year", department: "BBA", year: "1st Year", semester: "1st Sem", totalSections: 1, totalStudents: 1 },
+    ],
+    sections: [
+      { id: "sec-1", name: "Sec A", department: "CSE", classYear: "1st Year", capacity: 50, currentCount: 2 },
+      { id: "sec-2", name: "Sec B", department: "CSE", classYear: "1st Year", capacity: 50, currentCount: 1 },
+      { id: "sec-3", name: "Sec A", department: "CSE", classYear: "2nd Year", capacity: 45, currentCount: 1 },
+      { id: "sec-4", name: "Sec A", department: "EEE", classYear: "1st Year", capacity: 50, currentCount: 1 },
+    ],
+  },
   reminderRules: {
     weeklyReminderEnabled: true,
     nearDeadlineDays: 5,
@@ -896,6 +950,153 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
 ];
 
 export const storeActions = {
+  createDepartment(dept: { code: string; name: string; headName: string }) {
+    const newDept: AcademicDepartment = {
+      id: "dept-" + Date.now(),
+      code: dept.code.toUpperCase(),
+      name: dept.name,
+      headName: dept.headName,
+      totalStudents: 0,
+    };
+    if (!currentState.academicStructure) {
+      currentState.academicStructure = { departments: [], classes: [], sections: [] };
+    }
+    currentState.academicStructure.departments.push(newDept);
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Created Department",
+      details: `Created new department: ${dept.name} (${dept.code.toUpperCase()}), Head: ${dept.headName}.`,
+      timestamp: new Date().toLocaleString(),
+    });
+    saveState();
+    return { ok: true, department: newDept };
+  },
+
+  createClass(cls: { name: string; department: string; year: string; semester: string }) {
+    const newClass: AcademicClass = {
+      id: "cls-" + Date.now(),
+      name: cls.name,
+      department: cls.department,
+      year: cls.year,
+      semester: cls.semester,
+      totalSections: 0,
+      totalStudents: 0,
+    };
+    if (!currentState.academicStructure) {
+      currentState.academicStructure = { departments: [], classes: [], sections: [] };
+    }
+    currentState.academicStructure.classes.push(newClass);
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Created Academic Class",
+      details: `Created new class: ${cls.name} (${cls.department}, ${cls.year}, ${cls.semester}).`,
+      timestamp: new Date().toLocaleString(),
+    });
+    saveState();
+    return { ok: true, academicClass: newClass };
+  },
+
+  createSection(sec: { name: string; department: string; classYear: string; capacity: number }) {
+    const newSec: AcademicSection = {
+      id: "sec-" + Date.now(),
+      name: sec.name,
+      department: sec.department,
+      classYear: sec.classYear,
+      capacity: Number(sec.capacity) || 50,
+      currentCount: 0,
+    };
+    if (!currentState.academicStructure) {
+      currentState.academicStructure = { departments: [], classes: [], sections: [] };
+    }
+    currentState.academicStructure.sections.push(newSec);
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Created Academic Section",
+      details: `Created new section ${sec.name} for ${sec.department} (${sec.classYear}) with capacity ${sec.capacity}.`,
+      timestamp: new Date().toLocaleString(),
+    });
+    saveState();
+    return { ok: true, section: newSec };
+  },
+
+  promoteCohort(payload: { sourceDept: string; sourceClassYear: string; sourceSemester: string; targetClassYear: string; targetSemester: string }) {
+    let count = 0;
+    currentState.students.forEach((s) => {
+      const deptMatch = payload.sourceDept === "all" || s.department === payload.sourceDept;
+      const classMatch = payload.sourceClassYear === "all" || s.classYear === payload.sourceClassYear;
+      const semMatch = payload.sourceSemester === "all" || s.semester === payload.sourceSemester;
+
+      if (deptMatch && classMatch && semMatch) {
+        s.classYear = payload.targetClassYear;
+        s.semester = payload.targetSemester;
+        s.status = "Promoted";
+        s.classSection = `${s.department} ${payload.targetClassYear} (${s.section})`;
+        s.lastActivity = "Promoted by Admin";
+        count++;
+      }
+    });
+
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Cohort Promotion Executed",
+      details: `Promoted ${count} students from [${payload.sourceDept}, ${payload.sourceClassYear}, ${payload.sourceSemester}] -> [${payload.targetClassYear}, ${payload.targetSemester}]. Student identities, wallet balances, and transaction histories preserved.`,
+      timestamp: new Date().toLocaleString(),
+    });
+    saveState();
+    return { ok: true, count };
+  },
+
+  moveStudentSection(studentId: string, targetSection: string) {
+    const student = currentState.students.find((s) => s.id === studentId || s.studentId === studentId);
+    if (!student) return { ok: false, error: "Student record not found." };
+
+    const oldSec = student.section;
+    student.section = targetSection;
+    student.classSection = `${student.department} ${student.classYear} (${targetSection})`;
+
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Moved Student Section",
+      details: `Reassigned ${student.name} (${student.studentId}) section from ${oldSec} -> ${targetSection}.`,
+      timestamp: new Date().toLocaleString(),
+    });
+    saveState();
+    return { ok: true, student };
+  },
+
+  bulkAssignStudentsSection(studentIds: string[], targetSection: string) {
+    let count = 0;
+    studentIds.forEach((id) => {
+      const student = currentState.students.find((s) => s.id === id || s.studentId === id);
+      if (student) {
+        student.section = targetSection;
+        student.classSection = `${student.department} ${student.classYear} (${targetSection})`;
+        count++;
+      }
+    });
+
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Bulk Section Reassignment",
+      details: `Bulk reassigned ${count} students to section ${targetSection}.`,
+      timestamp: new Date().toLocaleString(),
+    });
+    saveState();
+    return { ok: true, count };
+  },
+
   setRole(role: Role) {
     currentState.role = role;
     saveState();
@@ -1610,7 +1811,6 @@ export const storeActions = {
     saveState();
     return { ok: true, count: generatedCount };
   },
-
 
 
     resetDemoState() {

@@ -72,6 +72,124 @@ export function AdminPanel({
   const [reviewApp, setReviewApp] = useState<PartialApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
+  // Phase 13 — Academic Structure Management State
+  const [academicSubTab, setAcademicSubTab] = useState<"structure" | "promotion" | "sections">("structure");
+
+  // Creation forms state
+  const [newDeptCode, setNewDeptCode] = useState("");
+  const [newDeptName, setNewDeptName] = useState("");
+  const [newDeptHead, setNewDeptHead] = useState("");
+
+  const [newClassName, setNewClassName] = useState("");
+  const [newClassDept, setNewClassDept] = useState("CSE");
+  const [newClassYear, setNewClassYear] = useState("1st Year");
+  const [newClassSemester, setNewClassSemester] = useState("1st Sem");
+
+  const [newSecName, setNewSecName] = useState("");
+  const [newSecDept, setNewSecDept] = useState("CSE");
+  const [newSecClassYear, setNewSecClassYear] = useState("1st Year");
+  const [newSecCapacity, setNewSecCapacity] = useState<number>(50);
+
+  // Promotion engine state
+  const [promoSourceDept, setPromoSourceDept] = useState("CSE");
+  const [promoSourceClassYear, setPromoSourceClassYear] = useState("1st Year");
+  const [promoSourceSemester, setPromoSourceSemester] = useState("1st Sem");
+  const [promoTargetClassYear, setPromoTargetClassYear] = useState("2nd Year");
+  const [promoTargetSemester, setPromoTargetSemester] = useState("2nd Sem");
+
+  // Section manager & bulk transfer state
+  const [selectedStudentIdsForSection, setSelectedStudentIdsForSection] = useState<string[]>([]);
+  const [bulkTargetSection, setBulkTargetSection] = useState("Sec B");
+
+  // Phase 13 Handlers
+  const handleCreateDept = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newDeptCode.trim() || !newDeptName.trim()) return alert("Please enter department code and name.");
+    actions.createDepartment({ code: newDeptCode.trim(), name: newDeptName.trim(), headName: newDeptHead.trim() || "Unassigned" });
+    setNewDeptCode("");
+    setNewDeptName("");
+    setNewDeptHead("");
+    alert(`Department ${newDeptCode.toUpperCase()} created successfully!`);
+  };
+
+  const handleCreateClass = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClassName.trim()) return alert("Please enter class name.");
+    actions.createClass({ name: newClassName.trim(), department: newClassDept, year: newClassYear, semester: newClassSemester });
+    setNewClassName("");
+    alert(`Class "${newClassName}" created successfully!`);
+  };
+
+  const handleCreateSection = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSecName.trim()) return alert("Please enter section name.");
+    actions.createSection({ name: newSecName.trim(), department: newSecDept, classYear: newSecClassYear, capacity: newSecCapacity });
+    setNewSecName("");
+    alert(`Section "${newSecName}" created successfully!`);
+  };
+
+  const handleExecuteCohortPromotion = () => {
+    const matchingCount = store.students.filter(s =>
+      (promoSourceDept === "all" || s.department === promoSourceDept) &&
+      (promoSourceClassYear === "all" || s.classYear === promoSourceClassYear) &&
+      (promoSourceSemester === "all" || s.semester === promoSourceSemester)
+    ).length;
+
+    if (matchingCount === 0) {
+      return alert("No students found matching the selected source department, class, and semester criteria.");
+    }
+
+    if (!confirm(`Are you sure you want to promote ${matchingCount} students from [${promoSourceDept} ${promoSourceClassYear} (${promoSourceSemester})] to [${promoTargetClassYear} (${promoTargetSemester})]?\n\nRule: Student identity, digital wallet, fee records, and transaction histories will be preserved.`)) {
+      return;
+    }
+
+    const res = actions.promoteCohort({
+      sourceDept: promoSourceDept,
+      sourceClassYear: promoSourceClassYear,
+      sourceSemester: promoSourceSemester,
+      targetClassYear: promoTargetClassYear,
+      targetSemester: promoTargetSemester,
+    });
+
+    if (res.ok) {
+      alert(`Successfully promoted ${res.count} students to ${promoTargetClassYear} (${promoTargetSemester})! Audit log created.`);
+    }
+  };
+
+  const handleToggleStudentSelectionForSection = (id: string) => {
+    if (selectedStudentIdsForSection.includes(id)) {
+      setSelectedStudentIdsForSection(selectedStudentIdsForSection.filter(x => x !== id));
+    } else {
+      setSelectedStudentIdsForSection([...selectedStudentIdsForSection, id]);
+    }
+  };
+
+  const handleSelectAllStudentsForSection = () => {
+    if (selectedStudentIdsForSection.length === store.students.length) {
+      setSelectedStudentIdsForSection([]);
+    } else {
+      setSelectedStudentIdsForSection(store.students.map(s => s.id));
+    }
+  };
+
+  const handleExecuteBulkSectionTransfer = () => {
+    if (selectedStudentIdsForSection.length === 0) {
+      return alert("Select at least one student for bulk section assignment.");
+    }
+    const res = actions.bulkAssignStudentsSection(selectedStudentIdsForSection, bulkTargetSection);
+    if (res.ok) {
+      alert(`Successfully reassigned ${res.count} students to ${bulkTargetSection}!`);
+      setSelectedStudentIdsForSection([]);
+    }
+  };
+
+  const handleSingleSectionTransfer = (studentId: string, targetSec: string) => {
+    const res = actions.moveStudentSection(studentId, targetSec);
+    if (res.ok && res.student) {
+      alert(`Reassigned ${res.student.name} to section ${targetSec}!`);
+    }
+  };
+
   // Human Support Escalations Queue State (Phase 8)
   const [selectedEscalation, setSelectedEscalation] = useState<EscalationTicket | null>(null);
   const [adminReplyInput, setAdminReplyInput] = useState("");
@@ -1023,6 +1141,662 @@ export function AdminPanel({
           </div>
         </div>
       )}
+
+      
+      {/* 9. PHASE 13 — ACADEMIC STRUCTURE MANAGEMENT */}
+      {activeTab === "academic" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* HEADER */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "#241A14" }}>
+                Academic Structure & Enrolment Management
+              </h2>
+              <p style={{ margin: "4px 0 0", fontSize: "0.88rem", color: "#66564A" }}>
+                Manage institutional departments, classes, sections, years, semesters, seamless cohort promotions, and student transfers.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <span style={{ fontSize: "0.82rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "8px", fontWeight: 700, color: "#D35400" }}>
+                Active Structure: {store.academicStructure?.departments?.length || 4} Depts • {store.academicStructure?.classes?.length || 5} Classes • {store.academicStructure?.sections?.length || 4} Sections
+              </span>
+            </div>
+          </div>
+
+          {/* TOP METRIC CARDS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block" }}>Departments</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#241A14" }}>{store.academicStructure?.departments?.length || 4} Registered</strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#8C7A6A" }}>CSE, EEE, BBA, Civil</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block" }}>Classes & Years</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#D35400" }}>{store.academicStructure?.classes?.length || 5} Active Cohorts</strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#8C7A6A" }}>1st Year → 4th Year</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block" }}>Academic Sections</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#047857" }}>{store.academicStructure?.sections?.length || 4} Sections</strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#8C7A6A" }}>Sec A, Sec B, Sec C</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block" }}>Total Enrolled</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#241A14" }}>{store.students.length} Students</strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#8C7A6A" }}>Identities & Wallets Preserved</p>
+            </div>
+          </div>
+
+          {/* SUB-TABS NAVIGATION */}
+          <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "6px", display: "flex", gap: "6px" }}>
+            {[
+              { id: "structure", label: "Departments, Classes & Sections", icon: Layers },
+              { id: "promotion", label: "Cohort Promotion Engine", icon: RefreshCw },
+              { id: "sections", label: "Section Manager & Bulk Transfer", icon: Users },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = academicSubTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setAcademicSubTab(tab.id as any)}
+                  style={{
+                    flex: 1,
+                    padding: "10px 14px",
+                    background: isActive ? "#FFFFFF" : "transparent",
+                    border: isActive ? "1px solid rgba(196, 154, 108, 0.4)" : "none",
+                    borderRadius: "8px",
+                    color: isActive ? "#D35400" : "#66564A",
+                    fontWeight: isActive ? 800 : 600,
+                    fontSize: "0.85rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    boxShadow: isActive ? "0 2px 6px rgba(36, 26, 20, 0.06)" : "none",
+                  }}
+                >
+                  <Icon size={15} /> {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* SUB-TAB 1: STRUCTURE REGISTRY & CREATION */}
+          {academicSubTab === "structure" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* CREATION CARDS GRID */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+                {/* 1. CREATE DEPARTMENT */}
+                <form onSubmit={handleCreateDept} style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Plus size={16} color="#D35400" />
+                    <h3 style={{ margin: 0, fontSize: "0.98rem", fontWeight: 800, color: "#241A14" }}>
+                      Create New Department
+                    </h3>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department Code</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. ME, Arch, Law"
+                      value={newDeptCode}
+                      onChange={(e) => setNewDeptCode(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Mechanical Engineering"
+                      value={newDeptName}
+                      onChange={(e) => setNewDeptName(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department Head Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Prof. Dr. M. Rahman"
+                      value={newDeptHead}
+                      onChange={(e) => setNewDeptHead(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    style={{ marginTop: "4px", background: "#D35400", color: "#FFFFFF", border: "none", padding: "9px 14px", borderRadius: "8px", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                  >
+                    <Plus size={14} /> Create Department
+                  </button>
+                </form>
+
+                {/* 2. CREATE CLASS */}
+                <form onSubmit={handleCreateClass} style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Plus size={16} color="#047857" />
+                    <h3 style={{ margin: 0, fontSize: "0.98rem", fontWeight: 800, color: "#241A14" }}>
+                      Create New Academic Class
+                    </h3>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Class Name</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. CSE 4th Year"
+                      value={newClassName}
+                      onChange={(e) => setNewClassName(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department</label>
+                      <select
+                        value={newClassDept}
+                        onChange={(e) => setNewClassDept(e.target.value)}
+                        style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                      >
+                        <option value="CSE">CSE</option>
+                        <option value="EEE">EEE</option>
+                        <option value="BBA">BBA</option>
+                        <option value="Civil">Civil</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Class / Year</label>
+                      <select
+                        value={newClassYear}
+                        onChange={(e) => setNewClassYear(e.target.value)}
+                        style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                      >
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Semester Placement</label>
+                    <select
+                      value={newClassSemester}
+                      onChange={(e) => setNewClassSemester(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                    >
+                      <option value="1st Sem">1st Sem</option>
+                      <option value="2nd Sem">2nd Sem</option>
+                      <option value="3rd Sem">3rd Sem</option>
+                      <option value="4th Sem">4th Sem</option>
+                      <option value="5th Sem">5th Sem</option>
+                      <option value="6th Sem">6th Sem</option>
+                      <option value="7th Sem">7th Sem</option>
+                      <option value="8th Sem">8th Sem</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    style={{ marginTop: "4px", background: "#047857", color: "#FFFFFF", border: "none", padding: "9px 14px", borderRadius: "8px", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                  >
+                    <Plus size={14} /> Create Academic Class
+                  </button>
+                </form>
+
+                {/* 3. CREATE SECTION */}
+                <form onSubmit={handleCreateSection} style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Plus size={16} color="#7C3AED" />
+                    <h3 style={{ margin: 0, fontSize: "0.98rem", fontWeight: 800, color: "#241A14" }}>
+                      Create New Section
+                    </h3>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Section Designation</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Sec C, Sec D"
+                      value={newSecName}
+                      onChange={(e) => setNewSecName(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department</label>
+                      <select
+                        value={newSecDept}
+                        onChange={(e) => setNewSecDept(e.target.value)}
+                        style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                      >
+                        <option value="CSE">CSE</option>
+                        <option value="EEE">EEE</option>
+                        <option value="BBA">BBA</option>
+                        <option value="Civil">Civil</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Max Capacity</label>
+                      <input
+                        type="number"
+                        value={newSecCapacity}
+                        onChange={(e) => setNewSecCapacity(Number(e.target.value))}
+                        style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Target Class / Year</label>
+                    <select
+                      value={newSecClassYear}
+                      onChange={(e) => setNewSecClassYear(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 600, color: "#241A14", outline: "none" }}
+                    >
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    style={{ marginTop: "4px", background: "#7C3AED", color: "#FFFFFF", border: "none", padding: "9px 14px", borderRadius: "8px", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                  >
+                    <Plus size={14} /> Create Section
+                  </button>
+                </form>
+              </div>
+
+              {/* CURRENT STRUCTURE TABLE */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
+                  Institutional Department & Cohort Directory
+                </h3>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                    <thead>
+                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Dept Code</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Department Name</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Department Head</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Active Classes</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Active Sections</th>
+                        <th style={{ padding: "10px 14px", fontWeight: 700 }}>Enrolled Students</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(store.academicStructure?.departments || [
+                        { id: "d1", code: "CSE", name: "Computer Science & Engineering", headName: "Prof. Dr. A. K. Azad", totalStudents: 4 },
+                        { id: "d2", code: "EEE", name: "Electrical & Electronic Engineering", headName: "Dr. Syeda Nasrin", totalStudents: 1 },
+                        { id: "d3", code: "BBA", name: "Business Administration", headName: "Prof. M. Rahman", totalStudents: 1 },
+                        { id: "d4", code: "Civil", name: "Civil Engineering", headName: "Engr. Faisal Ahmed", totalStudents: 1 },
+                      ]).map((d) => {
+                        const count = store.students.filter(s => s.department === d.code).length;
+                        return (
+                          <tr key={d.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ fontWeight: 800, color: "#D35400", background: "#FFF7E6", padding: "3px 8px", borderRadius: "6px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                                {d.code}
+                              </span>
+                            </td>
+                            <td style={{ padding: "10px 14px", fontWeight: 700, color: "#241A14" }}>{d.name}</td>
+                            <td style={{ padding: "10px 14px", color: "#66564A" }}>{d.headName}</td>
+                            <td style={{ padding: "10px 14px", color: "#66564A" }}>1st Year, 2nd Year, 3rd Year</td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ background: "rgba(4, 120, 87, 0.08)", color: "#047857", padding: "2px 8px", borderRadius: "4px", fontWeight: 700, fontSize: "0.78rem" }}>
+                                Sec A, Sec B
+                              </span>
+                            </td>
+                            <td style={{ padding: "10px 14px", fontWeight: 800, color: "#241A14" }}>
+                              {count} Students
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SUB-TAB 2: COHORT PROMOTION ENGINE */}
+          {academicSubTab === "promotion" && (
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Institutional Cohort Promotion Engine
+                </h3>
+                <p style={{ margin: "3px 0 0", fontSize: "0.86rem", color: "#66564A" }}>
+                  Promote entire student cohorts (Class 1 → Class 2, Year 1 → Year 2, Semester 1 → Semester 2) without re-entering student records.
+                </p>
+              </div>
+
+              {/* PROMOTION SELECTORS */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+                {/* SOURCE SELECTOR */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase" }}>
+                    From Source Cohort
+                  </span>
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department</label>
+                    <select
+                      value={promoSourceDept}
+                      onChange={(e) => setPromoSourceDept(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.86rem", fontWeight: 600, color: "#241A14" }}
+                    >
+                      <option value="all">All Departments</option>
+                      <option value="CSE">CSE</option>
+                      <option value="EEE">EEE</option>
+                      <option value="BBA">BBA</option>
+                      <option value="Civil">Civil</option>
+                    </select>
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Class / Year</label>
+                      <select
+                        value={promoSourceClassYear}
+                        onChange={(e) => setPromoSourceClassYear(e.target.value)}
+                        style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.86rem", fontWeight: 600, color: "#241A14" }}
+                      >
+                        <option value="all">All Classes</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Semester</label>
+                      <select
+                        value={promoSourceSemester}
+                        onChange={(e) => setPromoSourceSemester(e.target.value)}
+                        style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.86rem", fontWeight: 600, color: "#241A14" }}
+                      >
+                        <option value="all">All Semesters</option>
+                        <option value="1st Sem">1st Sem</option>
+                        <option value="2nd Sem">2nd Sem</option>
+                        <option value="3rd Sem">3rd Sem</option>
+                        <option value="4th Sem">4th Sem</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TARGET SELECTOR */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "#047857", textTransform: "uppercase" }}>
+                    To Target Placement
+                  </span>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Target Class / Year</label>
+                    <select
+                      value={promoTargetClassYear}
+                      onChange={(e) => setPromoTargetClassYear(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.86rem", fontWeight: 600, color: "#241A14" }}
+                    >
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Target Semester</label>
+                    <select
+                      value={promoTargetSemester}
+                      onChange={(e) => setPromoTargetSemester(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.86rem", fontWeight: 600, color: "#241A14" }}
+                    >
+                      <option value="1st Sem">1st Sem</option>
+                      <option value="2nd Sem">2nd Sem</option>
+                      <option value="3rd Sem">3rd Sem</option>
+                      <option value="4th Sem">4th Sem</option>
+                      <option value="5th Sem">5th Sem</option>
+                      <option value="6th Sem">6th Sem</option>
+                      <option value="7th Sem">7th Sem</option>
+                      <option value="8th Sem">8th Sem</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* DATA PRESERVATION GUARANTEE RULE NOTICE */}
+              <div style={{ background: "rgba(4, 120, 87, 0.08)", border: "1px solid rgba(4, 120, 87, 0.3)", borderRadius: "12px", padding: "14px", display: "flex", alignItems: "center", gap: "12px" }}>
+                <CheckCircle2 size={22} color="#047857" style={{ flexShrink: 0 }} />
+                <div style={{ fontSize: "0.84rem", color: "#047857" }}>
+                  <strong>Preservation Guarantee:</strong> Promotion updates academic placement tags (`classYear`, `semester`, `classSection`). Student legal identities, NID verification, Neo Cash digital wallet balances, payment ledgers, and transaction receipt histories remain <strong>100% preserved</strong> without re-entering student profiles.
+                </div>
+              </div>
+
+              {/* PROMOTION PREVIEW LIST */}
+              <div>
+                <h4 style={{ margin: "0 0 10px", fontSize: "0.92rem", color: "#241A14", fontWeight: 800 }}>
+                  Cohorts Eligible for Promotion Preview
+                </h4>
+                <div style={{ border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", overflow: "hidden" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem" }}>
+                    <thead>
+                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A" }}>
+                        <th style={{ padding: "10px 14px" }}>Student Name</th>
+                        <th style={{ padding: "10px 14px" }}>Student ID</th>
+                        <th style={{ padding: "10px 14px" }}>Current Placement</th>
+                        <th style={{ padding: "10px 14px" }}>Target Placement</th>
+                        <th style={{ padding: "10px 14px" }}>Wallet Balance</th>
+                        <th style={{ padding: "10px 14px" }}>Standing</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {store.students.filter(s =>
+                        (promoSourceDept === "all" || s.department === promoSourceDept) &&
+                        (promoSourceClassYear === "all" || s.classYear === promoSourceClassYear) &&
+                        (promoSourceSemester === "all" || s.semester === promoSourceSemester)
+                      ).length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ padding: "20px", textAlign: "center", color: "#8C7A6A" }}>
+                            No students match the current source cohort criteria.
+                          </td>
+                        </tr>
+                      ) : (
+                        store.students.filter(s =>
+                          (promoSourceDept === "all" || s.department === promoSourceDept) &&
+                          (promoSourceClassYear === "all" || s.classYear === promoSourceClassYear) &&
+                          (promoSourceSemester === "all" || s.semester === promoSourceSemester)
+                        ).map((s) => (
+                          <tr key={s.id} style={{ borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                            <td style={{ padding: "10px 14px", fontWeight: 700, color: "#241A14" }}>{s.name}</td>
+                            <td style={{ padding: "10px 14px", fontFamily: "monospace", color: "#D35400", fontWeight: 700 }}>{s.studentId}</td>
+                            <td style={{ padding: "10px 14px", color: "#66564A" }}>{s.department} {s.classYear} ({s.semester})</td>
+                            <td style={{ padding: "10px 14px", fontWeight: 700, color: "#047857" }}>{s.department} {promoTargetClassYear} ({promoTargetSemester})</td>
+                            <td style={{ padding: "10px 14px", fontWeight: 800, fontFeatureSettings: "'tnum'" }}>{formatTaka(s.walletBalance, false)}</td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ padding: "2px 8px", borderRadius: "999px", fontSize: "0.74rem", fontWeight: 800, background: "rgba(4, 120, 87, 0.12)", color: "#047857" }}>
+                                {s.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* PROMOTION ACTION BUTTON */}
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  onClick={handleExecuteCohortPromotion}
+                  style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "12px 24px", borderRadius: "10px", fontWeight: 800, fontSize: "0.92rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)" }}
+                >
+                  <RefreshCw size={16} /> Execute Cohort Promotion
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* SUB-TAB 3: SECTION MANAGER & BULK TRANSFER */}
+          {academicSubTab === "sections" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* SECTION CAPACITIES GRID */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+                {[
+                  { name: "Sec A", dept: "CSE", year: "1st Year", count: 2, capacity: 50 },
+                  { name: "Sec B", dept: "CSE", year: "1st Year", count: 1, capacity: 50 },
+                  { name: "Sec A", dept: "CSE", year: "2nd Year", count: 1, capacity: 45 },
+                  { name: "Sec A", dept: "EEE", year: "1st Year", count: 1, capacity: 50 },
+                ].map((sec, idx) => (
+                  <div key={idx} style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "14px", padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <strong style={{ color: "#241A14", fontSize: "0.95rem" }}>{sec.name}</strong>
+                      <span style={{ fontSize: "0.76rem", background: "#FFF7E6", color: "#D35400", padding: "2px 6px", borderRadius: "4px", fontWeight: 700 }}>
+                        {sec.dept} ({sec.year})
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "0.82rem", color: "#66564A" }}>
+                      Capacity: <strong>{sec.count}</strong> / {sec.capacity} Students
+                    </div>
+                    <div style={{ height: "6px", width: "100%", background: "#FDF9F3", borderRadius: "999px", overflow: "hidden", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <div style={{ height: "100%", width: `${(sec.count / sec.capacity) * 100}%`, background: "#047857" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* BULK TRANSFER CONTROL BAR */}
+              <div style={{ background: "#FDF9F3", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Users size={18} color="#D35400" />
+                  <div>
+                    <strong style={{ fontSize: "0.92rem", color: "#241A14", display: "block" }}>
+                      Bulk Section Transfer & Reassignment
+                    </strong>
+                    <span style={{ fontSize: "0.78rem", color: "#66564A" }}>
+                      Selected Students: <strong style={{ color: "#D35400" }}>{selectedStudentIdsForSection.length}</strong> / {store.students.length}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A" }}>Move to Section:</label>
+                  <select
+                    value={bulkTargetSection}
+                    onChange={(e) => setBulkTargetSection(e.target.value)}
+                    style={{ padding: "8px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 600, color: "#241A14" }}
+                  >
+                    <option value="Sec A">Sec A</option>
+                    <option value="Sec B">Sec B</option>
+                    <option value="Sec C">Sec C</option>
+                    <option value="Sec D">Sec D</option>
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={handleExecuteBulkSectionTransfer}
+                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "8px", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer" }}
+                  >
+                    Bulk Transfer Selected
+                  </button>
+                </div>
+              </div>
+
+              {/* STUDENT SECTION MANAGEMENT TABLE */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflow: "hidden" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                  <thead>
+                    <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <th style={{ padding: "12px 16px", width: "40px" }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedStudentIdsForSection.length === store.students.length && store.students.length > 0}
+                          onChange={handleSelectAllStudentsForSection}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student ID</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Department</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Class / Year</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Current Section</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700, textAlign: "right" }}>Single Transfer</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {store.students.map((s) => {
+                      const isSelected = selectedStudentIdsForSection.includes(s.id);
+                      return (
+                        <tr key={s.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.18)", background: isSelected ? "rgba(211, 84, 0, 0.04)" : "transparent" }}>
+                          <td style={{ padding: "12px 16px" }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleToggleStudentSelectionForSection(s.id)}
+                              style={{ cursor: "pointer" }}
+                            />
+                          </td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <strong style={{ color: "#241A14", display: "block" }}>{s.name}</strong>
+                            <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{s.email}</span>
+                          </td>
+                          <td style={{ padding: "12px 16px", fontFamily: "monospace", fontWeight: 700, color: "#D35400" }}>
+                            {s.studentId}
+                          </td>
+                          <td style={{ padding: "12px 16px" }}>{s.department}</td>
+                          <td style={{ padding: "12px 16px" }}>{s.classYear}</td>
+                          <td style={{ padding: "12px 16px" }}>
+                            <span style={{ background: "rgba(4, 120, 87, 0.1)", color: "#047857", padding: "2px 8px", borderRadius: "4px", fontSize: "0.78rem", fontWeight: 700 }}>
+                              {s.section}
+                            </span>
+                          </td>
+                          <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                            <select
+                              value={s.section}
+                              onChange={(e) => handleSingleSectionTransfer(s.id, e.target.value)}
+                              style={{ padding: "4px 8px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 600, color: "#241A14" }}
+                            >
+                              <option value="Sec A">Sec A</option>
+                              <option value="Sec B">Sec B</option>
+                              <option value="Sec C">Sec C</option>
+                              <option value="Sec D">Sec D</option>
+                            </select>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
 
       {activeTab === "bulk" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>

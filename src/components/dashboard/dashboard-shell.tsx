@@ -212,6 +212,11 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                     <Bell size={18} /> Reminder Engine
                   </button>
                 </li>
+                <li className="ms-nav-item">
+                  <button className={activeTab === "academic" ? "is-active" : ""} onClick={() => setActiveTab("academic")}>
+                    <Layers size={18} /> Academic Structure
+                  </button>
+                </li>
               </>
             )}
 
