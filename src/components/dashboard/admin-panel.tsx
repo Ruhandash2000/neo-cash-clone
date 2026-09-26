@@ -52,6 +52,18 @@ export function AdminPanel({
   const [editSemester, setEditSemester] = useState("3rd Sem");
   const [editVerified, setEditVerified] = useState(true);
 
+  // Add New Student Modal State
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addStudentId, setAddStudentId] = useState("");
+  const [addDept, setAddDept] = useState("CSE");
+  const [addClassYear, setAddClassYear] = useState("1st Year");
+  const [addSection, setAddSection] = useState("Sec A");
+  const [addSemester, setAddSemester] = useState("1st Sem");
+  const [addEmail, setAddEmail] = useState("");
+  const [addPhone, setAddPhone] = useState("+880 1700-000000");
+  const [addDues, setAddDues] = useState<number>(6500);
+
   // Bulk Fee Assignment Form
   const [bulkTitle, setBulkTitle] = useState("Semester Tuition Fee (Spring 2027)");
   const [bulkAmount, setBulkAmount] = useState<number>(6500);
@@ -538,6 +550,29 @@ export function AdminPanel({
       alert(`Successfully updated administrative profile for ${res.student.name} (${res.student.studentId})!`);
     } else {
       alert(res.error || "Failed to update student profile.");
+    }
+  };
+
+  const handleCreateStudentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addName.trim()) return alert("Enter student full name.");
+    if (!addStudentId.trim()) return alert("Enter student ID.");
+
+    const res = actions.addStudent({
+      name: addName.trim(),
+      studentId: addStudentId.trim(),
+      department: addDept,
+      classYear: addClassYear,
+      section: addSection,
+      semester: addSemester,
+      email: addEmail.trim() || `${addStudentId.toLowerCase().trim()}@dcc.edu.bd`,
+      phone: addPhone,
+      totalDues: Number(addDues) || 0,
+    });
+
+    if (res.ok && res.student) {
+      setShowAddStudentModal(false);
+      alert(`Successfully enrolled ${res.student.name} (${res.student.studentId}) into ${res.student.classSection}!`);
     }
   };
 
@@ -2210,6 +2245,18 @@ export function AdminPanel({
               <span style={{ fontSize: "0.82rem", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "8px", fontWeight: 700, color: "#66564A" }}>
                 Total Records: <strong style={{ color: "#D35400" }}>{filteredStudents.length}</strong> / {store.students.length}
               </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setAddName("");
+                  setAddStudentId(`DCC-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+                  setAddEmail("");
+                  setShowAddStudentModal(true);
+                }}
+                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "8px 16px", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px", boxShadow: "0 2px 8px rgba(211, 84, 0, 0.25)" }}
+              >
+                <Plus size={15} /> Add New Student
+              </button>
             </div>
           </div>
 
@@ -5157,6 +5204,112 @@ export function AdminPanel({
       {activeTab === "escalations" && renderEscalationsTab()}
 
       {activeTab === "reminders" && renderRemindersTab()}
+
+      {/* ADD NEW STUDENT MODAL */}
+      {showAddStudentModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
+          <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "600px", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "16px" }}>
+            
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "12px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: "#241A14" }}>
+                  Enrol New Student Record
+                </h3>
+                <span style={{ fontSize: "0.8rem", color: "#66564A" }}>
+                  Manually register a new student profile into institutional directory.
+                </span>
+              </div>
+              <button type="button" onClick={() => setShowAddStudentModal(false)} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateStudentSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                    Full Student Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Mahfuzur Rahman"
+                    value={addName}
+                    onChange={(e) => setAddName(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 700, outline: "none", fontSize: "0.86rem" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                    Student ID *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={addStudentId}
+                    onChange={(e) => setAddStudentId(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#D35400", fontWeight: 800, fontFamily: "monospace", outline: "none", fontSize: "0.86rem" }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Department</label>
+                  <select value={addDept} onChange={(e) => setAddDept(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontWeight: 700, fontSize: "0.82rem" }}>
+                    <option value="CSE">CSE</option>
+                    <option value="EEE">EEE</option>
+                    <option value="BBA">BBA</option>
+                    <option value="Civil">Civil</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Class / Year</label>
+                  <select value={addClassYear} onChange={(e) => setAddClassYear(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontWeight: 700, fontSize: "0.82rem" }}>
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Section</label>
+                  <select value={addSection} onChange={(e) => setAddSection(e.target.value)} style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontWeight: 700, fontSize: "0.82rem" }}>
+                    <option value="Sec A">Sec A</option>
+                    <option value="Sec B">Sec B</option>
+                    <option value="Sec C">Sec C</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Email Address</label>
+                  <input type="email" placeholder="student@dcc.edu.bd" value={addEmail} onChange={(e) => setAddEmail(e.target.value)} style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontWeight: 600, fontSize: "0.84rem" }} />
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>Initial Tuition Dues (৳)</label>
+                  <input type="number" value={addDues} onChange={(e) => setAddDues(Number(e.target.value))} style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontWeight: 800, fontSize: "0.84rem" }} />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+                <button type="button" onClick={() => setShowAddStudentModal(false)} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#66564A", padding: "8px 16px", borderRadius: "8px", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer" }}>
+                  Cancel
+                </button>
+                <button type="submit" style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "8px 20px", borderRadius: "8px", fontWeight: 800, fontSize: "0.84rem", cursor: "pointer", boxShadow: "0 2px 8px rgba(211, 84, 0, 0.25)" }}>
+                  Save & Enrol Student
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
 
       {showBulkConfirmModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>

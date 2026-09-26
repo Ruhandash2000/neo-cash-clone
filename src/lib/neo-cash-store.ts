@@ -1603,6 +1603,53 @@ export const storeActions = {
     }
   },
 
+  /** Manually enroll a new student record into institutional directory */
+  addStudent(data: {
+    name: string;
+    studentId: string;
+    department: string;
+    classYear: string;
+    section: string;
+    semester: string;
+    email: string;
+    phone?: string;
+    totalDues?: number;
+  }) {
+    const newStudent: StudentRecord = {
+      id: "st-" + Date.now(),
+      name: data.name,
+      studentId: data.studentId,
+      department: data.department || "CSE",
+      classYear: data.classYear || "1st Year",
+      section: data.section || "Sec A",
+      semester: data.semester || "1st Sem",
+      classSection: `${data.department || "CSE"} ${data.classYear || "1st Year"} (${data.section || "Sec A"})`,
+      session: "2026-2027",
+      email: data.email,
+      phone: data.phone || "+880 1700-000000",
+      status: "Active",
+      feeStatus: (data.totalDues || 0) > 0 ? "Pending" : "Paid",
+      walletBalance: 0,
+      totalDues: data.totalDues || 0,
+      verified: true,
+      lastActivity: "Just registered",
+    };
+
+    currentState.students.unshift(newStudent);
+
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Added Student Record",
+      details: `Manually enrolled student ${data.name} (${data.studentId}) into ${newStudent.classSection}.`,
+      timestamp: new Date().toLocaleString(),
+    });
+
+    saveState();
+    return { ok: true, student: newStudent };
+  },
+
   /** Process full or partial payment of a fee */
   payFee(feeId: string, method: string, customAmount?: number) {
     const feeIndex = currentState.fees.findIndex((f) => f.id === feeId);
