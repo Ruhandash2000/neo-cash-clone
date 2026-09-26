@@ -982,7 +982,54 @@ export interface DemoStudentProfile {
     rankInstitution: number;
     rankNational: number;
   };
+  fees?: Fee[];
+  transactions?: Transaction[];
+  notifications?: NotificationItem[];
+  partialApplication?: PartialApplication;
 }
+
+export interface DemoAdminProfile {
+  id: string;
+  name: string;
+  email: string;
+  roleTitle: string;
+  avatar: string;
+}
+
+export const DEMO_ADMINS_LIST: DemoAdminProfile[] = [
+  {
+    id: "admin-1",
+    name: "Refat Rahman",
+    email: "refat.admin@dcc.edu.bd",
+    roleTitle: "Senior Financial Controller",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Refat",
+  },
+  {
+    id: "admin-2",
+    name: "Dr. Syeda Nasrin",
+    email: "syeda.nasrin@dcc.edu.bd",
+    roleTitle: "Student Welfare & Audit Officer",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nasrin",
+  },
+];
+
+export interface DemoHeadProfile {
+  id: string;
+  name: string;
+  email: string;
+  title: string;
+  institution: string;
+  avatar: string;
+}
+
+export const DEMO_HEAD_PROFILE: DemoHeadProfile = {
+  id: "head-1",
+  name: "Prof. Dr. M. A. Karim",
+  email: "director@dcc.edu.bd",
+  title: "Director & Final Institutional Approval Authority",
+  institution: "Dhaka City College",
+  avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=DirectorKarim",
+};
 
 export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
   {
@@ -998,6 +1045,18 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ruhan",
     balances: { availableBalance: 24580, walletBalance: 6500, totalDue: 8500, paidThisMonth: 12000, pendingAmount: 2000 },
     donations: { totalDonated: 1200, points: 12, rankClass: 4, rankDept: 4, rankInstitution: 18, rankNational: 126 },
+    fees: [
+      { id: "fee-r1", title: "Semester Tuition Fee (Fall 2026)", amount: 6500, originalAmount: 20000, dueDate: "2026-09-30", status: "due", category: "Tuition", description: "Standard tuition dues for Fall 2026 term." },
+      { id: "fee-r2", title: "Computer Lab & Tech Resources Fee", amount: 2000, originalAmount: 2000, dueDate: "2026-10-05", status: "due", category: "Lab & Tech", description: "Access to high-performance AI lab servers." },
+    ],
+    transactions: [
+      { id: "TXN-88401", title: "Semester Tuition Partial Installment", date: "2026-09-26 10:15 AM", amount: 12000, type: "fee_payment", status: "Success", method: "bKash Mobile Banking", referenceId: "BK-991042", receiptNumber: "REC-982104" },
+      { id: "TXN-88390", title: "Neo Wallet Top-Up", date: "2026-09-24 02:45 PM", amount: 6500, type: "wallet", status: "Success", method: "City Bank Visa Debit", referenceId: "CB-441029", receiptNumber: "REC-982101" },
+    ],
+    notifications: [
+      { id: "n-r1", title: "Security Alert: Login Detected", message: "New Neo Cash AI session started from Dhaka, BD.", date: "Just now", type: "info", read: false },
+      { id: "n-r2", title: "Tuition Fee Due Soon", message: "Semester Tuition Fee (৳6,500) due on September 30.", date: "2 hours ago", type: "warning", read: false, category: "fee" },
+    ],
   },
   {
     id: "st-2",
@@ -1010,8 +1069,41 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
     email: "sp2khb@gmail.com",
     phone: "+880 1712-998877",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Shelly",
-    balances: { availableBalance: 14500, walletBalance: 4250, totalDue: 7500, paidThisMonth: 5000, pendingAmount: 2500 },
+    balances: { availableBalance: 14500, walletBalance: 4250, totalDue: 3500, paidThisMonth: 5000, pendingAmount: 2500 },
     donations: { totalDonated: 500, points: 5, rankClass: 3, rankDept: 7, rankInstitution: 14, rankNational: 42 },
+    fees: [
+      { id: "fee-s1", title: "Semester Tuition Fee (Spring 2026)", amount: 2500, originalAmount: 5000, dueDate: "2026-11-15", status: "partial_approved", partialAllowed: true, approvedPartialAmount: 2500, category: "Tuition", description: "Head approved 50% split. Installment 1 unlocked." },
+    ],
+    partialApplication: {
+      id: "APP-9042",
+      studentName: "Shelly Paul",
+      studentId: "DCC-CSE-24-8842",
+      feeId: "fee-s1",
+      feeTitle: "Semester Tuition Fee (Spring 2026)",
+      originalAmount: 5000,
+      requestedAmount: 2500,
+      approvedAmount: 2500,
+      remainingAmount: 2500,
+      newDeadline: "2026-11-15",
+      reason: "Family medical emergency causing short-term liquidity constraint.",
+      guardianName: "Robert Paul",
+      guardianPhone: "+880 1711-889900",
+      guardianIdDocUrl: "https://via.placeholder.com/600x380?text=Guardian+NID+Card",
+      signatureDocUrl: "https://via.placeholder.com/400x160?text=Guardian+Signature",
+      studentSignatureDocUrl: "https://via.placeholder.com/400x160?text=Student+Signature",
+      aiMatchScore: 96,
+      aiMatchStatus: "Signature Match",
+      status: "approved_head",
+      submittedAt: "2026-09-25 10:30 AM",
+      adminNotes: "Profile & NID verified. 96% AI signature match score.",
+      headNotes: "Executive sign-off granted. Installment 1 unlocked.",
+    },
+    transactions: [
+      { id: "TXN-S901", title: "Partial Payment Authorization", date: "2026-09-26 04:30 PM", amount: 2500, type: "fee_payment", status: "Success", method: "bKash Mobile Wallet", referenceId: "APP-9042-AUTH", receiptNumber: "REC-S9042" },
+    ],
+    notifications: [
+      { id: "n-s1", title: "Partial Payment Approved by Head!", message: "Head authorized your 50% split for APP-9042. Pay Installment 1 of ৳2,500 now.", date: "1 hour ago", type: "success", read: false, category: "application" },
+    ],
   },
   {
     id: "st-3",
@@ -1026,6 +1118,16 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tanzim",
     balances: { availableBalance: 38200, walletBalance: 12000, totalDue: 0, paidThisMonth: 18500, pendingAmount: 0 },
     donations: { totalDonated: 2500, points: 25, rankClass: 1, rankDept: 1, rankInstitution: 5, rankNational: 12 },
+    fees: [
+      { id: "fee-t1", title: "Annual Academic & Lab Fee", amount: 18500, originalAmount: 18500, dueDate: "2026-09-20", paidDate: "2026-09-18", status: "paid", category: "Tuition", description: "Full academic dues cleared." },
+    ],
+    transactions: [
+      { id: "TXN-T101", title: "Full Academic Dues Payment", date: "2026-09-18 11:20 AM", amount: 18500, type: "fee_payment", status: "Success", method: "City Bank Visa Debit", referenceId: "CB-99201", receiptNumber: "REC-T9901" },
+      { id: "TXN-T102", title: "Welfare Fund Contribution", date: "2026-09-20 03:15 PM", amount: 2500, type: "donation", status: "Success", method: "bKash Mobile Wallet", referenceId: "DON-T2500", receiptNumber: "REC-DON-102" },
+    ],
+    notifications: [
+      { id: "n-t1", title: "Full Financial Clearance Verified", message: "All academic dues are 100% paid. Examination admit card ready.", date: "3 days ago", type: "success", read: true, category: "payment" },
+    ],
   },
   {
     id: "st-4",
@@ -1040,6 +1142,35 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nusrat",
     balances: { availableBalance: 12000, walletBalance: 3500, totalDue: 6000, paidThisMonth: 4000, pendingAmount: 1500 },
     donations: { totalDonated: 300, points: 3, rankClass: 12, rankDept: 12, rankInstitution: 45, rankNational: 310 },
+    fees: [
+      { id: "fee-n1", title: "Admission & Departmental Fee", amount: 6000, originalAmount: 6000, dueDate: "2026-09-10", status: "overdue", category: "Tuition", description: "Overdue since Sept 10." },
+    ],
+    partialApplication: {
+      id: "APP-7741",
+      studentName: "Nusrat Jahan",
+      studentId: "DC-BBA-24-9011",
+      feeId: "fee-n1",
+      feeTitle: "Admission & Departmental Fee",
+      originalAmount: 6000,
+      requestedAmount: 3000,
+      reason: "Small family business liquidity delay.",
+      guardianName: "Kamrul Islam",
+      guardianPhone: "+880 1911-001122",
+      guardianIdDocUrl: "https://via.placeholder.com/600x380?text=Guardian+NID",
+      signatureDocUrl: "https://via.placeholder.com/400x160?text=Blurry+Signature",
+      aiMatchScore: 84,
+      aiMatchStatus: "Needs Review",
+      status: "changes_requested",
+      submittedAt: "2026-09-22 09:00 AM",
+      changeRequestNotes: "Please re-upload a clearer scan of guardian signature.",
+    },
+    transactions: [
+      { id: "TXN-N401", title: "Partial Payment Submission Fee", date: "2026-09-22 09:05 AM", amount: 0, type: "fee_payment", status: "Pending", method: "bKash Mobile Wallet", referenceId: "APP-7741-SUB", receiptNumber: "REC-N7741" },
+    ],
+    notifications: [
+      { id: "n-n1", title: "Emergency Overdue Alert", message: "Admission & Departmental Fee (৳6,000) is overdue!", date: "Yesterday", type: "error", read: false, category: "fee" },
+      { id: "n-n2", title: "Action Required: Application Feedback", message: "Admin requested changes on APP-7741: 'Please re-upload clearer signature.'", date: "2 days ago", type: "warning", read: false, category: "application" },
+    ],
   },
   {
     id: "st-5",
@@ -1054,6 +1185,34 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Farhan",
     balances: { availableBalance: 45000, walletBalance: 15000, totalDue: 3500, paidThisMonth: 9000, pendingAmount: 0 },
     donations: { totalDonated: 1800, points: 18, rankClass: 2, rankDept: 2, rankInstitution: 10, rankNational: 64 },
+    fees: [
+      { id: "fee-f1", title: "Final Year Thesis Defense Fee", amount: 3500, originalAmount: 3500, dueDate: "2026-10-15", status: "pending_partial", category: "Exam", description: "Pending Head review for 50% split." },
+    ],
+    partialApplication: {
+      id: "APP-5510",
+      studentName: "Farhan Ahmed",
+      studentId: "SUST-SWE-22-1104",
+      feeId: "fee-f1",
+      feeTitle: "Final Year Thesis Defense Fee",
+      originalAmount: 3500,
+      requestedAmount: 1750,
+      reason: "Research GPU hardware expenses.",
+      guardianName: "Nazmul Ahmed",
+      guardianPhone: "+880 1611-998877",
+      guardianIdDocUrl: "https://via.placeholder.com/600x380?text=Guardian+NID",
+      signatureDocUrl: "https://via.placeholder.com/400x160?text=Guardian+Signature",
+      aiMatchScore: 98,
+      aiMatchStatus: "Signature Match",
+      status: "forwarded_head",
+      submittedAt: "2026-09-24 02:00 PM",
+      adminNotes: "GPA 3.95 high standing. Verified and forwarded to Head.",
+    },
+    transactions: [
+      { id: "TXN-F501", title: "Neo Wallet Balance Top-Up", date: "2026-09-24 01:45 PM", amount: 15000, type: "wallet", status: "Success", method: "bKash Mobile Wallet", referenceId: "BK-551029", receiptNumber: "REC-F5510" },
+    ],
+    notifications: [
+      { id: "n-f1", title: "Application Forwarded to Head", message: "Admin forwarded your partial request APP-5510 to Executive Head.", date: "1 day ago", type: "info", read: false, category: "application" },
+    ],
   },
   {
     id: "st-6",
@@ -1066,8 +1225,18 @@ export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
     email: "anika.t@buet.ac.bd",
     phone: "+880 1512-334455",
     avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anika",
-    balances: { availableBalance: 29400, walletBalance: 8200, totalDue: 12000, paidThisMonth: 15000, pendingAmount: 4000 },
+    balances: { availableBalance: 29400, walletBalance: 8200, totalDue: 1500, paidThisMonth: 15000, pendingAmount: 0 },
     donations: { totalDonated: 1500, points: 15, rankClass: 5, rankDept: 5, rankInstitution: 22, rankNational: 98 },
+    fees: [
+      { id: "fee-a1", title: "Digital Library & Journal License Fee", amount: 1500, originalAmount: 1500, dueDate: "2026-10-10", status: "due", category: "Library", description: "Access to IEEE & ScienceDirect journals." },
+    ],
+    transactions: [
+      { id: "TXN-A601", title: "Semester Tuition Payment", date: "2026-09-15 10:00 AM", amount: 15000, type: "fee_payment", status: "Success", method: "Nagad Mobile Wallet", referenceId: "NG-772109", receiptNumber: "REC-A7721" },
+      { id: "TXN-A602", title: "Welfare Contribution", date: "2026-09-20 04:00 PM", amount: 1500, type: "donation", status: "Success", method: "bKash Mobile Wallet", referenceId: "DON-A1500", receiptNumber: "REC-DON-A602" },
+    ],
+    notifications: [
+      { id: "n-a1", title: "Upcoming Library Fee Due", message: "Digital Library Fee (৳1,500) due on October 10.", date: "4 days ago", type: "warning", read: true, category: "fee" },
+    ],
   },
 ];
 
@@ -1319,6 +1488,25 @@ export const storeActions = {
     };
     currentState.balances = { ...profile.balances };
     currentState.donations = { ...profile.donations };
+
+    if (profile.fees) {
+      currentState.fees = JSON.parse(JSON.stringify(profile.fees));
+    }
+    if (profile.transactions) {
+      currentState.transactions = JSON.parse(JSON.stringify(profile.transactions));
+    }
+    if (profile.notifications) {
+      currentState.notifications = JSON.parse(JSON.stringify(profile.notifications));
+    }
+    if (profile.partialApplication) {
+      const existingIdx = currentState.partialApplications.findIndex((a) => a.studentId === profile.studentId);
+      if (existingIdx >= 0) {
+        currentState.partialApplications[existingIdx] = JSON.parse(JSON.stringify(profile.partialApplication));
+      } else {
+        currentState.partialApplications.unshift(JSON.parse(JSON.stringify(profile.partialApplication)));
+      }
+    }
+
     saveState();
   },
 

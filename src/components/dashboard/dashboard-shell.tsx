@@ -9,7 +9,7 @@
  */
 
 import { useState } from "react";
-import { useNeoStore, Role, Transaction, DEMO_STUDENTS_LIST } from "@/lib/neo-cash-store";
+import { useNeoStore, Role, Transaction, DEMO_STUDENTS_LIST, DEMO_ADMINS_LIST, DEMO_HEAD_PROFILE } from "@/lib/neo-cash-store";
 import { OnboardingFlow } from "./onboarding-flow";
 import { StudentPanel } from "./student-panel";
 import { AdminPanel } from "./admin-panel";
@@ -44,19 +44,42 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
 
   return (
     <div className="dash-midnight">
-      {/* 1. DEMO ROLE SWITCHER TOP BANNER */}
+      {/* 1. DEMO ROLE CONTROLLER TOP BANNER (PHASE 22) */}
       <div className="demo-role-bar">
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontWeight: 800, color: "var(--ms-accent)", letterSpacing: "0.05em" }}>
-            NEO CASH AI • DEMO ROLE SWITCHER
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "4px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            DEMO CONTROLLER
           </span>
-          <span style={{ color: "var(--ms-text-muted)" }}>|</span>
           <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>
-            Switch roles to test Student, Admin, or Executive Head views:
+            Select active presentation account:
           </span>
         </div>
 
-        <div className="demo-role-pills">
+        <div className="demo-role-pills" style={{ alignItems: "center", gap: "8px" }}>
+          <button
+            type="button"
+            className={`demo-role-btn ${store.role === "student" ? "is-active" : ""}`}
+            onClick={() => handleRoleChange("student")}
+          >
+            🎓 Student ({DEMO_STUDENTS_LIST.length})
+          </button>
+          
+          <button
+            type="button"
+            className={`demo-role-btn ${store.role === "admin" ? "is-active" : ""}`}
+            onClick={() => handleRoleChange("admin")}
+          >
+            ⚙️ Admin ({DEMO_ADMINS_LIST.length})
+          </button>
+          
+          <button
+            type="button"
+            className={`demo-role-btn ${store.role === "head" ? "is-active" : ""}`}
+            onClick={() => handleRoleChange("head")}
+          >
+            🏆 Head (1)
+          </button>
+
           {store.role === "student" && (
             <select
               value={store.studentProfile.studentId}
@@ -75,40 +98,47 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
             >
               {DEMO_STUDENTS_LIST.map((std) => (
                 <option key={std.id} value={std.studentId}>
-                  👤 {std.name} ({std.studentId})
+                  👤 {std.name} ({std.studentId}) • {std.department}
                 </option>
               ))}
             </select>
           )}
 
-          <button
-            type="button"
-            className={`demo-role-btn ${store.role === "student" ? "is-active" : ""}`}
-            onClick={() => handleRoleChange("student")}
-          >
-            🎓 Student Panel
-          </button>
-          <button
-            type="button"
-            className={`demo-role-btn ${store.role === "admin" ? "is-active" : ""}`}
-            onClick={() => handleRoleChange("admin")}
-          >
-            ⚙️ Admin Panel
-          </button>
-          <button
-            type="button"
-            className={`demo-role-btn ${store.role === "head" ? "is-active" : ""}`}
-            onClick={() => handleRoleChange("head")}
-          >
-            🏆 Head / Authority
-          </button>
+          {store.role === "admin" && (
+            <select
+              style={{
+                background: "#2E2017",
+                color: "#FF8C42",
+                border: "1px solid rgba(196, 154, 108, 0.4)",
+                borderRadius: "6px",
+                padding: "3px 8px",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                outline: "none",
+                cursor: "pointer",
+              }}
+            >
+              {DEMO_ADMINS_LIST.map((adm) => (
+                <option key={adm.id} value={adm.id}>
+                  👨‍💼 {adm.name} ({adm.roleTitle})
+                </option>
+              ))}
+            </select>
+          )}
+
+          {store.role === "head" && (
+            <span style={{ fontSize: "0.76rem", color: "#FBBF24", fontWeight: 700, background: "rgba(211, 84, 0, 0.15)", padding: "3px 8px", borderRadius: "6px", border: "1px solid rgba(211, 84, 0, 0.3)" }}>
+              👑 {DEMO_HEAD_PROFILE.name} (Director)
+            </span>
+          )}
+
           <button
             type="button"
             className="demo-role-btn"
-            style={{ background: "rgba(245, 158, 11, 0.2)", color: "#FBBF24" }}
+            style={{ background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", marginLeft: "4px" }}
             onClick={handleRestartOnboarding}
           >
-            <RotateCcw size={12} /> Test Onboarding
+            <RotateCcw size={12} /> Test Onboarding Flow
           </button>
         </div>
       </div>
