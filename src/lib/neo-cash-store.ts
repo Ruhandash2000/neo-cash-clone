@@ -132,13 +132,19 @@ export interface StudentRecord {
   name: string;
   studentId: string;
   department: string;
+  classYear: string;
+  section: string;
+  semester: string;
   classSection: string;
   session: string;
   email: string;
   phone: string;
-  status: "Active" | "Promoted" | "Pending Dues";
+  status: "Active" | "Promoted" | "Pending Dues" | "Overdue";
+  feeStatus: "Paid" | "Pending" | "Overdue" | "Partial Approved";
+  walletBalance: number;
   totalDues: number;
   verified: boolean;
+  lastActivity: string;
 }
 
 export interface NeoState {
@@ -600,55 +606,136 @@ const INITIAL_STATE: NeoState = {
   students: [
     {
       id: "st-1",
+      name: "Ruhan Dash Dibya",
+      studentId: "DCC-CSE-24-1024",
+      department: "CSE",
+      classYear: "1st Year",
+      section: "Sec A",
+      semester: "2nd Sem",
+      classSection: "CSE 1st Year (Sec A)",
+      session: "2024-2025",
+      email: "student@neocash.ai",
+      phone: "+880 1712-345678",
+      status: "Pending Dues",
+      feeStatus: "Pending",
+      walletBalance: 6500,
+      totalDues: 8500,
+      verified: true,
+      lastActivity: "10 mins ago",
+    },
+    {
+      id: "st-2",
       name: "Shelly Paul",
       studentId: "DCC-2024-8842",
       department: "CSE",
+      classYear: "3rd Semester",
+      section: "Sec A",
+      semester: "3rd Sem",
       classSection: "CSE 3rd Sem (Sec A)",
       session: "2024-2025",
       email: "sp2khb@gmail.com",
       phone: "+880 1712-345678",
       status: "Pending Dues",
-      totalDues: 8500,
+      feeStatus: "Partial Approved",
+      walletBalance: 2400,
+      totalDues: 3500,
       verified: true,
+      lastActivity: "2 hours ago",
     },
     {
-      id: "st-2",
+      id: "st-3",
       name: "Tanzim Hasan",
       studentId: "DCC-2024-8843",
       department: "CSE",
+      classYear: "3rd Semester",
+      section: "Sec A",
+      semester: "3rd Sem",
       classSection: "CSE 3rd Sem (Sec A)",
       session: "2024-2025",
       email: "tanzim.h@dcc.edu.bd",
       phone: "+880 1819-112233",
       status: "Active",
+      feeStatus: "Paid",
+      walletBalance: 12500,
       totalDues: 0,
       verified: true,
+      lastActivity: "1 day ago",
     },
     {
-      id: "st-3",
+      id: "st-4",
       name: "Nusrat Jahan",
       studentId: "DCC-2024-8844",
       department: "BBA",
+      classYear: "2nd Year",
+      section: "Sec B",
+      semester: "1st Sem",
       classSection: "Inter 2nd Year (Sec B)",
       session: "2024-2025",
       email: "nusrat.j@dcc.edu.bd",
       phone: "+880 1912-887766",
-      status: "Pending Dues",
+      status: "Overdue",
+      feeStatus: "Overdue",
+      walletBalance: 500,
       totalDues: 6000,
       verified: true,
+      lastActivity: "3 days ago",
     },
     {
-      id: "st-4",
+      id: "st-5",
       name: "Farhan Ahmed",
       studentId: "DCC-2024-8845",
       department: "EEE",
+      classYear: "1st Semester",
+      section: "Sec A",
+      semester: "1st Sem",
       classSection: "EEE 1st Sem (Sec A)",
       session: "2025-2026",
       email: "farhan.a@dcc.edu.bd",
       phone: "+880 1611-445566",
       status: "Active",
+      feeStatus: "Paid",
+      walletBalance: 8200,
       totalDues: 0,
       verified: true,
+      lastActivity: "4 days ago",
+    },
+    {
+      id: "st-6",
+      name: "Tanvir Rahman",
+      studentId: "DCC-CSE-24-9001",
+      department: "CSE",
+      classYear: "3rd Semester",
+      section: "Sec A",
+      semester: "3rd Sem",
+      classSection: "CSE 3rd Sem (Sec A)",
+      session: "2024-2025",
+      email: "tanvir.r@dcc.edu.bd",
+      phone: "+880 1711-223344",
+      status: "Active",
+      feeStatus: "Paid",
+      walletBalance: 15400,
+      totalDues: 0,
+      verified: true,
+      lastActivity: "5 hours ago",
+    },
+    {
+      id: "st-7",
+      name: "Anika Tabassum",
+      studentId: "DCC-BBA-24-9002",
+      department: "BBA",
+      classYear: "2nd Year",
+      section: "Sec B",
+      semester: "2nd Sem",
+      classSection: "BBA 2nd Sem (Sec B)",
+      session: "2024-2025",
+      email: "anika.t@dcc.edu.bd",
+      phone: "+880 1812-998877",
+      status: "Active",
+      feeStatus: "Paid",
+      walletBalance: 9800,
+      totalDues: 0,
+      verified: true,
+      lastActivity: "1 day ago",
     },
   ],
 };
@@ -857,9 +944,33 @@ export const storeActions = {
     saveState();
   },
 
-  updateStudentProfile(data: Partial<NeoState["studentProfile"]>) {
-    currentState.studentProfile = { ...currentState.studentProfile, ...data };
-    saveState();
+  updateStudentProfile(dataOrStudentId: string | Partial<NeoState["studentProfile"]>, updates?: Partial<StudentRecord>) {
+    if (typeof dataOrStudentId === "string") {
+      const studentId = dataOrStudentId;
+      const student = currentState.students.find((s) => s.id === studentId || s.studentId === studentId);
+      if (!student) return { ok: false, error: "Student profile not found." };
+
+      Object.assign(student, updates || {});
+      if (updates?.department || updates?.classYear || updates?.section) {
+        student.classSection = `${updates.department || student.department} ${updates.classYear || student.classYear} (${updates.section || student.section})`;
+      }
+
+      currentState.auditLogs.unshift({
+        id: "log-" + Date.now(),
+        actor: "Admin (Refat Rahman)",
+        role: "Admin",
+        action: "Updated Student Profile",
+        details: `Updated administrative fields for ${student.name} (${student.studentId}): ${Object.keys(updates || {}).join(", ")}.`,
+        timestamp: new Date().toLocaleString(),
+      });
+
+      saveState();
+      return { ok: true, student };
+    } else {
+      currentState.studentProfile = { ...currentState.studentProfile, ...dataOrStudentId };
+      saveState();
+      return { ok: true };
+    }
   },
 
   /** Process full or partial payment of a fee */
@@ -1294,13 +1405,19 @@ export const storeActions = {
         name: item.name,
         studentId: item.studentId,
         department: item.department || "CSE",
-        classSection: item.classSection || "Inter 1st Year",
+        classYear: "1st Year",
+        section: "Sec A",
+        semester: "1st Sem",
+        classSection: item.classSection || "CSE 1st Year (Sec A)",
         session: "2025-2026",
         email: item.email || `${item.studentId.toLowerCase()}@dcc.edu.bd`,
         phone: "+880 1700-000000",
         status: "Active",
+        feeStatus: "Paid",
+        walletBalance: 0,
         totalDues: 0,
         verified: true,
+        lastActivity: "Just imported",
       });
     });
 
@@ -1493,6 +1610,8 @@ export const storeActions = {
     saveState();
     return { ok: true, count: generatedCount };
   },
+
+
 
     resetDemoState() {
     currentState = JSON.parse(JSON.stringify(INITIAL_STATE));

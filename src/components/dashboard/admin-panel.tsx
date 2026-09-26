@@ -12,12 +12,13 @@
  */
 
 import { useState } from "react";
-import { useNeoStore, PartialApplication, EscalationTicket } from "@/lib/neo-cash-store";
+import { useNeoStore, StudentRecord, PartialApplication, EscalationTicket, NotificationItem } from "@/lib/neo-cash-store";
 import { StatusBadge } from "@/components/design-system/status-badge";
 import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
-  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy, Bell, Zap
+  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy, Bell, Zap,
+  Eye, Edit3, UserCheck, CreditCard, History, Wallet, Calendar, Award, Mail, Phone, Shield, CheckSquare, Layers, Activity, UserX, ChevronRight, Download
 } from "lucide-react";
 
 export function AdminPanel({
@@ -29,9 +30,27 @@ export function AdminPanel({
 }) {
   const [store, actions] = useNeoStore();
 
-  // Student directory search & filters
+  // Student directory search & 6-Dimension Multi-Filters (Phase 12)
   const [studentSearch, setStudentSearch] = useState("");
+  const [filterClass, setFilterClass] = useState("all");
+  const [filterSection, setFilterSection] = useState("all");
   const [filterDept, setFilterDept] = useState("all");
+  const [filterSemester, setFilterSemester] = useState("all");
+  const [filterPaymentStatus, setFilterPaymentStatus] = useState("all");
+  const [filterVerification, setFilterVerification] = useState("all");
+
+  // Selected Student Detail Dossier & Admin Edit Modal (Phase 12)
+  const [selectedStudentDossier, setSelectedStudentDossier] = useState<StudentRecord | null>(null);
+  const [isEditingAdminFields, setIsEditingAdminFields] = useState(false);
+  const [activeDossierTab, setActiveDossierTab] = useState<"identity" | "academic" | "fees" | "transactions" | "wallet" | "partial" | "notifications" | "activity">("identity");
+
+  // Admin Edit Form State
+  const [editStatus, setEditStatus] = useState<StudentRecord["status"]>("Active");
+  const [editClassYear, setEditClassYear] = useState("3rd Year");
+  const [editSection, setEditSection] = useState("Sec A");
+  const [editDepartment, setEditDepartment] = useState("CSE");
+  const [editSemester, setEditSemester] = useState("3rd Sem");
+  const [editVerified, setEditVerified] = useState(true);
 
   // Bulk Fee Assignment Form
   const [bulkTitle, setBulkTitle] = useState("Semester Tuition Fee (Spring 2027)");
@@ -124,11 +143,105 @@ export function AdminPanel({
     alert(`Escalation ticket #${ticketId} marked as Resolved!`);
   };
 
-    const filteredStudents = store.students.filter(
-    (s) =>
-      (s.name.toLowerCase().includes(studentSearch.toLowerCase()) || s.studentId.toLowerCase().includes(studentSearch.toLowerCase())) &&
-      (filterDept === "all" || s.department === filterDept)
-  );
+    // Open Dossier & set up edit form defaults
+  const handleOpenDossier = (student: StudentRecord, editMode = false) => {
+    setSelectedStudentDossier(student);
+    setIsEditingAdminFields(editMode);
+    setActiveDossierTab("identity");
+    setEditStatus(student.status);
+    setEditClassYear(student.classYear || "3rd Year");
+    setEditSection(student.section || "Sec A");
+    setEditDepartment(student.department || "CSE");
+    setEditSemester(student.semester || "3rd Sem");
+    setEditVerified(student.verified ?? true);
+  };
+
+  const handleSaveAdminEdits = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudentDossier) return;
+
+    const res = actions.updateStudentProfile(selectedStudentDossier.id, {
+      status: editStatus,
+      classYear: editClassYear,
+      section: editSection,
+      department: editDepartment,
+      semester: editSemester,
+      verified: editVerified,
+    });
+
+    if (res.ok && res.student) {
+      setSelectedStudentDossier(res.student);
+      setIsEditingAdminFields(false);
+      alert(`Successfully updated administrative profile for ${res.student.name} (${res.student.studentId})!`);
+    } else {
+      alert(res.error || "Failed to update student profile.");
+    }
+  };
+
+  const handlePromoteStudent = (student: StudentRecord) => {
+    const nextSem = student.semester.includes("1st") ? "2nd Sem" : student.semester.includes("2nd") ? "3rd Sem" : "4th Sem";
+    const res = actions.updateStudentProfile(student.id, {
+      semester: nextSem,
+      status: "Promoted",
+    });
+    if (res.ok && res.student) {
+      if (selectedStudentDossier && selectedStudentDossier.id === student.id) {
+        setSelectedStudentDossier(res.student);
+      }
+      alert(`Promoted ${student.name} to ${nextSem}!`);
+    }
+  };
+
+  // Multi-field search & 6-dimension filter calculation
+  const filteredStudents = store.students.filter((s) => {
+    const searchLower = studentSearch.toLowerCase();
+    const matchesSearch =
+      studentSearch === "" ||
+      s.name.toLowerCase().includes(searchLower) ||
+      s.studentId.toLowerCase().includes(searchLower) ||
+      s.email.toLowerCase().includes(searchLower) ||
+      s.department.toLowerCase().includes(searchLower) ||
+      s.classYear.toLowerCase().includes(searchLower) ||
+      s.section.toLowerCase().includes(searchLower);
+
+    const matchesClass = filterClass === "all" || s.classYear === filterClass;
+    const matchesSection = filterSection === "all" || s.section === filterSection;
+    const matchesDept = filterDept === "all" || s.department === filterDept;
+    const matchesSemester = filterSemester === "all" || s.semester === filterSemester;
+    const matchesPayment = filterPaymentStatus === "all" || s.feeStatus === filterPaymentStatus;
+    const matchesVerification =
+      filterVerification === "all" ||
+      (filterVerification === "verified" ? s.verified === true : s.verified === false);
+
+    return (
+      matchesSearch &&
+      matchesClass &&
+      matchesSection &&
+      matchesDept &&
+      matchesSemester &&
+      matchesPayment &&
+      matchesVerification
+    );
+  });
+
+  const hasActiveFilters =
+    studentSearch !== "" ||
+    filterClass !== "all" ||
+    filterSection !== "all" ||
+    filterDept !== "all" ||
+    filterSemester !== "all" ||
+    filterPaymentStatus !== "all" ||
+    filterVerification !== "all";
+
+  const resetFilters = () => {
+    setStudentSearch("");
+    setFilterClass("all");
+    setFilterSection("all");
+    setFilterDept("all");
+    setFilterSemester("all");
+    setFilterPaymentStatus("all");
+    setFilterVerification("all");
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
@@ -539,92 +652,319 @@ export function AdminPanel({
 
       {/* 2. STUDENTS DIRECTORY TAB */}
       {activeTab === "students" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* HEADER BAR */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
             <div>
-              <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-                Student Directory & Class Promotion
-              </h1>
-              <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-                Manage institutional student profiles, department rosters, and promotion queues.
+              <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "#241A14" }}>
+                Institutional Student Directory
+              </h2>
+              <p style={{ margin: "4px 0 0", fontSize: "0.88rem", color: "#66564A" }}>
+                Complete student management directory with administrative field editing and deep financial dossier context.
               </p>
             </div>
-            <button type="button" className="ms-btn-primary" onClick={() => setActiveTab("import")} style={{ background: "#D35400", color: "#FFFFFF", padding: "8px 16px", borderRadius: "10px" }}>
-              <Upload size={16} /> Import Excel
-            </button>
-          </div>
 
-          {/* SEARCH & FILTER BAR */}
-          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <div style={{ position: "relative", flex: "1 1 260px" }}>
-              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
-              <input
-                type="text"
-                placeholder="Search student name or ID..."
-                value={studentSearch}
-                onChange={(e) => setStudentSearch(e.target.value)}
-                style={{ width: "100%", padding: "8px 12px 8px 36px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem" }}
-              />
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <span style={{ fontSize: "0.82rem", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "8px", fontWeight: 700, color: "#66564A" }}>
+                Total Records: <strong style={{ color: "#D35400" }}>{filteredStudents.length}</strong> / {store.students.length}
+              </span>
             </div>
-            <select
-              value={filterDept}
-              onChange={(e) => setFilterDept(e.target.value)}
-              style={{ padding: "8px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem" }}
-            >
-              <option value="all">All Departments</option>
-              <option value="CSE">CSE</option>
-              <option value="EEE">EEE</option>
-              <option value="BBA">BBA</option>
-            </select>
           </div>
 
-          {/* DIRECTORY TABLE */}
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflow: "hidden" }}>
+          {/* 6-DIMENSION FILTERS & SEARCH BAR (PHASE 12) */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            {/* SEARCH ROW */}
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: "260px", position: "relative" }}>
+                <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
+                <input
+                  type="text"
+                  placeholder="Search by student name, ID, email, or department..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px 10px 40px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem", boxSizing: "border-box" }}
+                />
+                {studentSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setStudentSearch("")}
+                    style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#8C7A6A", cursor: "pointer" }}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.5)", color: "#D35400", padding: "9px 14px", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <RefreshCw size={13} /> Reset Filters
+                </button>
+              )}
+            </div>
+
+            {/* 6 FILTER DROPDOWNS */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px" }}>
+              {/* 1. CLASS */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                  Class / Year
+                </label>
+                <select
+                  value={filterClass}
+                  onChange={(e) => setFilterClass(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.82rem", fontWeight: 600 }}
+                >
+                  <option value="all">All Classes</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+              </div>
+
+              {/* 2. SECTION */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                  Section
+                </label>
+                <select
+                  value={filterSection}
+                  onChange={(e) => setFilterSection(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.82rem", fontWeight: 600 }}
+                >
+                  <option value="all">All Sections</option>
+                  <option value="Sec A">Sec A</option>
+                  <option value="Sec B">Sec B</option>
+                  <option value="Sec C">Sec C</option>
+                </select>
+              </div>
+
+              {/* 3. DEPARTMENT */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                  Department
+                </label>
+                <select
+                  value={filterDept}
+                  onChange={(e) => setFilterDept(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.82rem", fontWeight: 600 }}
+                >
+                  <option value="all">All Departments</option>
+                  <option value="CSE">CSE</option>
+                  <option value="EEE">EEE</option>
+                  <option value="BBA">BBA</option>
+                  <option value="Civil">Civil</option>
+                </select>
+              </div>
+
+              {/* 4. SEMESTER */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                  Semester
+                </label>
+                <select
+                  value={filterSemester}
+                  onChange={(e) => setFilterSemester(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.82rem", fontWeight: 600 }}
+                >
+                  <option value="all">All Semesters</option>
+                  <option value="1st Sem">1st Sem</option>
+                  <option value="2nd Sem">2nd Sem</option>
+                  <option value="3rd Sem">3rd Sem</option>
+                  <option value="4th Sem">4th Sem</option>
+                  <option value="5th Sem">5th Sem</option>
+                  <option value="6th Sem">6th Sem</option>
+                  <option value="7th Sem">7th Sem</option>
+                  <option value="8th Sem">8th Sem</option>
+                </select>
+              </div>
+
+              {/* 5. PAYMENT STATUS */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                  Payment Status
+                </label>
+                <select
+                  value={filterPaymentStatus}
+                  onChange={(e) => setFilterPaymentStatus(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.82rem", fontWeight: 600 }}
+                >
+                  <option value="all">All Fee Statuses</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Overdue">Overdue</option>
+                  <option value="Partial Approved">Partial Approved</option>
+                </select>
+              </div>
+
+              {/* 6. VERIFICATION STATUS */}
+              <div>
+                <label style={{ display: "block", fontSize: "0.74rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                  Verification
+                </label>
+                <select
+                  value={filterVerification}
+                  onChange={(e) => setFilterVerification(e.target.value)}
+                  style={{ width: "100%", padding: "8px 10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.82rem", fontWeight: 600 }}
+                >
+                  <option value="all">All Verification</option>
+                  <option value="verified">Verified</option>
+                  <option value="unverified">Unverified / Pending</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* DIRECTORY TABLE (PHASE 12 COLUMNS) */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
               <thead>
                 <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Student Name</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Student ID</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Class & Section</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Email</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Status</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Dues</th>
-                  <th style={{ padding: "12px 18px", fontWeight: 700 }}>Actions</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>ID</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>Department</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>Class/Year</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>Section</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>Fee Status</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>Wallet</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700 }}>Last Activity</th>
+                  <th style={{ padding: "12px 16px", fontWeight: 700, textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredStudents.map((s) => (
-                  <tr key={s.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#241A14" }}>{s.name}</td>
-                    <td style={{ padding: "12px 18px", fontWeight: 700, color: "#D35400" }}>{s.studentId}</td>
-                    <td style={{ padding: "12px 18px", color: "#66564A" }}>{s.classSection}</td>
-                    <td style={{ padding: "12px 18px", color: "#66564A" }}>{s.email}</td>
-                    <td style={{ padding: "12px 18px" }}>
-                      <StatusBadge status={s.status === "Active" ? "verified" : "overdue"} customLabel={s.status} />
-                    </td>
-                    <td style={{ padding: "12px 18px", fontWeight: 800, color: s.totalDues > 0 ? "#BE123C" : "#047857", fontFeatureSettings: "'tnum'" }}>
-                      {formatTaka(s.totalDues, false)}
-                    </td>
-                    <td style={{ padding: "12px 18px" }}>
-                      <button
-                        type="button"
-                        onClick={() => alert(`Promoting ${s.name} to next semester/year.`)}
-                        style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "4px 10px", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                      >
-                        <RefreshCw size={12} /> Promote
-                      </button>
+                {filteredStudents.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} style={{ padding: "32px", textAlign: "center", color: "#8C7A6A" }}>
+                      No student records found matching your active filters.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredStudents.map((s) => (
+                    <tr key={s.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.18)", transition: "background 0.15s ease" }}>
+                      {/* 1. STUDENT */}
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#D35400", fontWeight: 800, fontSize: "0.82rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {s.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                          </div>
+                          <div>
+                            <strong style={{ color: "#241A14", display: "block", fontSize: "0.88rem" }}>{s.name}</strong>
+                            <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{s.email}</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* 2. ID */}
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#D35400", fontSize: "0.82rem", background: "rgba(211, 84, 0, 0.06)", padding: "3px 8px", borderRadius: "6px", border: "1px solid rgba(211, 84, 0, 0.15)" }}>
+                          {s.studentId}
+                        </span>
+                      </td>
+
+                      {/* 3. DEPARTMENT */}
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "3px 8px", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 700 }}>
+                          {s.department}
+                        </span>
+                      </td>
+
+                      {/* 4. CLASS/YEAR */}
+                      <td style={{ padding: "12px 16px", color: "#66564A", fontSize: "0.84rem", fontWeight: 600 }}>
+                        {s.classYear}
+                      </td>
+
+                      {/* 5. SECTION */}
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{ background: "rgba(4, 120, 87, 0.08)", color: "#047857", padding: "2px 7px", borderRadius: "4px", fontSize: "0.78rem", fontWeight: 700 }}>
+                          {s.section}
+                        </span>
+                      </td>
+
+                      {/* 6. FEE STATUS */}
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{
+                          padding: "4px 10px",
+                          borderRadius: "999px",
+                          fontSize: "0.76rem",
+                          fontWeight: 800,
+                          background:
+                            s.feeStatus === "Paid" ? "rgba(4, 120, 87, 0.12)" :
+                            s.feeStatus === "Pending" ? "rgba(217, 119, 6, 0.12)" :
+                            s.feeStatus === "Overdue" ? "rgba(190, 18, 60, 0.12)" :
+                            "rgba(124, 58, 237, 0.12)",
+                          color:
+                            s.feeStatus === "Paid" ? "#047857" :
+                            s.feeStatus === "Pending" ? "#D97706" :
+                            s.feeStatus === "Overdue" ? "#BE123C" :
+                            "#7C3AED",
+                          border: `1px solid ${
+                            s.feeStatus === "Paid" ? "rgba(4, 120, 87, 0.3)" :
+                            s.feeStatus === "Pending" ? "rgba(217, 119, 6, 0.3)" :
+                            s.feeStatus === "Overdue" ? "rgba(190, 18, 60, 0.3)" :
+                            "rgba(124, 58, 237, 0.3)"
+                          }`
+                        }}>
+                          {s.feeStatus}
+                        </span>
+                      </td>
+
+                      {/* 7. WALLET */}
+                      <td style={{ padding: "12px 16px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                        {formatTaka(s.walletBalance, false)}
+                      </td>
+
+                      {/* 8. LAST ACTIVITY */}
+                      <td style={{ padding: "12px 16px", color: "#8C7A6A", fontSize: "0.8rem" }}>
+                        {s.lastActivity}
+                      </td>
+
+                      {/* 9. ACTIONS */}
+                      <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                        <div style={{ display: "inline-flex", gap: "6px" }}>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDossier(s, false)}
+                            style={{ background: "#FFF7E6", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "5px 10px", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            title="View Financial Context & Full Dossier"
+                          >
+                            <Eye size={12} /> Dossier
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDossier(s, true)}
+                            style={{ background: "#FDF9F3", color: "#66564A", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "5px 10px", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            title="Edit Allowed Administrative Fields"
+                          >
+                            <Edit3 size={12} /> Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handlePromoteStudent(s)}
+                            style={{ background: "#FDF9F3", color: "#047857", border: "1px solid rgba(4, 120, 87, 0.3)", padding: "5px 8px", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            title="Promote to Next Semester"
+                          >
+                            <RefreshCw size={12} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
-          {/* PHASE 9 — STUDENT WELFARE & DONATIONS AUDIT LEDGER */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", marginTop: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+          {/* PHASE 9 — WELFARE & DONATIONS AUDIT LEDGER PRESERVED */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
                   Student Welfare & Impact Donations Audit Ledger
                 </h3>
                 <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
@@ -684,7 +1024,6 @@ export function AdminPanel({
         </div>
       )}
 
-      {/* 3. BULK FEE ASSIGNMENT */}
       {activeTab === "bulk" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
@@ -1501,6 +1840,487 @@ export function AdminPanel({
           </div>
         </div>
       )}
+
+      {/* PHASE 12 — STUDENT FINANCIAL DOSSIER & ADMINISTRATIVE EDIT MODAL */}
+      {selectedStudentDossier && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "20px", width: "100%", maxWidth: "950px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.25)", display: "flex", flexDirection: "column" }}>
+            
+            {/* MODAL HEADER */}
+            <div style={{ padding: "20px 24px", background: "#FFF7E6", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "#D35400", color: "#FFFFFF", fontWeight: 800, fontSize: "1.2rem", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 10px rgba(211, 84, 0, 0.3)" }}>
+                  {selectedStudentDossier.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                    <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: "#241A14" }}>
+                      {selectedStudentDossier.name}
+                    </h2>
+                    <span style={{ fontFamily: "monospace", fontSize: "0.82rem", fontWeight: 700, color: "#D35400", background: "rgba(211, 84, 0, 0.1)", padding: "2px 8px", borderRadius: "6px" }}>
+                      {selectedStudentDossier.studentId}
+                    </span>
+                    {selectedStudentDossier.verified && (
+                      <span style={{ background: "rgba(4, 120, 87, 0.12)", color: "#047857", fontSize: "0.74rem", fontWeight: 800, padding: "2px 8px", borderRadius: "999px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <CheckCircle2 size={12} /> Verified
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                    {selectedStudentDossier.department} • {selectedStudentDossier.classYear} ({selectedStudentDossier.section}) • {selectedStudentDossier.email}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingAdminFields(!isEditingAdminFields)}
+                  style={{ background: isEditingAdminFields ? "#D35400" : "#FFFFFF", color: isEditingAdminFields ? "#FFFFFF" : "#D35400", border: "1px solid #D35400", padding: "8px 14px", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <Edit3 size={14} /> {isEditingAdminFields ? "Cancel Edit" : "Edit Admin Fields"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudentDossier(null)}
+                  style={{ background: "none", border: "none", color: "#8C7A6A", cursor: "pointer", padding: "6px" }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* ADMIN EDITABLE FIELDS FORM (WHEN TOGGLED) */}
+            {isEditingAdminFields && (
+              <form onSubmit={handleSaveAdminEdits} style={{ padding: "18px 24px", background: "#FDF9F3", borderBottom: "1.5px solid rgba(211, 84, 0, 0.3)", display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <ShieldCheck size={16} color="#D35400" />
+                  <strong style={{ fontSize: "0.9rem", color: "#241A14" }}>
+                    Edit Administrative & Enrolment Fields
+                  </strong>
+                  <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
+                    (Allowed administrative modifications re-calculate institutional class section string)
+                  </span>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+                  {/* STATUS */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                      Administrative Status
+                    </label>
+                    <select
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value as any)}
+                      style={{ width: "100%", padding: "8px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem", fontWeight: 600 }}
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Promoted">Promoted</option>
+                      <option value="Pending Dues">Pending Dues</option>
+                      <option value="Overdue">Overdue</option>
+                    </select>
+                  </div>
+
+                  {/* DEPARTMENT */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                      Department
+                    </label>
+                    <select
+                      value={editDepartment}
+                      onChange={(e) => setEditDepartment(e.target.value)}
+                      style={{ width: "100%", padding: "8px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem", fontWeight: 600 }}
+                    >
+                      <option value="CSE">CSE</option>
+                      <option value="EEE">EEE</option>
+                      <option value="BBA">BBA</option>
+                      <option value="Civil">Civil</option>
+                    </select>
+                  </div>
+
+                  {/* CLASS / YEAR */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                      Class / Year
+                    </label>
+                    <input
+                      type="text"
+                      value={editClassYear}
+                      onChange={(e) => setEditClassYear(e.target.value)}
+                      placeholder="e.g. 3rd Year"
+                      style={{ width: "100%", padding: "8px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem", fontWeight: 600, boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* SECTION */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                      Section
+                    </label>
+                    <input
+                      type="text"
+                      value={editSection}
+                      onChange={(e) => setEditSection(e.target.value)}
+                      placeholder="e.g. Sec A"
+                      style={{ width: "100%", padding: "8px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem", fontWeight: 600, boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* SEMESTER */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                      Semester
+                    </label>
+                    <input
+                      type="text"
+                      value={editSemester}
+                      onChange={(e) => setEditSemester(e.target.value)}
+                      placeholder="e.g. 3rd Sem"
+                      style={{ width: "100%", padding: "8px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem", fontWeight: 600, boxSizing: "border-box" }}
+                    />
+                  </div>
+
+                  {/* VERIFICATION */}
+                  <div>
+                    <label style={{ display: "block", fontSize: "0.76rem", fontWeight: 700, color: "#66564A", marginBottom: "4px" }}>
+                      Verification Flag
+                    </label>
+                    <select
+                      value={editVerified ? "true" : "false"}
+                      onChange={(e) => setEditVerified(e.target.value === "true")}
+                      style={{ width: "100%", padding: "8px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem", fontWeight: 600 }}
+                    >
+                      <option value="true">Verified Student</option>
+                      <option value="false">Unverified / Pending Verification</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAdminFields(false)}
+                    style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#66564A", padding: "8px 14px", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "8px 18px", borderRadius: "8px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}
+                  >
+                    Save Administrative Changes
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* FINANCIAL SUMMARY SCORECARDS BAR */}
+            <div style={{ padding: "16px 24px", background: "#FFFFFF", borderBottom: "1px solid rgba(196, 154, 108, 0.2)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+              {/* OUTSTANDING DUES */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#66564A", display: "block" }}>Outstanding Dues</span>
+                <strong style={{ fontSize: "1.2rem", fontWeight: 800, color: selectedStudentDossier.totalDues > 0 ? "#BE123C" : "#047857", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(selectedStudentDossier.totalDues, false)}
+                </strong>
+              </div>
+
+              {/* FEE STATUS */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#66564A", display: "block" }}>Current Fee Standing</span>
+                <div style={{ marginTop: "4px" }}>
+                  <span style={{
+                    padding: "4px 10px",
+                    borderRadius: "999px",
+                    fontSize: "0.78rem",
+                    fontWeight: 800,
+                    background: selectedStudentDossier.feeStatus === "Paid" ? "rgba(4, 120, 87, 0.12)" : "rgba(217, 119, 6, 0.12)",
+                    color: selectedStudentDossier.feeStatus === "Paid" ? "#047857" : "#D97706"
+                  }}>
+                    {selectedStudentDossier.feeStatus}
+                  </span>
+                </div>
+              </div>
+
+              {/* WALLET BALANCE */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#66564A", display: "block" }}>Neo Cash Wallet Balance</span>
+                <strong style={{ fontSize: "1.2rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(selectedStudentDossier.walletBalance, false)}
+                </strong>
+              </div>
+
+              {/* WELFARE / IMPACT */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#66564A", display: "block" }}>Welfare & Impact Pts</span>
+                <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginTop: "2px" }}>
+                  <strong style={{ fontSize: "1.2rem", fontWeight: 800, color: "#D35400" }}>
+                    {store.studentProfile.studentId === selectedStudentDossier.studentId ? store.donations.points : 12} Pts
+                  </strong>
+                  <span style={{ fontSize: "0.74rem", color: "#8C7A6A" }}>
+                    ({formatTaka(store.studentProfile.studentId === selectedStudentDossier.studentId ? store.donations.totalDonated : 1200, false)})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* DOSSIER TABS NAVIGATION */}
+            <div style={{ padding: "0 24px", background: "#FFF7E6", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", gap: "4px", overflowX: "auto" }}>
+              {[
+                { id: "identity", label: "Identity", icon: UserCheck },
+                { id: "academic", label: "Academic Info", icon: Award },
+                { id: "fees", label: "Assigned Fees", icon: CreditCard },
+                { id: "transactions", label: "Transactions", icon: FileText },
+                { id: "wallet", label: "Wallet Context", icon: Wallet },
+                { id: "partial", label: "Partial Applications", icon: ShieldCheck },
+                { id: "notifications", label: "Notifications", icon: Bell },
+                { id: "activity", label: "Activity Log", icon: Activity },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeDossierTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveDossierTab(tab.id as any)}
+                    style={{
+                      padding: "12px 14px",
+                      background: "none",
+                      border: "none",
+                      borderBottom: isActive ? "3px solid #D35400" : "3px solid transparent",
+                      color: isActive ? "#D35400" : "#66564A",
+                      fontWeight: isActive ? 800 : 600,
+                      fontSize: "0.82rem",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <Icon size={14} /> {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* DOSSIER TAB CONTENT BODY */}
+            <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+              
+              {/* 1. IDENTITY TAB */}
+              {activeDossierTab === "identity" && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+                  <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+                    <h4 style={{ margin: "0 0 12px", fontSize: "0.92rem", color: "#241A14", fontWeight: 800 }}>
+                      Student Identity Details
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.84rem" }}>
+                      <div><strong style={{ color: "#66564A" }}>Full Legal Name:</strong> <span style={{ color: "#241A14", fontWeight: 700 }}>{selectedStudentDossier.name}</span></div>
+                      <div><strong style={{ color: "#66564A" }}>Institutional ID:</strong> <span style={{ color: "#D35400", fontWeight: 700 }}>{selectedStudentDossier.studentId}</span></div>
+                      <div><strong style={{ color: "#66564A" }}>Email Address:</strong> <span style={{ color: "#241A14" }}>{selectedStudentDossier.email}</span></div>
+                      <div><strong style={{ color: "#66564A" }}>Mobile Phone:</strong> <span style={{ color: "#241A14" }}>{selectedStudentDossier.phone}</span></div>
+                      <div><strong style={{ color: "#66564A" }}>Account Status:</strong> <span style={{ color: "#047857", fontWeight: 700 }}>{selectedStudentDossier.status}</span></div>
+                    </div>
+                  </div>
+
+                  <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+                    <h4 style={{ margin: "0 0 12px", fontSize: "0.92rem", color: "#241A14", fontWeight: 800 }}>
+                      Verification & Security Context
+                    </h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.84rem" }}>
+                      <div><strong style={{ color: "#66564A" }}>SSO Verified:</strong> <span style={{ color: selectedStudentDossier.verified ? "#047857" : "#BE123C", fontWeight: 700 }}>{selectedStudentDossier.verified ? "Yes (Identity Confirmed)" : "Pending Review"}</span></div>
+                      <div><strong style={{ color: "#66564A" }}>NID / Birth Certificate:</strong> <span style={{ color: "#241A14" }}>19982691048123904</span></div>
+                      <div><strong style={{ color: "#66564A" }}>Guardian Contact:</strong> <span style={{ color: "#241A14" }}>Md. Rafiqul Islam (+880 1711-908234)</span></div>
+                      <div><strong style={{ color: "#66564A" }}>Last Recorded Login:</strong> <span style={{ color: "#8C7A6A" }}>{selectedStudentDossier.lastActivity}</span></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2. ACADEMIC INFO TAB */}
+              {activeDossierTab === "academic" && (
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", fontSize: "0.86rem" }}>
+                  <div><span style={{ fontSize: "0.76rem", color: "#8C7A6A", display: "block" }}>Department</span><strong style={{ color: "#241A14" }}>{selectedStudentDossier.department}</strong></div>
+                  <div><span style={{ fontSize: "0.76rem", color: "#8C7A6A", display: "block" }}>Class & Year</span><strong style={{ color: "#241A14" }}>{selectedStudentDossier.classYear}</strong></div>
+                  <div><span style={{ fontSize: "0.76rem", color: "#8C7A6A", display: "block" }}>Section</span><strong style={{ color: "#047857" }}>{selectedStudentDossier.section}</strong></div>
+                  <div><span style={{ fontSize: "0.76rem", color: "#8C7A6A", display: "block" }}>Semester</span><strong style={{ color: "#241A14" }}>{selectedStudentDossier.semester}</strong></div>
+                  <div><span style={{ fontSize: "0.76rem", color: "#8C7A6A", display: "block" }}>Academic Session</span><strong style={{ color: "#241A14" }}>{selectedStudentDossier.session}</strong></div>
+                  <div><span style={{ fontSize: "0.76rem", color: "#8C7A6A", display: "block" }}>Combined Designation</span><strong style={{ color: "#D35400" }}>{selectedStudentDossier.classSection}</strong></div>
+                </div>
+              )}
+
+              {/* 3. FEES TAB */}
+              {activeDossierTab === "fees" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#241A14", fontWeight: 800 }}>
+                    Institutional Fee Obligations
+                  </h4>
+                  <div style={{ border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", overflow: "hidden" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem" }}>
+                      <thead>
+                        <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A" }}>
+                          <th style={{ padding: "10px 14px" }}>Fee Title</th>
+                          <th style={{ padding: "10px 14px" }}>Category</th>
+                          <th style={{ padding: "10px 14px" }}>Due Date</th>
+                          <th style={{ padding: "10px 14px" }}>Total Amount</th>
+                          <th style={{ padding: "10px 14px" }}>Paid Standing</th>
+                          <th style={{ padding: "10px 14px" }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {store.fees.map((f) => (
+                          <tr key={f.id} style={{ borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                            <td style={{ padding: "10px 14px", fontWeight: 700, color: "#241A14" }}>{f.title}</td>
+                            <td style={{ padding: "10px 14px", color: "#66564A" }}>{f.category}</td>
+                            <td style={{ padding: "10px 14px", color: "#8C7A6A" }}>{f.dueDate}</td>
+                            <td style={{ padding: "10px 14px", fontWeight: 700, fontFeatureSettings: "'tnum'" }}>{formatTaka(f.amount, false)}</td>
+                            <td style={{ padding: "10px 14px", fontWeight: 700, color: f.status === "paid" ? "#047857" : "#D35400", fontFeatureSettings: "'tnum'" }}>
+                              {f.status === "paid" ? formatTaka(f.amount, false) : formatTaka(f.approvedPartialAmount || 0, false)}
+                            </td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ padding: "2px 8px", borderRadius: "999px", fontSize: "0.74rem", fontWeight: 800, background: f.status === "paid" ? "rgba(4, 120, 87, 0.12)" : "rgba(217, 119, 6, 0.12)", color: f.status === "paid" ? "#047857" : "#D97706" }}>
+                                {f.status.toUpperCase()}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. TRANSACTIONS TAB */}
+              {activeDossierTab === "transactions" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#241A14", fontWeight: 800 }}>
+                    Payment Ledger & Digital Receipts History
+                  </h4>
+                  <div style={{ border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", overflow: "hidden" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.84rem" }}>
+                      <thead>
+                        <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A" }}>
+                          <th style={{ padding: "10px 14px" }}>TXN ID</th>
+                          <th style={{ padding: "10px 14px" }}>Date</th>
+                          <th style={{ padding: "10px 14px" }}>Description</th>
+                          <th style={{ padding: "10px 14px" }}>Method</th>
+                          <th style={{ padding: "10px 14px" }}>Amount</th>
+                          <th style={{ padding: "10px 14px" }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {store.transactions.map((t) => (
+                          <tr key={t.id} style={{ borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                            <td style={{ padding: "10px 14px", fontFamily: "monospace", fontWeight: 700, color: "#D35400" }}>{t.id}</td>
+                            <td style={{ padding: "10px 14px", color: "#8C7A6A" }}>{t.date}</td>
+                            <td style={{ padding: "10px 14px", fontWeight: 600, color: "#241A14" }}>{t.title}</td>
+                            <td style={{ padding: "10px 14px", color: "#66564A" }}>{t.method}</td>
+                            <td style={{ padding: "10px 14px", fontWeight: 800, color: "#047857", fontFeatureSettings: "'tnum'" }}>{formatTaka(t.amount, false)}</td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ padding: "2px 8px", borderRadius: "999px", fontSize: "0.74rem", fontWeight: 800, background: "rgba(4, 120, 87, 0.12)", color: "#047857" }}>
+                                {t.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* 5. WALLET TAB */}
+              {activeDossierTab === "wallet" && (
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#241A14", fontWeight: 800 }}>
+                        Student Digital Wallet Context
+                      </h4>
+                      <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#66564A" }}>
+                        Digital wallet used for direct automated fee settlement and top-ups.
+                      </p>
+                    </div>
+                    <strong style={{ fontSize: "1.25rem", color: "#D35400", fontFeatureSettings: "'tnum'" }}>
+                      {formatTaka(selectedStudentDossier.walletBalance, false)}
+                    </strong>
+                  </div>
+                  <div style={{ background: "#FFFFFF", padding: "12px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.2)", fontSize: "0.84rem", color: "#66564A" }}>
+                    Primary Linked Mobile Wallet: <strong>bKash Account (+880 1711-908234)</strong> • Status: <strong>Active & Verified</strong>
+                  </div>
+                </div>
+              )}
+
+              {/* 6. PARTIAL PAYMENT APPLICATIONS TAB */}
+              {activeDossierTab === "partial" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#241A14", fontWeight: 800 }}>
+                    Partial Payment Hardship Applications
+                  </h4>
+                  {store.partialApplications.length === 0 ? (
+                    <p style={{ fontSize: "0.84rem", color: "#8C7A6A", margin: 0 }}>No partial payment applications on record.</p>
+                  ) : (
+                    store.partialApplications.map((app) => (
+                      <div key={app.id} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <strong style={{ color: "#241A14", fontSize: "0.9rem" }}>{app.feeTitle}</strong>
+                          <span style={{ padding: "3px 10px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 800, background: (app.status === "approved_head" || app.status === "paid") ? "rgba(4, 120, 87, 0.12)" : "rgba(217, 119, 6, 0.12)", color: (app.status === "approved_head" || app.status === "paid") ? "#047857" : "#D97706" }}>
+                            {app.status.replace("_", " ").toUpperCase()}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: "0.84rem", color: "#66564A" }}>
+                          Total Fee: <strong>{formatTaka(app.originalAmount, false)}</strong> • Requested Instalment: <strong style={{ color: "#D35400" }}>{formatTaka(app.requestedAmount, false)}</strong>
+                        </div>
+                        <p style={{ margin: 0, fontSize: "0.82rem", color: "#241A14", fontStyle: "italic", background: "#FFFFFF", padding: "8px 12px", borderRadius: "6px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                          "{app.reason}"
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {/* 7. NOTIFICATIONS TAB */}
+              {activeDossierTab === "notifications" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#241A14", fontWeight: 800 }}>
+                    Transmitted Student Alerts & Notices
+                  </h4>
+                  {store.notifications.map((n: NotificationItem) => (
+                    <div key={n.id} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <strong style={{ color: "#241A14", fontSize: "0.86rem", display: "block" }}>{n.title}</strong>
+                        <span style={{ fontSize: "0.8rem", color: "#66564A" }}>{n.message}</span>
+                      </div>
+                      <span style={{ fontSize: "0.76rem", color: "#8C7A6A", whiteSpace: "nowrap" }}>{n.date}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* 8. ACTIVITY TIMELINE TAB */}
+              {activeDossierTab === "activity" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <h4 style={{ margin: 0, fontSize: "0.95rem", color: "#241A14", fontWeight: 800 }}>
+                    Student Audit Log & Activity Feed
+                  </h4>
+                  {store.auditLogs.map((log) => (
+                    <div key={log.id} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <strong style={{ color: "#241A14", fontSize: "0.86rem", display: "block" }}>{log.action}</strong>
+                        <span style={{ fontSize: "0.8rem", color: "#66564A" }}>{log.details}</span>
+                      </div>
+                      <span style={{ fontSize: "0.76rem", color: "#8C7A6A", whiteSpace: "nowrap" }}>{log.timestamp}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
