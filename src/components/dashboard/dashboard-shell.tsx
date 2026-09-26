@@ -9,7 +9,7 @@
  */
 
 import { useState } from "react";
-import { useNeoStore, Role, Transaction } from "@/lib/neo-cash-store";
+import { useNeoStore, Role, Transaction, DEMO_STUDENTS_LIST } from "@/lib/neo-cash-store";
 import { OnboardingFlow } from "./onboarding-flow";
 import { StudentPanel } from "./student-panel";
 import { AdminPanel } from "./admin-panel";
@@ -56,6 +56,30 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
         </div>
 
         <div className="demo-role-pills">
+          {store.role === "student" && (
+            <select
+              value={store.studentProfile.studentId}
+              onChange={(e) => actions.switchDemoStudent(e.target.value)}
+              style={{
+                background: "#2E2017",
+                color: "#FF8C42",
+                border: "1px solid rgba(196, 154, 108, 0.4)",
+                borderRadius: "6px",
+                padding: "3px 8px",
+                fontSize: "0.78rem",
+                fontWeight: 700,
+                outline: "none",
+                cursor: "pointer",
+              }}
+            >
+              {DEMO_STUDENTS_LIST.map((std) => (
+                <option key={std.id} value={std.studentId}>
+                  👤 {std.name} ({std.studentId})
+                </option>
+              ))}
+            </select>
+          )}
+
           <button
             type="button"
             className={`demo-role-btn ${store.role === "student" ? "is-active" : ""}`}

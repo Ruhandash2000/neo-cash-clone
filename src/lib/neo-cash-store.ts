@@ -116,12 +116,13 @@ export interface NeoState {
     availableBalance: number;
     walletBalance: number;
     totalDue: number;
-    monthlySpending: number;
+    paidThisMonth: number;
+    pendingAmount: number;
   };
   paymentMethods: Array<{
     id: string;
     name: string;
-    type: "bkash" | "rocket" | "visa" | "mastercard" | "card";
+    type: "bkash" | "rocket" | "nagad" | "visa" | "mastercard" | "card";
     account: string;
     isDefault?: boolean;
   }>;
@@ -153,22 +154,23 @@ const INITIAL_STATE: NeoState = {
     verified: true,
   },
   studentProfile: {
-    name: "Shelly Paul",
-    studentId: "DCC-2024-8842",
+    name: "Ruhan Dash Dibya",
+    studentId: "DCC-CSE-24-1024",
     institution: "Dhaka City College",
     department: "Computer Science & Engineering",
-    classSection: "CSE 3rd Semester (Sec A)",
-    session: "2024-2025",
-    email: "sp2khb@gmail.com",
+    classSection: "1st Year / 2nd Semester",
+    session: "2024–2025",
+    email: "student@neocash.ai",
     phone: "+880 1712-345678",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Shelly",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ruhan",
     isVerified: true,
   },
   balances: {
-    availableBalance: 14500,
-    walletBalance: 4250,
+    availableBalance: 24580,
+    walletBalance: 6500,
     totalDue: 8500,
-    monthlySpending: 3800,
+    paidThisMonth: 12000,
+    pendingAmount: 2000,
   },
   paymentMethods: [
     { id: "pm-1", name: "bKash Mobile Banking", type: "bkash", account: "+880 17****5678", isDefault: true },
@@ -239,12 +241,12 @@ const INITIAL_STATE: NeoState = {
     },
   ],
   donations: {
-    totalDonated: 500,
-    points: 5, // ৳500 / 100 = 5 Points
-    rankClass: 3,
-    rankDept: 7,
-    rankInstitution: 14,
-    rankNational: 42,
+    totalDonated: 1200,
+    points: 12, // ৳1,200 / 100 = 12 Points
+    rankClass: 4,
+    rankDept: 4,
+    rankInstitution: 18,
+    rankNational: 126,
   },
   transactions: [
     {
@@ -419,9 +421,151 @@ export function useNeoStore(): [NeoState, typeof storeActions] {
   return [state, storeActions];
 }
 
+export interface DemoStudentProfile {
+  id: string;
+  name: string;
+  studentId: string;
+  institution: string;
+  department: string;
+  classSection: string;
+  session: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  balances: {
+    availableBalance: number;
+    walletBalance: number;
+    totalDue: number;
+    paidThisMonth: number;
+    pendingAmount: number;
+  };
+  donations: {
+    totalDonated: number;
+    points: number;
+    rankClass: number;
+    rankDept: number;
+    rankInstitution: number;
+    rankNational: number;
+  };
+}
+
+export const DEMO_STUDENTS_LIST: DemoStudentProfile[] = [
+  {
+    id: "st-1",
+    name: "Ruhan Dash Dibya",
+    studentId: "DCC-CSE-24-1024",
+    institution: "Dhaka City College",
+    department: "Computer Science & Engineering",
+    classSection: "1st Year / 2nd Semester",
+    session: "2024–2025",
+    email: "student@neocash.ai",
+    phone: "+880 1712-345678",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ruhan",
+    balances: { availableBalance: 24580, walletBalance: 6500, totalDue: 8500, paidThisMonth: 12000, pendingAmount: 2000 },
+    donations: { totalDonated: 1200, points: 12, rankClass: 4, rankDept: 4, rankInstitution: 18, rankNational: 126 },
+  },
+  {
+    id: "st-2",
+    name: "Shelly Paul",
+    studentId: "DCC-CSE-24-8842",
+    institution: "Dhaka City College",
+    department: "Computer Science & Engineering",
+    classSection: "2nd Year / 3rd Semester",
+    session: "2024–2025",
+    email: "sp2khb@gmail.com",
+    phone: "+880 1712-998877",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Shelly",
+    balances: { availableBalance: 14500, walletBalance: 4250, totalDue: 7500, paidThisMonth: 5000, pendingAmount: 2500 },
+    donations: { totalDonated: 500, points: 5, rankClass: 3, rankDept: 7, rankInstitution: 14, rankNational: 42 },
+  },
+  {
+    id: "st-3",
+    name: "Tanzim Hasan",
+    studentId: "DU-EEE-23-4012",
+    institution: "University of Dhaka",
+    department: "Electrical & Electronic Engineering",
+    classSection: "3rd Year / 5th Semester",
+    session: "2023–2024",
+    email: "tanzim.h@du.ac.bd",
+    phone: "+880 1819-112233",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Tanzim",
+    balances: { availableBalance: 38200, walletBalance: 12000, totalDue: 0, paidThisMonth: 18500, pendingAmount: 0 },
+    donations: { totalDonated: 2500, points: 25, rankClass: 1, rankDept: 1, rankInstitution: 5, rankNational: 12 },
+  },
+  {
+    id: "st-4",
+    name: "Nusrat Jahan",
+    studentId: "DC-BBA-24-9011",
+    institution: "Dhaka College",
+    department: "Business Administration",
+    classSection: "1st Year / 1st Semester",
+    session: "2024–2025",
+    email: "nusrat.j@dc.edu.bd",
+    phone: "+880 1912-887766",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Nusrat",
+    balances: { availableBalance: 12000, walletBalance: 3500, totalDue: 6000, paidThisMonth: 4000, pendingAmount: 1500 },
+    donations: { totalDonated: 300, points: 3, rankClass: 12, rankDept: 12, rankInstitution: 45, rankNational: 310 },
+  },
+  {
+    id: "st-5",
+    name: "Farhan Ahmed",
+    studentId: "SUST-SWE-22-1104",
+    institution: "Shahjalal Univ of Sci & Tech",
+    department: "Software Engineering",
+    classSection: "4th Year / 7th Semester",
+    session: "2022–2023",
+    email: "farhan.a@sust.edu",
+    phone: "+880 1611-445566",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Farhan",
+    balances: { availableBalance: 45000, walletBalance: 15000, totalDue: 3500, paidThisMonth: 9000, pendingAmount: 0 },
+    donations: { totalDonated: 1800, points: 18, rankClass: 2, rankDept: 2, rankInstitution: 10, rankNational: 64 },
+  },
+  {
+    id: "st-6",
+    name: "Anika Tabassum",
+    studentId: "BUET-ME-23-7721",
+    institution: "BUET",
+    department: "Mechanical Engineering",
+    classSection: "2nd Year / 4th Semester",
+    session: "2023–2024",
+    email: "anika.t@buet.ac.bd",
+    phone: "+880 1512-334455",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Anika",
+    balances: { availableBalance: 29400, walletBalance: 8200, totalDue: 12000, paidThisMonth: 15000, pendingAmount: 4000 },
+    donations: { totalDonated: 1500, points: 15, rankClass: 5, rankDept: 5, rankInstitution: 22, rankNational: 98 },
+  },
+];
+
 export const storeActions = {
   setRole(role: Role) {
     currentState.role = role;
+    saveState();
+  },
+
+  switchDemoStudent(studentId: string) {
+    const profile = DEMO_STUDENTS_LIST.find((s) => s.id === studentId || s.studentId === studentId);
+    if (!profile) return;
+    currentState.studentProfile = {
+      name: profile.name,
+      studentId: profile.studentId,
+      institution: profile.institution,
+      department: profile.department,
+      classSection: profile.classSection,
+      session: profile.session,
+      email: profile.email,
+      phone: profile.phone,
+      avatar: profile.avatar,
+      isVerified: true,
+    };
+    currentState.selectedInstitution = {
+      name: profile.institution,
+      type: "Academic Institution",
+      location: "Bangladesh",
+      logo: "🏛️",
+      verified: true,
+    };
+    currentState.balances = { ...profile.balances };
+    currentState.donations = { ...profile.donations };
     saveState();
   },
 
@@ -465,7 +609,7 @@ export const storeActions = {
     }
     currentState.balances.availableBalance -= payAmount;
     currentState.balances.totalDue = Math.max(0, currentState.balances.totalDue - payAmount);
-    currentState.balances.monthlySpending += payAmount;
+    currentState.balances.paidThisMonth += payAmount;
 
     // Update fee status
     targetFee.status = "paid";

@@ -216,102 +216,286 @@ export function StudentPanel({
           </div>
 
           {/* LEVEL 2: PRIMARY FINANCIAL SUMMARY (SURFACE HIERARCHY) */}
-          <div className="ms-grid-3">
-            {/* HERO METRIC CARD — AVAILABLE BALANCE */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+            {/* HERO METRIC CARD — AVAILABLE BALANCE (VISUALLY DOMINANT) */}
             <div
               style={{
                 background: "#FFFFFF",
                 border: "2px solid #D35400",
                 borderRadius: "16px",
-                padding: "24px",
-                boxShadow: "0 6px 20px rgba(211, 84, 0, 0.08)",
+                padding: "20px 24px",
+                boxShadow: "0 8px 24px rgba(211, 84, 0, 0.1)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
+                gridColumn: "span 2",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  AVAILABLE BALANCE
+                <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  AVAILABLE BALANCE (PRIMARY)
                 </span>
-                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "3px 8px", borderRadius: "999px", fontWeight: 700 }}>
-                  PRIMARY
+                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                  ACTIVE WALLET
                 </span>
               </div>
 
-              <div style={{ margin: "14px 0 8px" }}>
-                <span style={{ fontSize: "2.35rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em", fontFeatureSettings: "'tnum'" }}>
+              <div style={{ margin: "10px 0 6px" }}>
+                <span style={{ fontSize: "2.4rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em", fontFeatureSettings: "'tnum'" }}>
                   {formatTaka(store.balances.availableBalance, false)}
                 </span>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.8rem", color: "#047857", fontWeight: 600 }}>
-                <CheckCircle2 size={14} />
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.82rem", color: "#047857", fontWeight: 700 }}>
+                <CheckCircle2 size={15} />
                 <span>Includes {formatTaka(store.balances.walletBalance, false)} in Neo Digital Wallet</span>
               </div>
             </div>
 
-            {/* SECONDARY METRIC CARD — TOTAL DUES PENDING */}
+            {/* SECONDARY METRIC CARD — TOTAL DUE */}
             <div
               style={{
                 background: "#FFFFFF",
                 border: "1px solid rgba(196, 154, 108, 0.3)",
                 borderRadius: "16px",
-                padding: "24px",
-                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
+                padding: "18px 20px",
+                boxShadow: "0 3px 10px rgba(36, 26, 20, 0.03)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  TOTAL DUES PENDING
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>
+                  TOTAL DUE
                 </span>
-                <StatusBadge status="due" customLabel="Action Needed" />
+                <StatusBadge status="due" customLabel="Due Soon" />
               </div>
 
-              <div style={{ margin: "14px 0 8px" }}>
-                <span style={{ fontSize: "1.85rem", fontWeight: "800", color: "#BE123C", letterSpacing: "-0.02em", fontFeatureSettings: "'tnum'" }}>
+              <div style={{ margin: "8px 0 4px" }}>
+                <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
                   {formatTaka(store.balances.totalDue, false)}
                 </span>
               </div>
 
-              <div style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>
-                Next due date: <strong style={{ color: "#241A14" }}>Oct 15, 2026</strong>
+              <div style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
+                Next Deadline: <strong style={{ color: "#241A14" }}>Oct 15, 2026</strong>
               </div>
             </div>
 
-            {/* SECONDARY METRIC CARD — DONATION POINTS */}
+            {/* SECONDARY METRIC CARD — PAID THIS MONTH */}
             <div
               style={{
                 background: "#FFFFFF",
                 border: "1px solid rgba(196, 154, 108, 0.3)",
                 borderRadius: "16px",
-                padding: "24px",
-                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
+                padding: "18px 20px",
+                boxShadow: "0 3px 10px rgba(36, 26, 20, 0.03)",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  DONATION IMPACT
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>
+                  PAID THIS MONTH
                 </span>
-                <span style={{ fontSize: "0.75rem", background: "rgba(247, 183, 51, 0.2)", color: "#B45309", padding: "3px 8px", borderRadius: "999px", fontWeight: 700 }}>
-                  RANK #3
-                </span>
-              </div>
-
-              <div style={{ margin: "14px 0 8px" }}>
-                <span style={{ fontSize: "1.85rem", fontWeight: 800, color: "#D35400", letterSpacing: "-0.02em" }}>
-                  {store.donations.points} Pts
+                <span style={{ fontSize: "0.72rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
+                  SETTLED
                 </span>
               </div>
 
-              <div style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>
-                Total Contributed: <strong style={{ color: "#241A14" }}>{formatTaka(store.donations.totalDonated, false)}</strong>
+              <div style={{ margin: "8px 0 4px" }}>
+                <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "#047857", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(store.balances.paidThisMonth || 12000, false)}
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
+                Verified by Digital Receipts
+              </div>
+            </div>
+
+            {/* SECONDARY METRIC CARD — PENDING APPL/DUES */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                border: "1px solid rgba(196, 154, 108, 0.3)",
+                borderRadius: "16px",
+                padding: "18px 20px",
+                boxShadow: "0 3px 10px rgba(36, 26, 20, 0.03)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>
+                  PENDING
+                </span>
+                <StatusBadge status="pending" customLabel="In Review" />
+              </div>
+
+              <div style={{ margin: "8px 0 4px" }}>
+                <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "#D35400", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(store.balances.pendingAmount || 2000, false)}
+                </span>
+              </div>
+
+              <div style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
+                Partial Application in Review
+              </div>
+            </div>
+          </div>
+
+          {/* QUICK ACTIONS BAR */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+            <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Quick Actions
+            </span>
+
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab("fees")}
+                style={{
+                  background: "#FFF7E6",
+                  border: "1px solid rgba(196, 154, 108, 0.4)",
+                  color: "#241A14",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <CreditCard size={15} style={{ color: "#D35400" }} /> Pay Fees
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowTopUpModal(true)}
+                style={{
+                  background: "#FFF7E6",
+                  border: "1px solid rgba(196, 154, 108, 0.4)",
+                  color: "#241A14",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <Wallet size={15} style={{ color: "#D35400" }} /> Wallet
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("transactions")}
+                style={{
+                  background: "#FFF7E6",
+                  border: "1px solid rgba(196, 154, 108, 0.4)",
+                  color: "#241A14",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <FileText size={15} style={{ color: "#D35400" }} /> Transactions
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("ai")}
+                style={{
+                  background: "#211710",
+                  color: "#FF8C42",
+                  border: "none",
+                  padding: "8px 16px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                  fontSize: "0.85rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <Sparkles size={15} /> AI Assistant
+              </button>
+            </div>
+          </div>
+
+          {/* AI ASSISTANT FINANCIAL PROCESS PREVIEW & INSTITUTIONAL NOTICES */}
+          <div className="ms-grid-2">
+            {/* AI ASSISTANT PREVIEW CARD */}
+            <div style={{ background: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "16px", padding: "20px", color: "#FFF7E6", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "#FF8C42", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Sparkles size={16} /> NEO AI FINANCIAL ASSISTANT
+                  </span>
+                  <span style={{ fontSize: "0.72rem", background: "rgba(255, 140, 66, 0.2)", color: "#FF8C42", padding: "2px 8px", borderRadius: "999px" }}>
+                    PROCESS AI
+                  </span>
+                </div>
+
+                <div style={{ background: "#3D2B1F", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)", marginBottom: "10px", fontSize: "0.88rem" }}>
+                  <p style={{ margin: 0, color: "#FF8C42", fontWeight: 700, fontSize: "0.78rem", marginBottom: "2px" }}>Student Question:</p>
+                  <p style={{ margin: 0, fontStyle: "italic", color: "#FFF7E6" }}>"I can't pay my full tuition this month."</p>
+                </div>
+
+                <div style={{ background: "rgba(211, 84, 0, 0.15)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(211, 84, 0, 0.3)", fontSize: "0.88rem", marginBottom: "16px" }}>
+                  <p style={{ margin: 0, color: "#F7B733", fontWeight: 700, fontSize: "0.78rem", marginBottom: "2px" }}>Neo AI Guidance:</p>
+                  <p style={{ margin: 0, color: "#FFF7E6" }}>"You may apply for Partial Payment. I can guide you through the required guardian documents & AI signature verification."</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("ai")}
+                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 18px", borderRadius: "10px", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+              >
+                <Sparkles size={16} /> Ask Neo AI
+              </button>
+            </div>
+
+            {/* INSTITUTIONAL NOTICES FEED */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                  <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700, color: "#241A14" }}>
+                    Institutional Notices & Alerts
+                  </h3>
+                  <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>{store.notifications.length} Active</span>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {store.notifications.slice(0, 3).map((notif) => (
+                    <div key={notif.id} style={{ padding: "10px 12px", background: "#FFF7E6", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
+                        <strong style={{ fontSize: "0.85rem", color: "#241A14" }}>{notif.title}</strong>
+                        <span style={{ fontSize: "0.72rem", color: "#8C7A6A" }}>{notif.date}</span>
+                      </div>
+                      <p style={{ margin: 0, fontSize: "0.8rem", color: "#66564A" }}>{notif.message}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginTop: "14px", fontSize: "0.78rem", color: "#8C7A6A", textAlign: "right" }}>
+                Official Notices verified by {store.studentProfile.institution}
               </div>
             </div>
           </div>
