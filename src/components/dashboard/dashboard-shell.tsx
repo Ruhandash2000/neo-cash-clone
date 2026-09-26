@@ -20,7 +20,7 @@ import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
   ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X, Palette, Wallet, MessageSquare
+  LogOut, Layers, AlertCircle, X, Palette, Wallet, MessageSquare, Activity
 } from "lucide-react";
 
 export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
