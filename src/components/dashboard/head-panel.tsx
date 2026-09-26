@@ -1086,6 +1086,112 @@ export function HeadPanel({
         </div>
       )}
 
+      {/* EXECUTIVE READ-ONLY STUDENT DIRECTORY (PHASE 24 INTEGRATION) */}
+      {activeTab === "students" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* HEADER BAR */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
+                  EXECUTIVE VIEW • READ-ONLY AUDIT
+                </span>
+              </div>
+              <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "#241A14" }}>
+                Institutional Student Directory
+              </h2>
+              <p style={{ margin: "2px 0 0", fontSize: "0.88rem", color: "#66564A" }}>
+                Executive view of enrolled student profiles, academic status, and total fee balances.
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <span style={{ fontSize: "0.82rem", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "8px", fontWeight: 700, color: "#66564A" }}>
+                Total Enrolled Students: <strong style={{ color: "#D35400" }}>{store.students.length}</strong>
+              </span>
+            </div>
+          </div>
+          {/* SEARCH & DEPT FILTER BAR */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "16px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: "260px", position: "relative" }}>
+              <Search size={16} style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
+              <input
+                type="text"
+                placeholder="Search by student name, ID, or email..."
+                value={headStudentSearch}
+                onChange={(e) => setHeadStudentSearch(e.target.value)}
+                style={{ width: "100%", padding: "9px 14px 9px 40px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem" }}
+              />
+            </div>
+            <select
+              value={headDeptFilter}
+              onChange={(e) => setHeadDeptFilter(e.target.value)}
+              style={{ padding: "9px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", fontWeight: 700, fontSize: "0.84rem", outline: "none" }}
+            >
+              <option value="all">All Departments</option>
+              <option value="CSE">CSE</option>
+              <option value="EEE">EEE</option>
+              <option value="BBA">BBA</option>
+              <option value="Civil">Civil</option>
+            </select>
+          </div>
+          {/* READ-ONLY STUDENT TABLE */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student ID</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Department</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Class & Year</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Fee Status</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700, textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {store.students
+                    .filter((s) => {
+                      const matchQuery = !headStudentSearch || s.name.toLowerCase().includes(headStudentSearch.toLowerCase()) || s.studentId.toLowerCase().includes(headStudentSearch.toLowerCase());
+                      const matchDept = headDeptFilter === "all" || s.department === headDeptFilter;
+                      return matchQuery && matchDept;
+                    })
+                    .map((student) => (
+                      <tr key={student.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                        <td style={{ padding: "12px 16px" }}>
+                          <strong style={{ color: "#241A14", display: "block" }}>{student.name}</strong>
+                          <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{student.email}</span>
+                        </td>
+                        <td style={{ padding: "12px 16px" }}>
+                          <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#D35400", background: "rgba(211, 84, 0, 0.08)", padding: "2px 6px", borderRadius: "4px" }}>
+                            {student.studentId}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px 16px", color: "#241A14", fontWeight: 600 }}>{student.department}</td>
+                        <td style={{ padding: "12px 16px", color: "#66564A" }}>{student.classYear} ({student.section})</td>
+                        <td style={{ padding: "12px 16px" }}>
+                          <StatusBadge
+                            status={student.feeStatus === "Paid" ? "approved" : student.feeStatus === "Overdue" ? "rejected" : "pending"}
+                            customLabel={student.feeStatus}
+                          />
+                        </td>
+                        <td style={{ padding: "12px 16px", textAlign: "right" }}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedStudentHead(student)}
+                            style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.3)", color: "#D35400", padding: "5px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <Eye size={14} /> View Record
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* EXECUTIVE DECISION MODAL — PHASE 20 FINAL APPROVAL CENTER */}
       {execApp && (
         <div className="ms-modal-overlay">
