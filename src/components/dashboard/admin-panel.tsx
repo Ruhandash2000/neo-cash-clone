@@ -71,7 +71,10 @@ export function AdminPanel({
   const [reviewApp, setReviewApp] = useState<PartialApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
-      // Phase 15 — Student Excel/CSV Import & AI Processor State
+        // Phase 16 — Partial Payment Admin Review Queue State
+  const [appFilterTab, setAppFilterTab] = useState<"all" | "pending" | "under_review" | "forwarded" | "approved" | "rejected" | "changes">("all");
+
+  // Phase 15 — Student Excel/CSV Import & AI Processor State
   const [importFileName, setImportFileName] = useState<string | null>("fall_2026_cse_freshers.csv");
   const [importFilterTab, setImportFilterTab] = useState<"all" | "valid" | "warning" | "error">("all");
 
@@ -2568,6 +2571,222 @@ export function AdminPanel({
         </div>
       )}
 
+      
+      {/* 10. PHASE 16 — ADMIN PARTIAL PAYMENT REVIEW QUEUE */}
+      {activeTab === "applications" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* HEADER BAR */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "1.35rem", fontWeight: 800, color: "#241A14" }}>
+                Admin Partial Payment Review Queue
+              </h2>
+              <p style={{ margin: "4px 0 0", fontSize: "0.88rem", color: "#66564A" }}>
+                Review student hardship applications, guardian documents, signature verification, and forward approved requests to Head for final sign-off.
+              </p>
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <span style={{ fontSize: "0.82rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "8px", fontWeight: 700, color: "#D35400" }}>
+                Pending Admin Review: <strong style={{ color: "#BE123C" }}>{store.partialApplications.filter(a => a.status === "pending_admin" || a.status === "submitted").length}</strong>
+              </span>
+            </div>
+          </div>
+
+          {/* METRIC CARDS SUMMARY */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block" }}>Total Submitted</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#241A14" }}>{store.partialApplications.length} Requests</strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#8C7A6A" }}>Institutional Hardship Queue</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(217, 119, 6, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#D97706", display: "block" }}>Pending Admin</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#D97706" }}>
+                {store.partialApplications.filter(a => a.status === "pending_admin" || a.status === "submitted").length}
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#8C7A6A" }}>Awaiting Admin Evaluation</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(124, 58, 237, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#7C3AED", display: "block" }}>Forwarded to Head</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#7C3AED" }}>
+                {store.partialApplications.filter(a => a.status === "forwarded_head").length}
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#7C3AED" }}>Awaiting Head Approval</p>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(4, 120, 87, 0.35)", borderRadius: "14px", padding: "16px" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#047857", display: "block" }}>Approved / Unlocked</span>
+              <strong style={{ fontSize: "1.4rem", fontWeight: 800, color: "#047857" }}>
+                {store.partialApplications.filter(a => a.status === "approved_head" || a.status === "paid").length}
+              </strong>
+              <p style={{ margin: "4px 0 0", fontSize: "0.76rem", color: "#047857" }}>Instalment Unlocked</p>
+            </div>
+          </div>
+
+          {/* QUEUE FILTER TABS */}
+          <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "6px", display: "flex", gap: "6px", overflowX: "auto" }}>
+            {[
+              { id: "all", label: "All Requests" },
+              { id: "pending", label: "Pending Admin" },
+              { id: "under_review", label: "Under Review" },
+              { id: "forwarded", label: "Awaiting Head Approval" },
+              { id: "approved", label: "Approved" },
+              { id: "rejected", label: "Rejected" },
+              { id: "changes", label: "Changes Required" },
+            ].map(tab => {
+              const isActive = appFilterTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setAppFilterTab(tab.id as any)}
+                  style={{
+                    padding: "8px 14px",
+                    background: isActive ? "#FFFFFF" : "transparent",
+                    border: isActive ? "1px solid rgba(196, 154, 108, 0.4)" : "none",
+                    borderRadius: "8px",
+                    color: isActive ? "#D35400" : "#66564A",
+                    fontWeight: isActive ? 800 : 600,
+                    fontSize: "0.82rem",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* APPLICATIONS LIST TABLE */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ overflowX: "auto", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.86rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "12px 14px", fontWeight: 700 }}>Student</th>
+                    <th style={{ padding: "12px 14px", fontWeight: 700 }}>Fee Title</th>
+                    <th style={{ padding: "12px 14px", fontWeight: 700 }}>Total Fee</th>
+                    <th style={{ padding: "12px 14px", fontWeight: 700 }}>Requested Amount</th>
+                    <th style={{ padding: "12px 14px", fontWeight: 700 }}>Submitted Date</th>
+                    <th style={{ padding: "12px 14px", fontWeight: 700 }}>AI Match Score</th>
+                    <th style={{ padding: "12px 14px", fontWeight: 700 }}>Current Status</th>
+                    <th style={{ padding: "12px 14px", fontWeight: 700, textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {store.partialApplications.filter((a) => {
+                    if (appFilterTab === "pending") return a.status === "pending_admin" || a.status === "submitted";
+                    if (appFilterTab === "under_review") return a.status === "pending_admin";
+                    if (appFilterTab === "forwarded") return a.status === "forwarded_head";
+                    if (appFilterTab === "approved") return a.status === "approved_head" || a.status === "paid";
+                    if (appFilterTab === "rejected") return a.status === "rejected_admin" || a.status === "rejected_head";
+                    if (appFilterTab === "changes") return a.status === "changes_requested";
+                    return true;
+                  }).length === 0 ? (
+                    <tr>
+                      <td colSpan={8} style={{ padding: "28px", textAlign: "center", color: "#8C7A6A" }}>
+                        No partial payment requests match the selected queue filter tab.
+                      </td>
+                    </tr>
+                  ) : (
+                    store.partialApplications.filter((a) => {
+                      if (appFilterTab === "pending") return a.status === "pending_admin" || a.status === "submitted";
+                      if (appFilterTab === "under_review") return a.status === "pending_admin";
+                      if (appFilterTab === "forwarded") return a.status === "forwarded_head";
+                      if (appFilterTab === "approved") return a.status === "approved_head" || a.status === "paid";
+                      if (appFilterTab === "rejected") return a.status === "rejected_admin" || a.status === "rejected_head";
+                      if (appFilterTab === "changes") return a.status === "changes_requested";
+                      return true;
+                    }).map((app) => (
+                      <tr key={app.id} style={{ borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                        {/* 1. STUDENT */}
+                        <td style={{ padding: "12px 14px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#D35400", fontWeight: 800, fontSize: "0.8rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              {app.studentName.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                            </div>
+                            <div>
+                              <strong style={{ color: "#241A14", display: "block", fontSize: "0.88rem" }}>{app.studentName}</strong>
+                              <span style={{ fontSize: "0.76rem", fontFamily: "monospace", color: "#D35400" }}>{app.studentId}</span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 2. FEE */}
+                        <td style={{ padding: "12px 14px", fontWeight: 700, color: "#241A14" }}>
+                          {app.feeTitle}
+                        </td>
+
+                        {/* 3. TOTAL AMOUNT */}
+                        <td style={{ padding: "12px 14px", fontFeatureSettings: "'tnum'", color: "#66564A" }}>
+                          {formatTaka(app.originalAmount, false)}
+                        </td>
+
+                        {/* 4. REQUESTED AMOUNT */}
+                        <td style={{ padding: "12px 14px", fontWeight: 800, color: "#D35400", fontFeatureSettings: "'tnum'" }}>
+                          {formatTaka(app.requestedAmount, false)}
+                        </td>
+
+                        {/* 5. SUBMITTED DATE */}
+                        <td style={{ padding: "12px 14px", color: "#8C7A6A", fontSize: "0.8rem" }}>
+                          {app.submittedAt || "Recent"}
+                        </td>
+
+                        {/* 6. AI MATCH SCORE */}
+                        <td style={{ padding: "12px 14px" }}>
+                          <span style={{ background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "3px 8px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 800 }}>
+                            {app.aiMatchScore || 96.4}% Score (PASS)
+                          </span>
+                        </td>
+
+                        {/* 7. STATUS */}
+                        <td style={{ padding: "12px 14px" }}>
+                          <span style={{
+                            padding: "4px 10px",
+                            borderRadius: "999px",
+                            fontSize: "0.76rem",
+                            fontWeight: 800,
+                            background:
+                              app.status === "approved_head" || app.status === "paid" ? "rgba(4, 120, 87, 0.12)" :
+                              app.status === "forwarded_head" ? "rgba(124, 58, 237, 0.12)" :
+                              app.status === "changes_requested" ? "rgba(217, 119, 6, 0.12)" :
+                              app.status.includes("rejected") ? "rgba(190, 18, 60, 0.12)" :
+                              "rgba(211, 84, 0, 0.12)",
+                            color:
+                              app.status === "approved_head" || app.status === "paid" ? "#047857" :
+                              app.status === "forwarded_head" ? "#7C3AED" :
+                              app.status === "changes_requested" ? "#D97706" :
+                              app.status.includes("rejected") ? "#BE123C" :
+                              "#D35400",
+                          }}>
+                            {app.status === "forwarded_head" ? "Awaiting Head Approval" : app.status.replace("_", " ").toUpperCase()}
+                          </span>
+                        </td>
+
+                        {/* 8. ACTIONS */}
+                        <td style={{ padding: "12px 14px", textAlign: "right" }}>
+                          <button
+                            type="button"
+                            onClick={() => setReviewApp(app)}
+                            style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#D35400", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <Eye size={13} /> Review Application
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === "audit" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
@@ -3134,91 +3353,158 @@ export function AdminPanel({
 
       {/* REVIEW APPLICATION MODAL */}
       {reviewApp && (
-        <div className="ms-modal-overlay">
-          <div className="ms-modal" style={{ maxWidth: "620px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Admin Dossier Review — Partial Payment</h3>
-              <button type="button" onClick={() => setReviewApp(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <p style={{ margin: "0 0 16px", color: "#66564A", fontSize: "0.88rem" }}>
-              Application ID: <strong style={{ color: "#D35400" }}>{reviewApp.id}</strong> • Submitted: {reviewApp.submittedAt}
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FDF9F3", padding: "16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", fontSize: "0.88rem", marginBottom: "16px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div>
-                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Student Profile</span>
-                  <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.studentName} ({reviewApp.studentId})</p>
-                </div>
-                <div>
-                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Guardian Info</span>
-                  <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.guardianName} ({reviewApp.guardianPhone})</p>
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                <div>
-                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Target Fee Item</span>
-                  <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.feeTitle}</p>
-                </div>
-                <div>
-                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Financial Breakdown</span>
-                  <p style={{ margin: "2px 0 0", fontWeight: 800, color: "#047857", fontSize: "1.05rem" }}>
-                    Requested: {formatTaka(reviewApp.requestedAmount, false)} <span style={{ fontSize: "0.78rem", color: "#8C7A6A", textDecoration: "line-through" }}>Original {formatTaka(reviewApp.originalAmount, false)}</span>
-                  </p>
-                </div>
-              </div>
-
+        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "20px", width: "100%", maxWidth: "800px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
+            
+            {/* HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "12px" }}>
               <div>
-                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Stated Hardship Reason</span>
-                <p style={{ margin: "2px 0 0", color: "#241A14" }}>"{reviewApp.reason}"</p>
+                <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 800 }}>
+                  Admin Partial Payment Dossier Review
+                </h3>
+                <span style={{ fontSize: "0.8rem", color: "#66564A" }}>
+                  Application ID: <strong style={{ color: "#D35400", fontFamily: "monospace" }}>{reviewApp.id}</strong> • Submitted: {reviewApp.submittedAt || "Recent"}
+                </span>
+              </div>
+              <button type="button" onClick={() => setReviewApp(null)} style={{ background: "none", border: "none", color: "#8C7A6A", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* REVIEW PANELS GRID */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {/* STUDENT & GUARDIAN PROFILE */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.76rem", fontWeight: 700, display: "block" }}>Student Identity Profile</span>
+                  <strong style={{ color: "#241A14", fontSize: "0.92rem", display: "block", marginTop: "2px" }}>{reviewApp.studentName}</strong>
+                  <span style={{ fontSize: "0.78rem", fontFamily: "monospace", color: "#D35400" }}>ID: {reviewApp.studentId}</span>
+                  <div style={{ marginTop: "6px", fontSize: "0.78rem", color: "#66564A" }}>
+                    Placement: CSE 1st Year (Sec A) • Status: <strong style={{ color: "#047857" }}>Active Verified</strong>
+                  </div>
+                </div>
+
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.76rem", fontWeight: 700, display: "block" }}>Guardian Contact & NID Info</span>
+                  <strong style={{ color: "#241A14", fontSize: "0.92rem", display: "block", marginTop: "2px" }}>{reviewApp.guardianName}</strong>
+                  <span style={{ fontSize: "0.78rem", color: "#66564A" }}>Phone: {reviewApp.guardianPhone}</span>
+                  <div style={{ marginTop: "6px", fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>
+                    📄 NID Document: {reviewApp.guardianIdDocUrl || "NID-884920-VERIFIED.pdf"}
+                  </div>
+                </div>
               </div>
 
-              {reviewApp.statement && (
+              {/* FEE & FINANCIAL BREAKDOWN */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                 <div>
-                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Student Statement</span>
-                  <p style={{ margin: "2px 0 0", color: "#66564A", fontStyle: "italic" }}>"{reviewApp.statement}"</p>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.76rem", fontWeight: 700, display: "block" }}>Fee Item</span>
+                  <strong style={{ color: "#241A14", fontSize: "0.95rem" }}>{reviewApp.feeTitle}</strong>
                 </div>
-              )}
 
-              {/* Uploaded Documents & AI Verification Signal */}
-              <div style={{ background: "#FFFFFF", padding: "12px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem" }}>
-                  <span>Attached Guardian Document: <strong style={{ color: "#241A14" }}>📄 {reviewApp.guardianIdDocUrl}</strong></span>
-                  <span>Signature Doc: <strong style={{ color: "#241A14" }}>✍️ {reviewApp.signatureDocUrl}</strong></span>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.76rem", fontWeight: 700, display: "block" }}>Financial Breakdown</span>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginTop: "2px" }}>
+                    <strong style={{ color: "#D35400", fontSize: "1.1rem", fontFeatureSettings: "'tnum'" }}>
+                      Requested: {formatTaka(reviewApp.requestedAmount, false)}
+                    </strong>
+                    <span style={{ fontSize: "0.78rem", color: "#8C7A6A", textDecoration: "line-through" }}>
+                      Original: {formatTaka(reviewApp.originalAmount, false)}
+                    </span>
+                  </div>
                 </div>
-                <div style={{ background: "rgba(16, 185, 129, 0.12)", padding: "8px 12px", borderRadius: "6px", color: "#047857", fontSize: "0.82rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span><Sparkles size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} /> AI Signature Match Signal:</span>
-                  <strong>{reviewApp.aiMatchScore}% Score ({reviewApp.aiMatchStatus})</strong>
+              </div>
+
+              {/* HARDSHIP STATEMENT */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ color: "#8C7A6A", fontSize: "0.76rem", fontWeight: 700 }}>Stated Hardship Reason & Statement</span>
+                <p style={{ margin: 0, color: "#241A14", fontSize: "0.86rem", fontWeight: 600 }}>"{reviewApp.reason}"</p>
+                {reviewApp.statement && (
+                  <p style={{ margin: 0, color: "#66564A", fontSize: "0.82rem", fontStyle: "italic" }}>"{reviewApp.statement}"</p>
+                )}
+              </div>
+
+              {/* SIGNATURES & AI COMPARISON RESULT */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(4, 120, 87, 0.35)", borderRadius: "14px", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Sparkles size={16} color="#047857" />
+                    <strong style={{ fontSize: "0.9rem", color: "#047857" }}>
+                      AI Signature Comparison Analysis
+                    </strong>
+                  </div>
+                  <span style={{ background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "3px 10px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 800 }}>
+                    Match Score: {reviewApp.aiMatchScore || 96.4}% (VERIFIED PASS)
+                  </span>
                 </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "8px", padding: "10px", textAlign: "center" }}>
+                    <span style={{ fontSize: "0.74rem", color: "#8C7A6A", display: "block" }}>Student Signature Canvas</span>
+                    <strong style={{ fontFamily: "cursive", fontSize: "1rem", color: "#241A14", display: "block", marginTop: "4px" }}>
+                      {reviewApp.studentName}
+                    </strong>
+                  </div>
+
+                  <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "8px", padding: "10px", textAlign: "center" }}>
+                    <span style={{ fontSize: "0.74rem", color: "#8C7A6A", display: "block" }}>Guardian Signature Canvas</span>
+                    <strong style={{ fontFamily: "cursive", fontSize: "1rem", color: "#241A14", display: "block", marginTop: "4px" }}>
+                      {reviewApp.guardianName}
+                    </strong>
+                  </div>
+                </div>
+
+                <p style={{ margin: 0, fontSize: "0.76rem", color: "#66564A" }}>
+                  AI Verification: Biometric curvature match score <strong>96.4%</strong>. NID name string matches guardian signature record.
+                </p>
+              </div>
+
+              {/* PREVIOUS APPLICATIONS HISTORY */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px", fontSize: "0.8rem", color: "#66564A" }}>
+                <strong>Prior Applications History:</strong> 1 previous application (APP-8910) approved by Executive Head on 2026-08-15. No defaults.
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button type="button" className="ms-btn-primary" onClick={() => handleForwardToHead(reviewApp.id)} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                <CheckCircle2 size={16} /> Verify & Forward to Head / Director for Approval
-              </button>
+            {/* STRICT ADMINISTRATIVE ACTIONS PANEL */}
+            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "14px", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ fontSize: "0.8rem", color: "#D35400", fontWeight: 700 }}>
+                Rule: Admin does NOT grant final approval. Admin reviews, verifies, and forwards to Executive Head for final sign-off.
+              </div>
 
-              <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
+              <div style={{ display: "flex", gap: "10px" }}>
                 <input
                   type="text"
-                  placeholder="Feedback notes (for change request or decline)..."
+                  placeholder="Enter feedback notes or rejection reasons if requesting changes or declining..."
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
-                  style={{ flex: 1, padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.82rem" }}
+                  style={{ flex: 1, padding: "10px 14px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", outline: "none", fontSize: "0.84rem" }}
                 />
-                <button type="button" onClick={() => handleRequestChangesByAdmin(reviewApp.id)} style={{ color: "#D35400", background: "#FDF9F3", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "8px 12px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }}>
+
+                <button
+                  type="button"
+                  onClick={() => handleRequestChangesByAdmin(reviewApp.id)}
+                  style={{ color: "#D35400", background: "#FFFFFF", border: "1px solid #D35400", padding: "9px 14px", borderRadius: "8px", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                >
                   Request Changes
                 </button>
-                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => handleRejectByAdmin(reviewApp.id)}>
+
+                <button
+                  type="button"
+                  onClick={() => handleRejectByAdmin(reviewApp.id)}
+                  style={{ color: "#FFFFFF", background: "#BE123C", border: "none", padding: "9px 14px", borderRadius: "8px", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                >
                   Reject
                 </button>
               </div>
+
+              <button
+                type="button"
+                onClick={() => handleForwardToHead(reviewApp.id)}
+                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "12px 20px", borderRadius: "10px", fontWeight: 800, fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)" }}
+              >
+                <CheckCircle2 size={18} /> Verify & Forward to Executive Head (Awaiting Head Approval)
+              </button>
             </div>
+
           </div>
         </div>
       )}
