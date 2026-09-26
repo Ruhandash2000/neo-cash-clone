@@ -12,12 +12,12 @@
  */
 
 import { useState } from "react";
-import { useNeoStore, PartialApplication } from "@/lib/neo-cash-store";
+import { useNeoStore, PartialApplication, EscalationTicket } from "@/lib/neo-cash-store";
 import { StatusBadge } from "@/components/design-system/status-badge";
 import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
-  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles
+  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy
 } from "lucide-react";
 
 export function AdminPanel({
@@ -52,6 +52,12 @@ export function AdminPanel({
   // Selected Application for Review Modal
   const [reviewApp, setReviewApp] = useState<PartialApplication | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+
+  // Human Support Escalations Queue State (Phase 8)
+  const [selectedEscalation, setSelectedEscalation] = useState<EscalationTicket | null>(null);
+  const [adminReplyInput, setAdminReplyInput] = useState("");
+  const [escalationFilter, setEscalationFilter] = useState<"all" | "open" | "in_progress" | "resolved">("all");
+  const [escalationSearch, setEscalationSearch] = useState("");
 
   const handleBulkAssign = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +101,30 @@ export function AdminPanel({
     alert(`Application ${appId} declined.`);
   };
 
-  const filteredStudents = store.students.filter(
+  const handleSendAdminReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEscalation) return;
+    if (!adminReplyInput.trim()) return alert("Enter your response for the student.");
+
+    const res = actions.replyEscalation(selectedEscalation.id, adminReplyInput.trim(), "admin");
+    if (res.ok && res.ticket) {
+      setSelectedEscalation(res.ticket);
+      setAdminReplyInput("");
+      alert("Admin response transmitted to student chat thread!");
+    } else {
+      alert(res.error || "Failed to submit response.");
+    }
+  };
+
+  const handleResolveTicket = (ticketId: string) => {
+    actions.resolveEscalation(ticketId);
+    if (selectedEscalation && selectedEscalation.id === ticketId) {
+      setSelectedEscalation({ ...selectedEscalation, status: "resolved" });
+    }
+    alert(`Escalation ticket #${ticketId} marked as Resolved!`);
+  };
+
+    const filteredStudents = store.students.filter(
     (s) =>
       (s.name.toLowerCase().includes(studentSearch.toLowerCase()) || s.studentId.toLowerCase().includes(studentSearch.toLowerCase())) &&
       (filterDept === "all" || s.department === filterDept)
@@ -614,7 +643,325 @@ export function AdminPanel({
         </div>
       )}
 
-      {/* REVIEW APPLICATION MODAL */}
+            {/* 6. HUMAN SUPPORT ESCALATION QUEUE (PHASE 8) */}
+      {activeTab === "escalations" && (() => {
+        const escalationsList = store.escalations || [];
+        const openCount = escalationsList.filter(e => e.status === "open").length;
+        const progressCount = escalationsList.filter(e => e.status === "in_progress").length;
+        const resolvedCount = escalationsList.filter(e => e.status === "resolved").length;
+
+        const filteredTickets = escalationsList.filter(t => {
+          if (escalationFilter === "open" && t.status !== "open") return false;
+          if (escalationFilter === "in_progress" && t.status !== "in_progress") return false;
+          if (escalationFilter === "resolved" && t.status !== "resolved") return false;
+
+          if (escalationSearch.trim()) {
+            const q = escalationSearch.toLowerCase().trim();
+            const matchId = t.id.toLowerCase().includes(q);
+            const matchName = t.studentName.toLowerCase().includes(q);
+            const matchIdNum = t.studentId.toLowerCase().includes(q);
+            const matchSubject = t.subject.toLowerCase().includes(q);
+            if (!matchId && !matchName && !matchIdNum && !matchSubject) return false;
+          }
+          return true;
+        });
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            
+            {/* PAGE HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                  Human Support Escalation Queue
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Review and reply to student support inquiries escalated from the Neo AI Financial Assistant.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "999px", fontWeight: 700, color: "#241A14", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <ShieldCheck size={14} style={{ color: "#047857" }} /> Institutional Support Desk
+                </span>
+              </div>
+            </div>
+
+            {/* METRIC SUMMARY CARDS */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+              <div style={{ background: "#FFFFFF", border: openCount > 0 ? "2px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Open Pending Escalations</span>
+                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#241A14" }}>{openCount} Ticket{openCount !== 1 ? "s" : ""}</h2>
+              </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>In Progress (Under Review)</span>
+                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#9A6600" }}>{progressCount} Ticket{progressCount !== 1 ? "s" : ""}</h2>
+              </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Resolved Support Tickets</span>
+                <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#047857" }}>{resolvedCount} Ticket{resolvedCount !== 1 ? "s" : ""}</h2>
+              </div>
+            </div>
+
+            {/* FILTER TABS & SEARCH BAR */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "18px 20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+                
+                {/* Filter Tabs */}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  {[
+                    { id: "all", label: "All Support Tickets", count: escalationsList.length },
+                    { id: "open", label: "Open", count: openCount },
+                    { id: "in_progress", label: "In Progress", count: progressCount },
+                    { id: "resolved", label: "Resolved", count: resolvedCount },
+                  ].map((tab) => {
+                    const isActive = escalationFilter === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setEscalationFilter(tab.id as any)}
+                        style={{
+                          background: isActive ? "#D35400" : "#FDF9F3",
+                          color: isActive ? "#FFFFFF" : "#241A14",
+                          border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
+                          padding: "6px 14px",
+                          borderRadius: "999px",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        {tab.label}
+                        <span style={{ background: isActive ? "rgba(255,255,255,0.25)" : "rgba(36,26,20,0.08)", padding: "2px 6px", borderRadius: "999px", fontSize: "0.74rem" }}>
+                          {tab.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Search Bar */}
+                <div style={{ position: "relative", minWidth: "260px", flex: "1 1 260px", maxWidth: "360px" }}>
+                  <Search size={15} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#8C7A6A" }} />
+                  <input
+                    type="text"
+                    placeholder="Search by student name, ID, or subject..."
+                    value={escalationSearch}
+                    onChange={(e) => setEscalationSearch(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px 8px 34px",
+                      background: "#FDF9F3",
+                      border: "1px solid rgba(196, 154, 108, 0.35)",
+                      borderRadius: "10px",
+                      color: "#241A14",
+                      fontSize: "0.84rem",
+                      outline: "none",
+                    }}
+                  />
+                  {escalationSearch && (
+                    <button type="button" onClick={() => setEscalationSearch("")} style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#8C7A6A", cursor: "pointer" }}>
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+            {/* TICKETS TABLE LISTING */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
+              {filteredTickets.length === 0 ? (
+                <div style={{ padding: "48px 20px", textAlign: "center", color: "#66564A" }}>
+                  <MessageSquare size={42} style={{ color: "#8C7A6A", marginBottom: "12px" }} />
+                  <h4 style={{ margin: "0 0 6px", color: "#241A14", fontSize: "1.1rem" }}>No support escalations found</h4>
+                  <p style={{ margin: 0, fontSize: "0.86rem" }}>No student tickets match the selected filter or search terms.</p>
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                    <thead>
+                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Ticket ID</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Student Dossier</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Institution & Dept</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Subject</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Logged At</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700 }}>Status</th>
+                        <th style={{ padding: "14px 18px", fontWeight: 700, textAlign: "right" }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTickets.map((ticket) => (
+                        <tr key={ticket.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                          <td style={{ padding: "14px 18px", fontWeight: 800, color: "#D35400" }}>
+                            #{ticket.id}
+                          </td>
+                          <td style={{ padding: "14px 18px" }}>
+                            <strong style={{ color: "#241A14", display: "block" }}>{ticket.studentName}</strong>
+                            <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>ID: {ticket.studentId}</span>
+                          </td>
+                          <td style={{ padding: "14px 18px", color: "#66564A" }}>
+                            <div>{ticket.institution}</div>
+                            <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{ticket.department}</span>
+                          </td>
+                          <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14" }}>
+                            {ticket.subject}
+                            <span style={{ fontSize: "0.75rem", color: "#8C7A6A", display: "block", marginTop: "2px" }}>
+                              {ticket.messages.length} message(s) in thread
+                            </span>
+                          </td>
+                          <td style={{ padding: "14px 18px", color: "#66564A", fontSize: "0.82rem" }}>
+                            {ticket.createdAt}
+                          </td>
+                          <td style={{ padding: "14px 18px" }}>
+                            <StatusBadge
+                              status={ticket.status === "resolved" ? "approved" : ticket.status === "in_progress" ? "pending" : "due"}
+                              customLabel={ticket.status === "open" ? "Open Ticket" : ticket.status === "in_progress" ? "In Progress" : "Resolved"}
+                            />
+                          </td>
+                          <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedEscalation(ticket)}
+                              style={{
+                                background: "#D35400",
+                                color: "#FFFFFF",
+                                border: "none",
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                fontSize: "0.8rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: "6px",
+                              }}
+                            >
+                              <MessageSquare size={14} /> Respond & View Thread 💬
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+          </div>
+        );
+      })()}
+
+      {/* ESCALATION TICKET RESPONSE MODAL */}
+      {selectedEscalation && (
+        <div className="ms-modal-overlay">
+          <div className="ms-modal" style={{ maxWidth: "680px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "12px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.25rem", fontWeight: 800 }}>
+                    Support Escalation #{selectedEscalation.id}
+                  </h3>
+                  <StatusBadge
+                    status={selectedEscalation.status === "resolved" ? "approved" : selectedEscalation.status === "in_progress" ? "pending" : "due"}
+                    customLabel={selectedEscalation.status}
+                  />
+                </div>
+                <p style={{ margin: 0, color: "#66564A", fontSize: "0.84rem" }}>
+                  Student: <strong>{selectedEscalation.studentName}</strong> ({selectedEscalation.studentId}) • {selectedEscalation.institution}
+                </p>
+              </div>
+
+              <button type="button" onClick={() => setSelectedEscalation(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              
+              {/* Subject Banner */}
+              <div style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "12px 16px", borderRadius: "10px", color: "#241A14", fontWeight: 700, fontSize: "0.92rem" }}>
+                Topic: {selectedEscalation.subject}
+              </div>
+
+              {/* Conversation Thread */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "16px", maxHeight: "280px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                  Conversation Thread
+                </span>
+                
+                {selectedEscalation.messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    style={{
+                      alignSelf: msg.sender === "admin" ? "flex-end" : "flex-start",
+                      maxWidth: "85%",
+                      background: msg.sender === "admin" ? "#D35400" : msg.sender === "ai" ? "#FFFFFF" : "#FFF7E6",
+                      color: msg.sender === "admin" ? "#FFFFFF" : "#241A14",
+                      padding: "12px 14px",
+                      borderRadius: "12px",
+                      border: msg.sender === "admin" ? "none" : "1px solid rgba(196, 154, 108, 0.3)",
+                      fontSize: "0.88rem",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <span style={{ fontSize: "0.72rem", fontWeight: 800, display: "block", marginBottom: "4px", color: msg.sender === "admin" ? "#FFF7E6" : "#D35400" }}>
+                      {msg.senderName || msg.sender} • {msg.timestamp}
+                    </span>
+                    <div>{msg.text}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Admin Response Form */}
+              <form onSubmit={handleSendAdminReply} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "6px" }}>
+                    Official Admin Response to Student Thread
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={adminReplyInput}
+                    onChange={(e) => setAdminReplyInput(e.target.value)}
+                    placeholder="Type official institutional guidance or decision for the student..."
+                    style={{ width: "100%", padding: "12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleResolveTicket(selectedEscalation.id)}
+                    style={{ background: "#FDF9F3", color: "#047857", border: "1px solid rgba(16, 185, 129, 0.4)", padding: "8px 16px", borderRadius: "10px", fontSize: "0.84rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <CheckCircle2 size={16} /> Mark Ticket Resolved
+                  </button>
+
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button type="button" className="ms-btn-secondary" onClick={() => setSelectedEscalation(null)} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 16px", borderRadius: "10px", fontWeight: 600, fontSize: "0.85rem" }}>
+                      Close
+                    </button>
+                    <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "8px 18px", borderRadius: "10px", fontWeight: 700, fontSize: "0.85rem", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <Send size={15} /> Send Admin Reply 🚀
+                    </button>
+                  </div>
+                </div>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+
+{/* REVIEW APPLICATION MODAL */}
       {reviewApp && (
         <div className="ms-modal-overlay">
           <div className="ms-modal" style={{ maxWidth: "620px" }}>

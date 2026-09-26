@@ -20,7 +20,7 @@ import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
   ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X, Palette, Wallet
+  LogOut, Layers, AlertCircle, X, Palette, Wallet, MessageSquare
 } from "lucide-react";
 
 export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
@@ -194,6 +194,16 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 <li className="ms-nav-item">
                   <button className={activeTab === "audit" ? "is-active" : ""} onClick={() => setActiveTab("audit")}>
                     <FileText size={18} /> Audit Trail
+                  </button>
+                </li>
+                <li className="ms-nav-item">
+                  <button className={activeTab === "escalations" ? "is-active" : ""} onClick={() => setActiveTab("escalations")}>
+                    <MessageSquare size={18} /> Support Queue
+                    {(store.escalations?.filter((e) => e.status === "open").length || 0) > 0 && (
+                      <span style={{ background: "#D35400", color: "#FFFFFF", padding: "2px 6px", borderRadius: "999px", fontSize: "0.72rem", marginLeft: "6px", fontWeight: 700 }}>
+                        {store.escalations?.filter((e) => e.status === "open").length}
+                      </span>
+                    )}
                   </button>
                 </li>
               </>

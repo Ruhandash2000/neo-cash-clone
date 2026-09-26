@@ -22,7 +22,7 @@ import {
   Wallet, CreditCard, DollarSign, ArrowUpRight, ArrowDownLeft, ShieldCheck,
   FileText, Sparkles, AlertCircle, HeartHandshake, Award, TrendingUp, Download,
   CheckCircle2, Clock, Send, MessageSquare, PlusCircle, Eye, X, Search, Filter,
-  Calendar, Info, AlertTriangle, ChevronRight
+  Calendar, Info, AlertTriangle, ChevronRight, LifeBuoy, UserCheck, CornerDownRight
 } from "lucide-react";
 
 function mapFeeStatus(status: string): StatusType {
@@ -91,9 +91,39 @@ export function StudentPanel({
   const [txnSearchQuery, setTxnSearchQuery] = useState<string>("");
   const [selectedDetailTxn, setSelectedDetailTxn] = useState<Transaction | null>(null);
 
-  // AI Chat Assistant State
-  const [chatMessages, setChatMessages] = useState<Array<{ sender: "user" | "ai"; text: string; time: string }>>([
-    { sender: "ai", text: "Hello Ruhan! I am your Neo AI Student Financial Assistant. You can ask me about fee deadlines, receipt validation, or applying for partial payments.", time: "10:00 AM" },
+  // Escalation Support Modal State
+  const [showEscalateModal, setShowEscalateModal] = useState(false);
+  const [escalateSubject, setEscalateSubject] = useState("Tuition Hardship & Installment Request");
+  const [escalateMessage, setEscalateMessage] = useState("");
+
+  // AI Chat Assistant State (Phase 8 Financial Process Copilot)
+  const [chatMessages, setChatMessages] = useState<Array<{
+    id: string;
+    sender: "user" | "ai" | "admin";
+    senderName?: string;
+    text: string;
+    time: string;
+    actions?: Array<{
+      label: string;
+      actionType: "apply_partial" | "pay_fee" | "view_receipts" | "topup_wallet" | "escalate_admin";
+      feeId?: string;
+    }>;
+    isEscalationNotice?: boolean;
+    ticketId?: string;
+  }>>([
+    {
+      id: "msg-welcome",
+      sender: "ai",
+      senderName: "Neo AI Financial Assistant",
+      text: "Hello Ruhan! I am your specialized Neo Cash Financial Process Assistant. How can I assist you with your tuition fees, payment deadlines, partial payments, or digital receipts today?",
+      time: "10:00 AM",
+      actions: [
+        { label: "When is my tuition due? 🗓️", actionType: "pay_fee" },
+        { label: "I can't pay my full tuition 📋", actionType: "apply_partial" },
+        { label: "What documents do I need? 📄", actionType: "apply_partial" },
+        { label: "Talk to Admin 👤", actionType: "escalate_admin" },
+      ]
+    },
   ]);
   const [chatInput, setChatInput] = useState("");
 
@@ -166,28 +196,137 @@ export function StudentPanel({
     }
   };
 
-  const handleSendChatMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    const userMsg = chatInput.trim();
+  const generateAiResponse = (userQuery: string) => {
+    const q = userQuery.toLowerCase();
     const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    setChatMessages((prev) => [...prev, { sender: "user", text: userMsg, time }]);
-    setChatInput("");
+    
+    // Live dynamic data from store
+    const unpaidFees = store.fees.filter(f => f.status !== "paid");
+    const primaryFee = unpaidFees[0] || store.fees[0];
+    const latestTxn = store.transactions[0];
+    const activeApp = store.partialApplications.find(a => a.studentId === store.studentProfile.studentId);
+    
+    let replyText = "";
+    let actions: Array<{ label: string; actionType: "apply_partial" | "pay_fee" | "view_receipts" | "topup_wallet" | "escalate_admin"; feeId?: string }> = [];
+
+    if (q.includes("can't pay") || q.includes("cant pay") || q.includes("cannot pay") || q.includes("full tuition") || q.includes("hardship") || q.includes("partial")) {
+      replyText = "You may apply for Partial Payment. Our institutional financial assistance policy allows eligible students to split tuition fees into manageable installments following guardian ID and signature verification.";
+      actions = [
+        { label: "Apply for Partial Payment 📋", actionType: "apply_partial", feeId: primaryFee ? primaryFee.id : "fee-1" },
+        { label: "View Required Documents 📄", actionType: "apply_partial" },
+        { label: "Talk to Admin 👤", actionType: "escalate_admin" },
+      ];
+    } else if (q.includes("when") || q.includes("due") || q.includes("deadline") || q.includes("tuition due")) {
+      if (primaryFee) {
+        replyText = `Your ${primaryFee.title} of ${formatTaka(primaryFee.amount, false)} is due on ${primaryFee.dueDate}. You currently have ${unpaidFees.length} unpaid fee(s) totaling ${formatTaka(unpaidFees.reduce((s, f) => s + f.amount, 0), false)}.`;
+      } else {
+        replyText = "All your current institutional semester fees have been paid in full! No outstanding due dates logged.";
+      }
+      actions = [
+        { label: "Pay Fee Now 💳", actionType: "pay_fee", feeId: primaryFee ? primaryFee.id : "fee-1" },
+        { label: "Apply for Partial Payment 📋", actionType: "apply_partial", feeId: primaryFee ? primaryFee.id : "fee-1" },
+      ];
+    } else if (q.includes("document") || q.includes("require") || q.includes("need") || q.includes("nid") || q.includes("signature")) {
+      replyText = "For a Partial Payment application, you need:\n1. Digital application statement explaining reason\n2. Guardian National ID (NID/Passport photo)\n3. Guardian & student digital signature for AI vector match validation.";
+      actions = [
+        { label: "Open Partial Application Form 📋", actionType: "apply_partial" },
+      ];
+    } else if (q.includes("receipt") || q.includes("paid") || q.includes("proof") || q.includes("transaction")) {
+      replyText = `Your digital receipt #${latestTxn?.receiptNumber || "REC-982104"} for ${latestTxn?.title || "Tuition Fee"} is cryptographically signed and stored in the institutional ledger.`;
+      actions = [
+        { label: "View Digital Receipts 🧾", actionType: "view_receipts" },
+      ];
+    } else if (q.includes("wallet") || q.includes("balance") || q.includes("top up") || q.includes("topup") || q.includes("add money")) {
+      replyText = `Your active Neo Wallet balance is ${formatTaka(store.balances.walletBalance, false)}. You can top up using bKash, Rocket, or Debit/Credit cards.`;
+      actions = [
+        { label: "Top Up Wallet ➕", actionType: "topup_wallet" },
+      ];
+    } else if (q.includes("notice") || q.includes("policy") || q.includes("rule")) {
+      replyText = "Notice from Financial Controller: Late fee penalties take effect 5 days after deadline. Hardship partial applications must be submitted prior to the due date for automatic hold on late fees.";
+      actions = [
+        { label: "Apply for Partial Payment 📋", actionType: "apply_partial" },
+      ];
+    } else if (q.includes("admin") || q.includes("talk") || q.includes("human") || q.includes("escalat") || q.includes("help")) {
+      replyText = "I can escalate your request directly to Dhaka City College Financial Controllers. An admin will review your student dossier and reply to your thread.";
+      actions = [
+        { label: "Submit Support Escalation 👤", actionType: "escalate_admin" },
+      ];
+    } else {
+      replyText = `I understand you are inquiring about institutional processes. You currently have ${formatTaka(store.balances.totalDue, false)} total outstanding fees and ${formatTaka(store.balances.walletBalance, false)} in your wallet. How can I help you proceed?`;
+      actions = [
+        { label: "Apply for Partial Payment 📋", actionType: "apply_partial" },
+        { label: "Talk to Admin 👤", actionType: "escalate_admin" },
+      ];
+    }
+
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: "msg-" + Date.now(),
+        sender: "ai",
+        senderName: "Neo AI Financial Assistant",
+        text: replyText,
+        time,
+        actions,
+      },
+    ]);
+  };
+
+  const handleSendChatMessage = (e?: React.FormEvent, customMsg?: string) => {
+    if (e) e.preventDefault();
+    const query = customMsg || chatInput.trim();
+    if (!query) return;
+
+    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setChatMessages((prev) => [
+      ...prev,
+      { id: "user-" + Date.now(), sender: "user", text: query, time },
+    ]);
+    if (!customMsg) setChatInput("");
 
     setTimeout(() => {
-      let reply = "I can help with that! ";
-      const lower = userMsg.toLowerCase();
-      if (lower.includes("fee") || lower.includes("due")) {
-        reply += `You have active fees pending. Your upcoming deadline is Semester Tuition Fee (${formatTaka(6000)}) due Oct 15, 2026.`;
-      } else if (lower.includes("partial") || lower.includes("hardship")) {
-        reply += `Partial Payment requires guardian ID & signature. Submit your application under Fees & Dues for AI verification.`;
-      } else if (lower.includes("receipt")) {
-        reply += `Your latest transaction receipt #${store.transactions[0]?.receiptNumber || "REC-9821"} is available in Transactions.`;
-      } else {
-        reply += `If you need custom institutional assistance, you can click "Talk to Admin" to escalate your query directly.`;
-      }
-      setChatMessages((prev) => [...prev, { sender: "ai", text: reply, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-    }, 800);
+      generateAiResponse(query);
+    }, 600);
+  };
+
+  const handleChatActionClick = (action: any) => {
+    if (action.actionType === "apply_partial") {
+      const targetFee = store.fees.find(f => f.id === action.feeId) || store.fees[0];
+      if (targetFee) setSelectedPartialFee(targetFee);
+    } else if (action.actionType === "pay_fee") {
+      const targetFee = store.fees.find(f => f.id === action.feeId) || store.fees[0];
+      if (targetFee) setSelectedPayFee(targetFee);
+    } else if (action.actionType === "view_receipts") {
+      setActiveTab("transactions");
+    } else if (action.actionType === "topup_wallet") {
+      setShowTopUpModal(true);
+    } else if (action.actionType === "escalate_admin") {
+      setShowEscalateModal(true);
+    }
+  };
+
+  const handleEscalationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!escalateMessage.trim()) return alert("Please describe your query for Admin.");
+
+    const ticket = actions.createEscalation(escalateSubject, escalateMessage.trim());
+    setShowEscalateModal(false);
+    setEscalateMessage("");
+
+    // Post escalation notice in AI chat
+    const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        id: "esc-notif-" + Date.now(),
+        sender: "ai",
+        senderName: "Neo AI Assistant (Escalated)",
+        text: `Escalation Ticket #${ticket.id} has been opened and transmitted to Dhaka City College Financial Controllers! Subject: "${escalateSubject}". Admin replies will appear directly in this thread and in your Notifications.`,
+        time,
+        isEscalationNotice: true,
+        ticketId: ticket.id,
+      },
+    ]);
   };
 
   return (
@@ -1906,89 +2045,406 @@ export function StudentPanel({
         );
       })()}
 
-      {/* 5. DARK FEATURED SECTION — AI FINANCIAL ASSISTANT TAB */}
-      {activeTab === "ai" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14", display: "flex", alignItems: "center", gap: "10px" }}>
-              <Sparkles style={{ color: "#D35400" }} /> Neo AI Student Financial Assistant
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-              Inquire about your fee deadlines, partial payment status, receipts, or institutional guidelines.
-            </p>
-          </div>
+      {/* 5. DARK FEATURED SECTION — AI FINANCIAL ASSISTANT TAB (PHASE 8) */}
+      {activeTab === "ai" && (() => {
+        const unpaidFees = store.fees.filter(f => f.status !== "paid");
+        const totalUnpaid = unpaidFees.reduce((sum, f) => sum + f.amount, 0);
+        const upcomingFee = unpaidFees[0] || store.fees[0];
+        const activeApp = store.partialApplications.find(a => a.studentId === store.studentProfile.studentId);
+        const activeEscalations = store.escalations?.filter(e => e.studentId === store.studentProfile.studentId) || [];
 
-          {/* SOPHISTICATED DARK FEATURED SURFACE (#241A14) */}
-          <div
-            style={{
-              background: "#241A14",
-              border: "1px solid rgba(196, 154, 108, 0.4)",
-              borderRadius: "18px",
-              padding: "24px",
-              boxShadow: "0 12px 30px rgba(36, 26, 20, 0.25)",
-              display: "flex",
-              flexDirection: "column",
-              height: "540px",
-            }}
-          >
-            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "14px", paddingRight: "8px" }}>
-              {chatMessages.map((msg, index) => (
-                <div key={index} style={{ alignSelf: msg.sender === "user" ? "flex-end" : "flex-start", maxWidth: "80%" }}>
-                  <div
-                    style={{
-                      padding: "14px 18px",
-                      borderRadius: "14px",
-                      background: msg.sender === "user" ? "#D35400" : "#3D2B1F",
-                      color: msg.sender === "user" ? "#FFFFFF" : "#FFF7E6",
-                      fontSize: "0.92rem",
-                      lineHeight: "1.55",
-                      border: msg.sender === "ai" ? "1px solid rgba(196, 154, 108, 0.3)" : "none",
-                    }}
-                  >
-                    {msg.text}
-                  </div>
-                  <span style={{ fontSize: "0.72rem", color: "#8C7A6A", marginTop: "4px", display: "block", textAlign: msg.sender === "user" ? "right" : "left" }}>
-                    {msg.time}
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            
+            {/* PAGE HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14", display: "flex", alignItems: "center", gap: "10px" }}>
+                    <Sparkles style={{ color: "#D35400" }} /> Neo AI Student Financial Assistant
+                  </h1>
+                  <span style={{ fontSize: "0.74rem", background: "rgba(16, 185, 129, 0.12)", color: "#047857", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                    ● Active Financial Process Copilot
                   </span>
                 </div>
-              ))}
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Specialized financial process guide for fees, deadlines, partial payment hardship applications, receipts, and human admin escalations.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="ms-btn-primary"
+                  onClick={() => setShowEscalateModal(true)}
+                  style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "6px" }}
+                >
+                  <MessageSquare size={16} /> Talk to Admin (Escalate)
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={handleSendChatMessage} style={{ display: "flex", gap: "10px", marginTop: "18px" }}>
-              <input
-                type="text"
-                placeholder="Ask Neo AI about your fees, partial payments, receipts..."
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
+            {/* MAIN TWO-COLUMN DASHBOARD GRID (CONTEXT SIDEBAR + CHAT SURFACE) */}
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 320px) 1fr", gap: "20px", alignItems: "start" }}>
+              
+              {/* LEFT COLUMN: CONTEXTUAL FEE INFORMATION SIDEBAR */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                
+                {/* CARD 1: LIVE FINANCIAL CONTEXT */}
+                <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)" }}>
+                  <div style={{ fontSize: "0.76rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Info size={14} /> LIVE FINANCIAL DOSSIER
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                    <div>
+                      <span style={{ fontSize: "0.78rem", color: "#8C7A6A", display: "block" }}>Total Outstanding Dues</span>
+                      <strong style={{ fontSize: "1.4rem", color: "#241A14", fontWeight: 800, fontFeatureSettings: "'tnum'" }}>
+                        {formatTaka(totalUnpaid, false)}
+                      </strong>
+                    </div>
+
+                    <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", padding: "12px" }}>
+                      <span style={{ fontSize: "0.74rem", color: "#8C7A6A", display: "block" }}>Nearest Fee Deadline</span>
+                      <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "#241A14", marginTop: "2px" }}>
+                        {upcomingFee ? upcomingFee.title : "No Pending Fees"}
+                      </div>
+                      <div style={{ fontSize: "0.8rem", color: upcomingFee?.status === "overdue" ? "#BE123C" : "#D35400", fontWeight: 700, marginTop: "2px" }}>
+                        {upcomingFee ? `Due: ${upcomingFee.dueDate} (${formatTaka(upcomingFee.amount, false)})` : "Clear"}
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
+                      <span style={{ color: "#66564A" }}>Available Wallet:</span>
+                      <strong style={{ color: "#047857", fontWeight: 800 }}>{formatTaka(store.balances.walletBalance, false)}</strong>
+                    </div>
+
+                    <div style={{ borderTop: "1px solid rgba(196, 154, 108, 0.25)", paddingTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.82rem" }}>
+                      <span style={{ color: "#66564A" }}>Partial Hardship App:</span>
+                      {activeApp ? (
+                        <StatusBadge status={activeApp.status.includes("approved") ? "approved" : activeApp.status.includes("rejected") ? "rejected" : "pending"} customLabel={activeApp.status} />
+                      ) : (
+                        <span style={{ color: "#8C7A6A", fontWeight: 600 }}>Not Applied</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* CARD 2: QUICK ACTION SHORTCUTS */}
+                <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "18px" }}>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "10px" }}>
+                    Copilot Action Shortcuts
+                  </div>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = unpaidFees[0] || store.fees[0];
+                        if (target) setSelectedPartialFee(target);
+                      }}
+                      style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "10px 14px", borderRadius: "10px", fontSize: "0.84rem", fontWeight: 700, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: "8px" }}
+                    >
+                      <FileText size={16} /> Apply for Partial Payment 📋
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const target = unpaidFees[0] || store.fees[0];
+                        if (target) setSelectedPayFee(target);
+                      }}
+                      style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "10px", fontSize: "0.84rem", fontWeight: 700, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: "8px" }}
+                    >
+                      <CreditCard size={16} /> Pay Fee Immediately 💳
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowTopUpModal(true)}
+                      style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "10px", fontSize: "0.84rem", fontWeight: 600, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", gap: "8px" }}
+                    >
+                      <PlusCircle size={16} /> Top Up Digital Wallet ➕
+                    </button>
+                  </div>
+                </div>
+
+                {/* CARD 3: INSTITUTION POLICY NOTICE */}
+                <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "14px", padding: "14px 16px", fontSize: "0.8rem", color: "#66564A", lineHeight: 1.5 }}>
+                  <strong style={{ color: "#241A14", display: "block", marginBottom: "4px" }}>
+                    📌 Official Institution Notice
+                  </strong>
+                  Tuition deadlines are set by Dhaka City College Controllers. Students with documented financial hardship can request installment splits with guardian NID verification.
+                </div>
+
+                {/* CARD 4: ACTIVE HUMAN ESCALATIONS SUMMARY */}
+                {activeEscalations.length > 0 && (
+                  <div style={{ background: "#FFFFFF", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "14px", padding: "14px", fontSize: "0.82rem" }}>
+                    <div style={{ fontWeight: 800, color: "#047857", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <CheckCircle2 size={15} /> Active Admin Support Tickets ({activeEscalations.length})
+                    </div>
+                    {activeEscalations.map(esc => (
+                      <div key={esc.id} style={{ background: "#FDF9F3", padding: "8px 10px", borderRadius: "8px", marginTop: "6px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                        <div style={{ fontWeight: 700, color: "#241A14", fontSize: "0.8rem" }}>#{esc.id}: {esc.subject}</div>
+                        <div style={{ fontSize: "0.75rem", color: "#66564A", marginTop: "2px", display: "flex", justifyContent: "space-between" }}>
+                          <span>Status: <strong>{esc.status}</strong></span>
+                          <span>Replies: {esc.messages.length}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+              </div>
+
+              {/* RIGHT COLUMN: SOPHISTICATED DARK FEATURED CHAT SURFACE (#241A14) */}
+              <div
                 style={{
-                  flex: 1,
-                  padding: "12px 16px",
-                  background: "#3D2B1F",
+                  background: "#241A14",
                   border: "1px solid rgba(196, 154, 108, 0.4)",
-                  borderRadius: "10px",
-                  color: "#FFF7E6",
-                  outline: "none",
-                  fontSize: "0.92rem",
-                }}
-              />
-              <button
-                type="submit"
-                style={{
-                  background: "#D35400",
-                  color: "#FFFFFF",
-                  border: "none",
-                  borderRadius: "10px",
-                  padding: "0 20px",
-                  fontWeight: 700,
-                  fontSize: "0.9rem",
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px",
+                  borderRadius: "18px",
+                  padding: "20px 24px",
+                  boxShadow: "0 12px 30px rgba(36, 26, 20, 0.25)",
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "620px",
                 }}
               >
-                <Send size={16} /> Send
+                {/* CHAT CONTAINER HEADER */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "14px", marginBottom: "16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(211, 84, 0, 0.2)", border: "1px solid #D35400", display: "flex", alignItems: "center", justifyContent: "center", color: "#FF8C42" }}>
+                      <Sparkles size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ margin: 0, color: "#FFF7E6", fontSize: "1.05rem", fontWeight: 800 }}>
+                        Neo Financial Process Assistant
+                      </h3>
+                      <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>
+                        Connected to Dhaka City College Student Financial Ledger
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowEscalateModal(true)}
+                    style={{ background: "rgba(211, 84, 0, 0.2)", color: "#FF8C42", border: "1px solid rgba(211, 84, 0, 0.4)", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                  >
+                    <MessageSquare size={14} /> Escalate to Admin
+                  </button>
+                </div>
+
+                {/* MESSAGES SCROLL AREA */}
+                <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "14px", paddingRight: "8px" }}>
+                  {chatMessages.map((msg) => {
+                    const isUser = msg.sender === "user";
+                    const isAdmin = msg.sender === "admin";
+                    const isNotice = msg.isEscalationNotice;
+
+                    return (
+                      <div key={msg.id} style={{ alignSelf: isUser ? "flex-end" : "flex-start", maxWidth: "85%" }}>
+                        {/* Sender Label */}
+                        {!isUser && (
+                          <span style={{ fontSize: "0.72rem", color: isAdmin ? "#10B981" : "#FF8C42", fontWeight: 700, marginBottom: "3px", display: "block" }}>
+                            {msg.senderName || (isAdmin ? "Admin (Refat Rahman)" : "Neo AI Assistant")}
+                          </span>
+                        )}
+
+                        {/* Bubble */}
+                        <div
+                          style={{
+                            padding: "14px 18px",
+                            borderRadius: isUser ? "16px 16px 2px 16px" : "16px 16px 16px 2px",
+                            background: isUser ? "#D35400" : isNotice ? "rgba(211, 84, 0, 0.15)" : isAdmin ? "#064E3B" : "#3D2B1F",
+                            color: isUser ? "#FFFFFF" : "#FFF7E6",
+                            fontSize: "0.92rem",
+                            lineHeight: "1.55",
+                            border: isNotice ? "1.5px solid #D35400" : isAdmin ? "1.5px solid #10B981" : "1px solid rgba(196, 154, 108, 0.3)",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
+                          }}
+                        >
+                          <div style={{ whiteSpace: "pre-wrap" }}>{msg.text}</div>
+
+                          {/* Action Buttons inside AI response */}
+                          {msg.actions && msg.actions.length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px", paddingTop: "10px", borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                              {msg.actions.map((act, i) => (
+                                <button
+                                  key={i}
+                                  type="button"
+                                  onClick={() => handleChatActionClick(act)}
+                                  style={{
+                                    background: "#D35400",
+                                    color: "#FFFFFF",
+                                    border: "none",
+                                    padding: "6px 12px",
+                                    borderRadius: "8px",
+                                    fontSize: "0.8rem",
+                                    fontWeight: 700,
+                                    cursor: "pointer",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                                  }}
+                                >
+                                  {act.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        <span style={{ fontSize: "0.7rem", color: "#8C7A6A", marginTop: "4px", display: "block", textAlign: isUser ? "right" : "left" }}>
+                          {msg.time}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* SUGGESTED QUESTIONS / PROMPT CHIPS */}
+                <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                  <span style={{ fontSize: "0.72rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "8px" }}>
+                    Suggested Questions (Click to Ask):
+                  </span>
+                  <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px" }}>
+                    {[
+                      "I can't pay my full tuition.",
+                      "When is my tuition due?",
+                      "What documents do I need?",
+                      "Where can I find my receipt?",
+                      "How do I top up my wallet?",
+                      "Talk to Admin",
+                    ].map((promptChip, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSendChatMessage(undefined, promptChip)}
+                        style={{
+                          background: "#3D2B1F",
+                          color: "#FFF7E6",
+                          border: "1px solid rgba(196, 154, 108, 0.35)",
+                          padding: "5px 12px",
+                          borderRadius: "999px",
+                          fontSize: "0.78rem",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        {promptChip}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CHAT INPUT FORM */}
+                <form onSubmit={handleSendChatMessage} style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                  <input
+                    type="text"
+                    placeholder="Ask Neo AI about fees, deadlines, partial payments, receipts..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    style={{
+                      flex: 1,
+                      padding: "12px 16px",
+                      background: "#3D2B1F",
+                      border: "1px solid rgba(196, 154, 108, 0.4)",
+                      borderRadius: "10px",
+                      color: "#FFF7E6",
+                      outline: "none",
+                      fontSize: "0.92rem",
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    style={{
+                      background: "#D35400",
+                      color: "#FFFFFF",
+                      border: "none",
+                      borderRadius: "10px",
+                      padding: "0 20px",
+                      fontWeight: 700,
+                      fontSize: "0.9rem",
+                      cursor: "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <Send size={16} /> Send
+                  </button>
+                </form>
+
+              </div>
+
+            </div>
+
+          </div>
+        );
+      })()}
+
+      {/* SUPPORT ESCALATION MODAL (TALK TO ADMIN) */}
+      {showEscalateModal && (
+        <div className="ms-modal-overlay">
+          <div className="ms-modal" style={{ maxWidth: "560px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "12px" }}>
+              <div>
+                <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.25rem", fontWeight: 800 }}>
+                  Talk to Admin — Human Support Escalation
+                </h3>
+                <span style={{ fontSize: "0.8rem", color: "#66564A" }}>
+                  Transmits query directly to Dhaka City College Financial Controllers.
+                </span>
+              </div>
+              <button type="button" onClick={() => setShowEscalateModal(false)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
+                <X size={20} />
               </button>
+            </div>
+
+            <form onSubmit={handleEscalationSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "6px" }}>
+                  Escalation Topic / Subject
+                </label>
+                <select
+                  value={escalateSubject}
+                  onChange={(e) => setEscalateSubject(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem" }}
+                >
+                  <option value="Tuition Hardship & Installment Request">Tuition Hardship & Installment Request</option>
+                  <option value="Fee Due Date Extension Request">Fee Due Date Extension Request</option>
+                  <option value="Payment Gateway Discrepancy">Payment Gateway Discrepancy</option>
+                  <option value="Digital Receipt Verification Inquiry">Digital Receipt Verification Inquiry</option>
+                  <option value="Other Financial Process Guidance">Other Financial Process Guidance</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "6px" }}>
+                  Describe your query or situation for Admin
+                </label>
+                <textarea
+                  rows={4}
+                  value={escalateMessage}
+                  onChange={(e) => setEscalateMessage(e.target.value)}
+                  placeholder="Explain why you need admin assistance, fee amounts, or custom requests..."
+                  style={{ width: "100%", padding: "12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem", lineHeight: 1.5 }}
+                />
+              </div>
+
+              <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "10px", fontSize: "0.78rem", color: "#66564A" }}>
+                🔒 <strong>Escalation Policy:</strong> Admin replies will be logged directly into your AI Assistant chat thread and sent to your Notifications tray.
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
+                <button type="button" className="ms-btn-secondary" onClick={() => setShowEscalateModal(false)} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
+                  Cancel
+                </button>
+                <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
+                  Submit Ticket to Admin 🚀
+                </button>
+              </div>
             </form>
           </div>
         </div>

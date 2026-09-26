@@ -86,6 +86,29 @@ export interface NotificationItem {
   read: boolean;
 }
 
+
+export interface EscalationMessage {
+  id: string;
+  sender: "student" | "ai" | "admin";
+  senderName: string;
+  text: string;
+  timestamp: string;
+  actionType?: "apply_partial" | "pay_fee" | "view_receipt";
+}
+
+export interface EscalationTicket {
+  id: string;
+  studentName: string;
+  studentId: string;
+  institution: string;
+  department: string;
+  subject: string;
+  status: "open" | "in_progress" | "resolved";
+  messages: EscalationMessage[];
+  createdAt: string;
+  lastReplyAt: string;
+}
+
 export interface AuditLog {
   id: string;
   actor: string;
@@ -159,6 +182,7 @@ export interface NeoState {
   transactions: Transaction[];
   notifications: NotificationItem[];
   auditLogs: AuditLog[];
+  escalations: EscalationTicket[];
   students: StudentRecord[];
 }
 
@@ -451,6 +475,35 @@ const INITIAL_STATE: NeoState = {
       date: "3 days ago",
       type: "success",
       read: true,
+    },
+  ],
+    escalations: [
+    {
+      id: "ESC-9082",
+      studentName: "Shelly Paul",
+      studentId: "DCC-CSE-24-8842",
+      institution: "Dhaka City College",
+      department: "Computer Science & Engineering",
+      subject: "Partial payment installment deadline inquiry",
+      status: "open",
+      createdAt: "2026-09-25 04:30 PM",
+      lastReplyAt: "2026-09-25 04:30 PM",
+      messages: [
+        {
+          id: "m-1",
+          sender: "student",
+          senderName: "Shelly Paul",
+          text: "I applied for partial payment (APP-9042). Can Admin confirm if my second installment deadline can be set to Nov 30?",
+          timestamp: "2026-09-25 04:30 PM",
+        },
+        {
+          id: "m-2",
+          sender: "ai",
+          senderName: "Neo AI Assistant",
+          text: "I have registered your inquiry and escalated this to Dhaka City College Admin Controllers. An admin representative will reply shortly.",
+          timestamp: "2026-09-25 04:31 PM",
+        },
+      ],
     },
   ],
   auditLogs: [
@@ -1201,6 +1254,103 @@ export const storeActions = {
   markAllNotificationsRead() {
     currentState.notifications.forEach((n) => (n.read = true));
     saveState();
+  },
+
+    createEscalation(subject: string, initialUserMessage: string) {
+    const ticketId = "ESC-" + Math.floor(1000 + Math.random() * 9000);
+    const now = new Date().toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+    const newTicket: EscalationTicket = {
+      id: ticketId,
+      studentName: currentState.studentProfile.name,
+      studentId: currentState.studentProfile.studentId,
+      institution: currentState.studentProfile.institution,
+      department: currentState.studentProfile.classSection,
+      subject,
+      status: "open",
+      createdAt: now,
+      lastReplyAt: now,
+      messages: [
+        {
+          id: "m-" + Date.now(),
+          sender: "student",
+          senderName: currentState.studentProfile.name,
+          text: initialUserMessage,
+          timestamp: now,
+        },
+        {
+          id: "m-ai-" + Date.now(),
+          sender: "ai",
+          senderName: "Neo AI Assistant",
+          text: `Escalation ticket #${ticketId} opened. Your issue "${subject}" has been transmitted directly to ${currentState.studentProfile.institution} Financial Controllers. An admin controller will reply to your thread shortly.`,
+          timestamp: now,
+        },
+      ],
+    };
+
+    if (!currentState.escalations) currentState.escalations = [];
+    currentState.escalations.unshift(newTicket);
+    currentState.notifications.unshift({
+      id: "notif-" + Date.now(),
+      title: "Support Ticket Escalated",
+      message: `Escalation #${ticketId} submitted to Admin controllers.`,
+      date: "Just now",
+      type: "info",
+      read: false,
+    });
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: currentState.studentProfile.name,
+      role: "Student",
+      action: "Escalated Support Ticket",
+      details: `Created ticket #${ticketId}: "${subject}"`,
+      timestamp: now,
+    });
+
+    saveState();
+    return newTicket;
+  },
+
+  replyEscalation(ticketId: string, replyText: string, senderRole: "student" | "admin") {
+    if (!currentState.escalations) currentState.escalations = [];
+    const ticket = currentState.escalations.find((t) => t.id === ticketId);
+    if (!ticket) return { ok: false, error: "Ticket not found." };
+
+    const now = new Date().toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+    const senderName = senderRole === "admin" ? "Admin (Refat Rahman)" : currentState.studentProfile.name;
+
+    ticket.messages.push({
+      id: "m-" + Date.now(),
+      sender: senderRole,
+      senderName,
+      text: replyText,
+      timestamp: now,
+    });
+
+    ticket.lastReplyAt = now;
+    ticket.status = senderRole === "admin" ? "in_progress" : "open";
+
+    if (senderRole === "admin") {
+      currentState.notifications.unshift({
+        id: "notif-" + Date.now(),
+        title: "Admin Replied to Escalation",
+        message: `Admin replied on ticket #${ticketId}: "${replyText.substring(0, 45)}..."`,
+        date: "Just now",
+        type: "success",
+        read: false,
+      });
+    }
+
+    saveState();
+    return { ok: true, ticket };
+  },
+
+  resolveEscalation(ticketId: string) {
+    if (!currentState.escalations) currentState.escalations = [];
+    const ticket = currentState.escalations.find((t) => t.id === ticketId);
+    if (ticket) {
+      ticket.status = "resolved";
+      saveState();
+    }
   },
 
   resetDemoState() {
