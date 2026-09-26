@@ -132,185 +132,309 @@ export function AdminPanel({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
-      {/* 1. ADMIN OVERVIEW */}
+      {/* 1. PROFESSIONAL DATA-DRIVEN ADMIN DASHBOARD (PHASE 11) */}
       {activeTab === "overview" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
           
-          {/* LEVEL 1: OPEN OPERATIONS HERO (NO CARD CONTAINER) */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+          {/* INSTITUTION DOSSIER BANNER & HEADER */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
             <div>
-              <h1 style={{ margin: 0, fontSize: "2rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
-                Institutional Financial Operations
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                  ● Operational Command Center
+                </span>
+                <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College (Dhanmondi, Dhaka)</span>
+              </div>
+              <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
+                Institutional Financial Operations & Analytics
               </h1>
-              <p style={{ margin: "4px 0 0", fontSize: "0.95rem", color: "#66564A" }}>
-                Dhaka City College Operations Center • Real-time fee collections & application tracking
+              <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                Academic Period: <strong>Fall Semester 2026–2027</strong> • Financial Audit Period: <strong>Q3 2026 Window</strong>
               </p>
             </div>
 
-            <button
-              type="button"
-              className="ms-btn-primary"
-              onClick={() => setActiveTab("bulk")}
-              style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
-            >
-              <Plus size={16} /> Bulk Fee Assignment
-            </button>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                type="button"
+                className="ms-btn-primary"
+                onClick={() => setActiveTab("bulk")}
+                style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <Plus size={16} /> Bulk Fee Assignment
+              </button>
+            </div>
           </div>
 
-          {/* LEVEL 2: OPERATIONAL METRIC CARDS */}
-          <div className="ms-grid-3">
+          {/* SUMMARY METRICS GRID (6 OPERATIONAL KPIS) */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
             
-            {/* TOTAL STUDENTS CARD */}
-            <div
-              style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(196, 154, 108, 0.3)",
-                borderRadius: "14px",
-                padding: "24px",
-                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                TOTAL STUDENTS ENROLLED
+            {/* TOTAL STUDENTS */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Total Students</span>
+              <div style={{ margin: "10px 0 4px" }}>
+                <span style={{ fontSize: "2rem", fontWeight: 800, color: "#241A14" }}>2,120</span>
+              </div>
+              <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                <CheckCircle2 size={14} /> 98.4% Verified Cohort
               </span>
-
-              <div style={{ margin: "14px 0 8px" }}>
-                <span style={{ fontSize: "2.25rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em" }}>
-                  2,120
-                </span>
-              </div>
-
-              <div style={{ fontSize: "0.8rem", color: "#047857", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
-                <CheckCircle2 size={14} />
-                <span>98.4% Verified Student Profiles</span>
-              </div>
             </div>
 
-            {/* TOTAL COLLECTIONS CARD */}
-            <div
-              style={{
-                background: "#FFFFFF",
-                border: "2px solid #D35400",
-                borderRadius: "14px",
-                padding: "24px",
-                boxShadow: "0 6px 20px rgba(211, 84, 0, 0.06)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                  TOTAL COLLECTIONS (SPRING 2027)
-                </span>
-                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "3px 8px", borderRadius: "6px", fontWeight: 700 }}>
-                  PRIMARY
+            {/* TOTAL OUTSTANDING */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Total Outstanding</span>
+              <div style={{ margin: "10px 0 4px" }}>
+                <span style={{ fontSize: "1.8rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
+                  {formatTaka(1480000, false)}
                 </span>
               </div>
+              <span style={{ fontSize: "0.78rem", color: "#BE123C", fontWeight: 600 }}>
+                Across 18 Overdue Profiles
+              </span>
+            </div>
 
-              <div style={{ margin: "14px 0 8px" }}>
-                <span style={{ fontSize: "2.25rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.03em", fontFeatureSettings: "'tnum'" }}>
+            {/* TOTAL COLLECTED */}
+            <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Total Collected</span>
+              <div style={{ margin: "10px 0 4px" }}>
+                <span style={{ fontSize: "1.8rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
                   {formatTaka(4820000, false)}
                 </span>
               </div>
-
-              <div style={{ fontSize: "0.8rem", color: "#66564A" }}>
-                Collection Rate: <strong style={{ color: "#241A14" }}>82% On-Time</strong>
-              </div>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>
+                Spring & Fall Collections
+              </span>
             </div>
 
-            {/* PENDING APPLICATIONS CARD */}
-            <div
-              style={{
-                background: "#FFFFFF",
-                border: "1px solid rgba(196, 154, 108, 0.3)",
-                borderRadius: "14px",
-                padding: "24px",
-                boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-              }}
-            >
-              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                PENDING APPLICATIONS
+            {/* COLLECTION RATE */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Collection Rate</span>
+              <div style={{ margin: "10px 0 4px" }}>
+                <span style={{ fontSize: "2rem", fontWeight: 800, color: "#047857" }}>82%</span>
+              </div>
+              <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 600 }}>
+                On-Time Settlement Rate
               </span>
+            </div>
 
-              <div style={{ margin: "14px 0 8px" }}>
-                <span style={{ fontSize: "1.85rem", fontWeight: 800, color: "#D35400" }}>
-                  {store.partialApplications.filter((a) => a.status === "pending_admin").length} Pending
+            {/* PENDING PARTIAL APPLICATIONS */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Pending Partial Apps</span>
+              <div style={{ margin: "10px 0 4px" }}>
+                <span style={{ fontSize: "2rem", fontWeight: 800, color: "#D35400" }}>
+                  {store.partialApplications.filter((a) => a.status === "pending_admin").length}
                 </span>
               </div>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>
+                Requires Admin Review
+              </span>
+            </div>
 
-              <div style={{ fontSize: "0.8rem", color: "#8C7A6A" }}>
-                Requires Executive Sign-Off
+            {/* OVERDUE STUDENTS */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Overdue Students</span>
+              <div style={{ margin: "10px 0 4px" }}>
+                <span style={{ fontSize: "2rem", fontWeight: 800, color: "#BE123C" }}>18</span>
               </div>
+              <span style={{ fontSize: "0.78rem", color: "#BE123C", fontWeight: 600 }}>
+                3.2% Cohort Overdue Rate
+              </span>
             </div>
 
           </div>
 
-          {/* LEVEL 3: QUEUE & ALERTS SPLIT VIEW */}
-          <div className="ms-grid-2">
+          {/* QUICK ACTIONS TOOLBAR */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "18px 20px" }}>
+            <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "12px" }}>
+              Admin Quick Actions Toolbar
+            </div>
             
-            {/* PARTIAL PAYMENT REVIEW QUEUE */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab("bulk")}
+                style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <FileSpreadsheet size={18} /> Bulk Fee Assignment ➕
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("students")}
+                style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <Users size={18} /> Student Directory 👥
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("import")}
+                style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <Upload size={18} /> Excel Roster Import 📥
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("applications")}
+                style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <ShieldCheck size={18} /> Partial Payment Queue 📋
+              </button>
+            </div>
+          </div>
+
+          {/* OPERATIONAL ANALYTICS SECTION (DATA-DRIVEN VISUALIZATIONS) */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            
+            {/* COLLECTION TREND & PAYMENT ACTIVITY */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Fee Collection Trend & Payment Activity
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                  Monthly revenue collection progress and payment gateway distribution.
+                </p>
+              </div>
+
+              {/* Monthly Trend Progress */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Monthly Collection Trend</span>
+                {[
+                  { month: "July 2026", amount: 1250000, target: 1500000, pct: 84 },
+                  { month: "August 2026", amount: 1820000, target: 2000000, pct: 92 },
+                  { month: "September 2026", amount: 1750000, target: 2200000, pct: 78 },
+                ].map((item, idx) => (
+                  <div key={idx} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.84rem" }}>
+                      <span style={{ fontWeight: 700, color: "#241A14" }}>{item.month}</span>
+                      <span style={{ fontWeight: 800, color: "#D35400" }}>{formatTaka(item.amount, false)} ({item.pct}%)</span>
+                    </div>
+                    <div style={{ width: "100%", height: "8px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ width: `${item.pct}%`, height: "100%", background: item.pct > 85 ? "#047857" : "#D35400", borderRadius: "999px" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Gateway Distribution */}
+              <div style={{ borderTop: "1px solid rgba(196, 154, 108, 0.25)", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Payment Gateway Distribution</span>
+                {[
+                  { gateway: "bKash Mobile Banking", pct: 58, amount: "৳27,95,600", color: "#D35400" },
+                  { gateway: "DBBL Rocket", pct: 22, amount: "৳10,60,400", color: "#9A6600" },
+                  { gateway: "Visa / Mastercard Debit", pct: 14, amount: "৳6,74,800", color: "#1D4ED8" },
+                  { gateway: "Neo Wallet Balance", pct: 6, amount: "৳2,89,200", color: "#047857" },
+                ].map((gw, idx) => (
+                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.82rem" }}>
+                    <span style={{ color: "#66564A", fontWeight: 600 }}>{gw.gateway}</span>
+                    <strong style={{ color: gw.color, fontFeatureSettings: "'tnum'" }}>{gw.pct}% ({gw.amount})</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* FEE STATUS & OVERDUE DEPARTMENTAL ANALYSIS */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Fee Status & Overdue Departmental Analysis
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                  Portfolio distribution and departmental risk breakdown.
+                </p>
+              </div>
+
+              {/* Status Breakdown Grid */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(16, 185, 129, 0.3)", borderRadius: "10px", padding: "12px" }}>
+                  <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase" }}>Settled & Paid</span>
+                  <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#047857" }}>72%</div>
+                  <span style={{ fontSize: "0.75rem", color: "#047857" }}>1,526 Students</span>
+                </div>
+
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(211, 84, 0, 0.3)", borderRadius: "10px", padding: "12px" }}>
+                  <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase" }}>Pending Due</span>
+                  <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#D35400" }}>18%</div>
+                  <span style={{ fontSize: "0.75rem", color: "#D35400" }}>382 Students</span>
+                </div>
+
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(190, 18, 60, 0.3)", borderRadius: "10px", padding: "12px" }}>
+                  <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase" }}>Overdue Risk</span>
+                  <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#BE123C" }}>6%</div>
+                  <span style={{ fontSize: "0.75rem", color: "#BE123C" }}>127 Students</span>
+                </div>
+
+                <div style={{ background: "#FDF9F3", border: "1px solid rgba(37, 99, 235, 0.3)", borderRadius: "10px", padding: "12px" }}>
+                  <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase" }}>Approved Installments</span>
+                  <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "#1D4ED8" }}>4%</div>
+                  <span style={{ fontSize: "0.75rem", color: "#1D4ED8" }}>85 Students</span>
+                </div>
+              </div>
+
+              {/* Departmental Overdue Analysis Table */}
+              <div style={{ borderTop: "1px solid rgba(196, 154, 108, 0.25)", paddingTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Departmental Overdue Risk</span>
+                {[
+                  { dept: "Computer Science & Eng (CSE)", count: "8 Students", amount: "৳95,000", risk: "High" },
+                  { dept: "Business Administration (BBA)", count: "6 Students", amount: "৳62,000", risk: "Medium" },
+                  { dept: "Electrical & Electronic Eng (EEE)", count: "4 Students", amount: "৳38,000", risk: "Low" },
+                ].map((row, idx) => (
+                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: "#FDF9F3", borderRadius: "8px", fontSize: "0.82rem" }}>
+                    <div>
+                      <strong style={{ color: "#241A14", display: "block" }}>{row.dept}</strong>
+                      <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>{row.count}</span>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <strong style={{ color: "#BE123C" }}>{row.amount}</strong>
+                      <span style={{ fontSize: "0.72rem", background: "rgba(190, 18, 60, 0.1)", color: "#BE123C", padding: "1px 6px", borderRadius: "4px", display: "block", marginTop: "2px", fontWeight: 700 }}>
+                        {row.risk} Risk
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* ACTION CENTER & OPERATIONAL ALERTS */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            
+            {/* PENDING PARTIAL PAYMENT REVIEW QUEUE */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px", display: "flex", flexDirection: "column", gap: "14px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>
-                  Partial Payment Review Queue
-                </h2>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Pending Partial Applications
+                </h3>
                 <button
                   type="button"
                   onClick={() => setActiveTab("applications")}
                   style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
                 >
-                  View Queue →
+                  Full Queue →
                 </button>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {store.partialApplications.map((app) => (
-                  <div
-                    key={app.id}
-                    style={{
-                      background: "#FFFFFF",
-                      border: "1px solid rgba(196, 154, 108, 0.25)",
-                      borderRadius: "12px",
-                      padding: "16px",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "10px",
-                    }}
-                  >
+                {store.partialApplications.slice(0, 3).map((app) => (
+                  <div key={app.id} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "8px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
-                        <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "#241A14" }}>
-                          {app.studentName} ({app.studentId})
-                        </h4>
-                        <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
-                          Target Fee: {app.feeTitle}
-                        </span>
+                        <strong style={{ color: "#241A14", fontSize: "0.9rem" }}>{app.studentName} ({app.studentId})</strong>
+                        <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block" }}>{app.feeTitle}</span>
                       </div>
                       <StatusBadge status={app.status.startsWith("approved") ? "approved" : "under_review"} />
                     </div>
-
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "8px", borderTop: "1px dashed rgba(196, 154, 108, 0.2)" }}>
-                      <span style={{ fontSize: "0.82rem", color: "#66564A" }}>
-                        Requested: <strong style={{ color: "#241A14" }}>{formatTaka(app.requestedAmount, false)}</strong> / {formatTaka(app.originalAmount, false)}
-                      </span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px dashed rgba(196, 154, 108, 0.2)", paddingTop: "6px", fontSize: "0.8rem" }}>
+                      <span>Requested: <strong style={{ color: "#D35400" }}>{formatTaka(app.requestedAmount, false)}</strong></span>
                       {app.status === "pending_admin" ? (
-                        <button
-                          type="button"
-                          className="ms-btn-primary"
-                          onClick={() => setReviewApp(app)}
-                          style={{ background: "#D35400", color: "#FFFFFF", padding: "4px 12px", fontSize: "0.78rem", borderRadius: "8px" }}
-                        >
+                        <button type="button" className="ms-btn-primary" onClick={() => setReviewApp(app)} style={{ background: "#D35400", color: "#FFFFFF", padding: "3px 10px", fontSize: "0.75rem", borderRadius: "6px" }}>
                           Review & Forward
                         </button>
                       ) : (
-                        <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>Reviewed</span>
+                        <span style={{ color: "#8C7A6A", fontSize: "0.75rem" }}>Reviewed</span>
                       )}
                     </div>
                   </div>
@@ -318,36 +442,96 @@ export function AdminPanel({
               </div>
             </div>
 
-            {/* SOPHISTICATED SYSTEM OPERATIONAL ALERTS */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <h2 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>
-                System Operational Alerts
-              </h2>
+            {/* IMPORTANT OPERATIONAL ALERTS & SYSTEM EVENTS */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px", display: "flex", flexDirection: "column", gap: "14px" }}>
+              <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                Important Operational Alerts
+              </h3>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderLeft: "4px solid #BE123C", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", borderLeftWidth: "4px" }}>
-                  <h5 style={{ margin: "0 0 2px", color: "#BE123C", fontSize: "0.88rem", fontWeight: 700 }}>OVERDUE NOTICE</h5>
-                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#66564A" }}>
-                    23 students in CSE 3rd Semester have midterm exam fees overdue.
-                  </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ padding: "12px 14px", background: "#FDF9F3", borderLeft: "4px solid #BE123C", borderRadius: "10px", fontSize: "0.82rem" }}>
+                  <strong style={{ color: "#BE123C", display: "block", marginBottom: "2px" }}>🔴 OVERDUE NOTICE</strong>
+                  18 students in CSE 3rd Semester have unpaid tuition fees passing deadline.
                 </div>
 
-                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderLeft: "4px solid #D35400", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", borderLeftWidth: "4px" }}>
-                  <h5 style={{ margin: "0 0 2px", color: "#D35400", fontSize: "0.88rem", fontWeight: 700 }}>UPCOMING DEADLINE</h5>
-                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#66564A" }}>
-                    Semester Tuition Fee deadline in 19 days (Oct 15, 2026).
-                  </p>
+                <div style={{ padding: "12px 14px", background: "#FDF9F3", borderLeft: "4px solid #D35400", borderRadius: "10px", fontSize: "0.82rem" }}>
+                  <strong style={{ color: "#D35400", display: "block", marginBottom: "2px" }}>🟡 UPCOMING DEADLINE</strong>
+                  Semester Tuition Fee deadline in 4 days (September 30, 2026).
                 </div>
 
-                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderLeft: "4px solid #047857", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", borderLeftWidth: "4px" }}>
-                  <h5 style={{ margin: "0 0 2px", color: "#047857", fontSize: "0.88rem", fontWeight: 700 }}>SYSTEM PROVISIONING</h5>
-                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#66564A" }}>
-                    420 student digital wallets provisioned successfully.
-                  </p>
+                <div style={{ padding: "12px 14px", background: "#FDF9F3", borderLeft: "4px solid #9A6600", borderRadius: "10px", fontSize: "0.82rem" }}>
+                  <strong style={{ color: "#9A6600", display: "block", marginBottom: "2px" }}>🟠 FAILED GATEWAY TIMEOUT</strong>
+                  1 Mastercard payment failure logged (Ref #MC-881029). Auto-retry enabled.
+                </div>
+
+                <div style={{ padding: "12px 14px", background: "#FDF9F3", borderLeft: "4px solid #047857", borderRadius: "10px", fontSize: "0.82rem" }}>
+                  <strong style={{ color: "#047857", display: "block", marginBottom: "2px" }}>🟢 BIOMETRIC AUDIT</strong>
+                  420 student digital wallets provisioned & WebAuthn signatures verified.
                 </div>
               </div>
             </div>
 
+          </div>
+
+          {/* RECENT OPERATIONAL ACTIVITY FEED */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
+            <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Recent Institutional Activity Log
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#66564A" }}>
+                  Real-time feed tracking payments, fee assignments, student updates, approvals, and admin actions.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("audit")}
+                style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
+              >
+                Full Audit Trail →
+              </button>
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "12px 18px", fontWeight: 700 }}>Activity Type</th>
+                    <th style={{ padding: "12px 18px", fontWeight: 700 }}>Actor</th>
+                    <th style={{ padding: "12px 18px", fontWeight: 700 }}>Action & Details</th>
+                    <th style={{ padding: "12px 18px", fontWeight: 700 }}>Logged Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { type: "payment", actor: "Ruhan Dash Dibya (Student)", action: "Paid Semester Tuition Fee (৳20,000) via bKash", time: "10 mins ago", color: "#047857" },
+                    { type: "fee assignment", actor: "Admin (Refat Rahman)", action: "Bulk assigned Spring 2027 Tuition Fee (৳6,500)", time: "1 hour ago", color: "#D35400" },
+                    { type: "student update", actor: "Aria Rahman (Student)", action: "Updated NID guardian identity document & signature", time: "3 hours ago", color: "#1D4ED8" },
+                    { type: "approval", actor: "Prof. Dr. M. A. Karim (Head)", action: "Approved partial application APP-9042 for Shelly Paul", time: "1 day ago", color: "#047857" },
+                    { type: "admin action", actor: "Admin (Refat Rahman)", action: "Executed automated fee reminder engine run", time: "2 days ago", color: "#9A6600" },
+                  ].map((act, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <td style={{ padding: "12px 18px" }}>
+                        <span style={{ background: `${act.color}15`, color: act.color, padding: "3px 10px", borderRadius: "6px", fontSize: "0.76rem", fontWeight: 800, textTransform: "uppercase" }}>
+                          {act.type}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 18px", fontWeight: 700, color: "#241A14" }}>
+                        {act.actor}
+                      </td>
+                      <td style={{ padding: "12px 18px", color: "#66564A" }}>
+                        {act.action}
+                      </td>
+                      <td style={{ padding: "12px 18px", color: "#8C7A6A", fontSize: "0.82rem" }}>
+                        {act.time}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>
