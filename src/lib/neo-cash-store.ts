@@ -84,6 +84,15 @@ export interface NotificationItem {
   date: string;
   type: "info" | "success" | "warning" | "error";
   read: boolean;
+  category?: "payment" | "fee" | "application" | "institution" | "system" | "email";
+  emailAlert?: boolean;
+}
+
+export interface ReminderRules {
+  weeklyReminderEnabled: boolean;
+  nearDeadlineDays: number;
+  finalDayAlertEnabled: boolean;
+  overduePenaltyNotice: boolean;
 }
 
 
@@ -184,6 +193,7 @@ export interface NeoState {
   auditLogs: AuditLog[];
   escalations: EscalationTicket[];
   students: StudentRecord[];
+  reminderRules: ReminderRules;
 }
 
 const INITIAL_STATE: NeoState = {
@@ -451,30 +461,85 @@ const INITIAL_STATE: NeoState = {
       receiptNumber: "REC-982098",
     },
   ],
+  reminderRules: {
+    weeklyReminderEnabled: true,
+    nearDeadlineDays: 5,
+    finalDayAlertEnabled: true,
+    overduePenaltyNotice: true,
+  },
   notifications: [
     {
-      id: "notif-1",
-      title: "Fee Payment Reminder",
-      message: "Semester Tuition Fee (৳6,000) is due on October 15, 2026.",
+      id: "notif-email-1",
+      title: "Security Email Alert: New Login Detected",
+      message: "New Neo Cash AI login detected from Chrome on Windows (Dhaka, BD).",
+      date: "Just now",
+      type: "info",
+      read: false,
+      category: "email",
+      emailAlert: true,
+    },
+    {
+      id: "notif-pay-1",
+      title: "Payment Successful",
+      message: "Semester Tuition Fee (৳20,000) cleared via bKash Mobile Banking. Receipt #REC-982104 generated.",
+      date: "10 mins ago",
+      type: "success",
+      read: false,
+      category: "payment",
+    },
+    {
+      id: "notif-fee-1",
+      title: "Weekly Fee Reminder",
+      message: "Semester Tuition Fee (৳20,000) assigned by Dhaka City College is due on September 30, 2026.",
       date: "2 hours ago",
       type: "warning",
       read: false,
+      category: "fee",
     },
     {
-      id: "notif-2",
-      title: "Partial Payment Forwarded",
-      message: "Admin reviewed your request APP-9042 and forwarded it to Head for final sign-off.",
-      date: "1 day ago",
-      type: "info",
+      id: "notif-fee-2",
+      title: "Near-Deadline Alert",
+      message: "Library & Digital Resources Fee (৳1,500) due in 3 days (October 05, 2026).",
+      date: "5 hours ago",
+      type: "warning",
       read: false,
+      category: "fee",
     },
     {
-      id: "notif-3",
-      title: "Donation Points Awarded",
-      message: "You earned 5 Donation Points! Rank in Class improved to #3.",
-      date: "3 days ago",
+      id: "notif-app-1",
+      title: "Partial Payment Approved",
+      message: "Application APP-9042 approved by Executive Director! 50% split unlocked.",
+      date: "1 day ago",
       type: "success",
       read: true,
+      category: "application",
+    },
+    {
+      id: "notif-app-2",
+      title: "Application Action Required",
+      message: "Admin requested changes on application APP-7741. Please check feedback notes.",
+      date: "2 days ago",
+      type: "error",
+      read: true,
+      category: "application",
+    },
+    {
+      id: "notif-inst-1",
+      title: "Institution Notice: Examination Clearance",
+      message: "Financial clearance deadline for Fall Midterm examinations set for October 20.",
+      date: "3 days ago",
+      type: "info",
+      read: true,
+      category: "institution",
+    },
+    {
+      id: "notif-admin-1",
+      title: "Support Thread Response",
+      message: "Admin (Refat Rahman) replied to your support escalation ticket #ESC-9082.",
+      date: "4 days ago",
+      type: "info",
+      read: true,
+      category: "institution",
     },
   ],
     escalations: [
@@ -1353,7 +1418,83 @@ export const storeActions = {
     }
   },
 
-  resetDemoState() {
+  updateReminderRules(newRules: Partial<ReminderRules>) {
+    currentState.reminderRules = { ...currentState.reminderRules, ...newRules };
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Admin (Refat Rahman)",
+      role: "Admin",
+      action: "Updated Reminder Rules",
+      details: `Near-deadline threshold set to ${currentState.reminderRules.nearDeadlineDays} days.`,
+      timestamp: new Date().toLocaleString(),
+    });
+    saveState();
+  },
+
+  triggerRemindersRun() {
+    const rules = currentState.reminderRules;
+    const now = new Date();
+    let generatedCount = 0;
+
+    currentState.fees.forEach((fee) => {
+      if (fee.status !== "paid") {
+        const dueDate = new Date(fee.dueDate);
+        const diffTime = dueDate.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0 && rules.overduePenaltyNotice) {
+          currentState.notifications.unshift({
+            id: "notif-missed-" + Date.now() + "-" + Math.random(),
+            title: "Missed Deadline / Overdue Alert",
+            message: `Overdue Notice: ${fee.title} (${fee.amount.toLocaleString()} ৳) passed due date (${fee.dueDate}). Please settle immediately.`,
+            date: "Just now",
+            type: "error",
+            read: false,
+            category: "fee",
+          });
+          generatedCount++;
+        } else if (diffDays === 0 && rules.finalDayAlertEnabled) {
+          currentState.notifications.unshift({
+            id: "notif-final-" + Date.now() + "-" + Math.random(),
+            title: "Final-Day Deadline Notice",
+            message: `Emergency Alert: Today is the final payment deadline for ${fee.title} (${fee.amount.toLocaleString()} ৳).`,
+            date: "Just now",
+            type: "error",
+            read: false,
+            category: "fee",
+          });
+          generatedCount++;
+        } else if (diffDays > 0 && diffDays <= rules.nearDeadlineDays) {
+          currentState.notifications.unshift({
+            id: "notif-near-" + Date.now() + "-" + Math.random(),
+            title: "Near-Deadline Alert",
+            message: `Upcoming Deadline: ${fee.title} is due in ${diffDays} day(s) on ${fee.dueDate}.`,
+            date: "Just now",
+            type: "warning",
+            read: false,
+            category: "fee",
+          });
+          generatedCount++;
+        } else if (rules.weeklyReminderEnabled) {
+          currentState.notifications.unshift({
+            id: "notif-weekly-" + Date.now() + "-" + Math.random(),
+            title: "Weekly Fee Reminder",
+            message: `Automated Weekly Reminder: ${fee.title} (${fee.amount.toLocaleString()} ৳) due on ${fee.dueDate}.`,
+            date: "Just now",
+            type: "info",
+            read: false,
+            category: "fee",
+          });
+          generatedCount++;
+        }
+      }
+    });
+
+    saveState();
+    return { ok: true, count: generatedCount };
+  },
+
+    resetDemoState() {
     currentState = JSON.parse(JSON.stringify(INITIAL_STATE));
     saveState();
   },

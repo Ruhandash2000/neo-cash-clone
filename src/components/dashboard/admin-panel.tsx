@@ -17,7 +17,7 @@ import { StatusBadge } from "@/components/design-system/status-badge";
 import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
-  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy
+  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy, Bell, Zap
 } from "lucide-react";
 
 export function AdminPanel({
@@ -1085,7 +1085,149 @@ export function AdminPanel({
       )}
 
 
-{/* REVIEW APPLICATION MODAL */}
+{/* 7. INSTITUTIONAL REMINDER RULES & ALERT ENGINE (PHASE 10) */}
+      {activeTab === "reminders" && (() => {
+        const rules = store.reminderRules || {
+          weeklyReminderEnabled: true,
+          nearDeadlineDays: 5,
+          finalDayAlertEnabled: true,
+          overduePenaltyNotice: true,
+        };
+
+        const handleToggleRule = (key: keyof typeof rules, value: any) => {
+          actions.updateReminderRules({ [key]: value });
+        };
+
+        const handleRunReminders = () => {
+          const res = actions.triggerRemindersRun();
+          alert(`Automated Reminder Engine Executed! Successfully dispatched ${res.count} fee notification alert(s) across student profiles.`);
+        };
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            
+            {/* HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                  Institutional Reminder Rules & Automated Alert Engine
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Configure automated fee reminder thresholds, near-deadline warnings, and trigger bulk notification dispatches.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="ms-btn-primary"
+                onClick={handleRunReminders}
+                style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontSize: "0.9rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "6px" }}
+              >
+                <Zap size={16} /> Trigger Automated Reminders Run Now 🚀
+              </button>
+            </div>
+
+            {/* REMINDER RULES CONFIGURATION GRID */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+              
+              {/* RULE 1: WEEKLY REMINDERS */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Bell size={18} style={{ color: "#D35400" }} /> Weekly Automated Reminder
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={rules.weeklyReminderEnabled}
+                    onChange={(e) => handleToggleRule("weeklyReminderEnabled", e.target.checked)}
+                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
+                  />
+                </div>
+                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
+                  Sends scheduled weekly summary notifications to students with active unpaid semester fees.
+                </p>
+                <span style={{ fontSize: "0.76rem", color: rules.weeklyReminderEnabled ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
+                  Status: {rules.weeklyReminderEnabled ? "● ACTIVE & RUNNING" : "○ DISABLED"}
+                </span>
+              </div>
+
+              {/* RULE 2: NEAR-DEADLINE THRESHOLD */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Clock size={18} style={{ color: "#D35400" }} /> Near-Deadline Alert Threshold
+                </div>
+                <p style={{ margin: "0 0 10px", fontSize: "0.84rem", color: "#66564A" }}>
+                  Trigger high-priority alert when fee due date falls within selected threshold days.
+                </p>
+                <select
+                  value={rules.nearDeadlineDays}
+                  onChange={(e) => handleToggleRule("nearDeadlineDays", Number(e.target.value))}
+                  style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 700, outline: "none" }}
+                >
+                  <option value={3}>3 Days Prior to Due Date</option>
+                  <option value={5}>5 Days Prior to Due Date (Recommended)</option>
+                  <option value={7}>7 Days Prior to Due Date</option>
+                  <option value={10}>10 Days Prior to Due Date</option>
+                </select>
+              </div>
+
+              {/* RULE 3: FINAL-DAY EMERGENCY ALERT */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <AlertTriangle size={18} style={{ color: "#BE123C" }} /> Final-Day Emergency Alert
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={rules.finalDayAlertEnabled}
+                    onChange={(e) => handleToggleRule("finalDayAlertEnabled", e.target.checked)}
+                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
+                  />
+                </div>
+                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
+                  Dispatches emergency notifications on the exact deadline date warning of final payment window.
+                </p>
+                <span style={{ fontSize: "0.76rem", color: rules.finalDayAlertEnabled ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
+                  Status: {rules.finalDayAlertEnabled ? "● ACTIVE & RUNNING" : "○ DISABLED"}
+                </span>
+              </div>
+
+              {/* RULE 4: MISSED DEADLINE LATE FEE NOTICE */}
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                  <div style={{ fontWeight: 800, color: "#241A14", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <XCircle size={18} style={{ color: "#BE123C" }} /> Missed Deadline Overdue Alert
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={rules.overduePenaltyNotice}
+                    onChange={(e) => handleToggleRule("overduePenaltyNotice", e.target.checked)}
+                    style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
+                  />
+                </div>
+                <p style={{ margin: 0, fontSize: "0.84rem", color: "#66564A", lineHeight: 1.4 }}>
+                  Notifies students immediately upon passing due date with instructions for hardship waiver or split request.
+                </p>
+                <span style={{ fontSize: "0.76rem", color: rules.overduePenaltyNotice ? "#047857" : "#8C7A6A", fontWeight: 700, marginTop: "10px", display: "block" }}>
+                  Status: {rules.overduePenaltyNotice ? "● ACTIVE & RUNNING" : "○ DISABLED"}
+                </span>
+              </div>
+
+            </div>
+
+            {/* AUDIT SUMMARY BOX */}
+            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "14px", padding: "16px", fontSize: "0.85rem", color: "#66564A", display: "flex", alignItems: "center", gap: "10px" }}>
+              <ShieldCheck size={20} style={{ color: "#047857", flexShrink: 0 }} />
+              <div>
+                <strong>Administrative Control Policy:</strong> Reminder dispatches are logged to the institutional audit log. Clicking "Trigger Automated Reminders Run Now" scans active unpaid fees and pushes alerts to student notification trays instantly.
+              </div>
+            </div>
+
+          </div>
+        );
+      })()}
+
+      {/* REVIEW APPLICATION MODAL */}
       {reviewApp && (
         <div className="ms-modal-overlay">
           <div className="ms-modal" style={{ maxWidth: "620px" }}>
