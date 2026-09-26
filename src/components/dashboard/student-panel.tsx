@@ -1605,45 +1605,83 @@ export function StudentPanel({
         </div>
       )}
 
-      {/* 3. DONATION & SOCIAL IMPACT TAB */}
+      {/* 3. DONATION & SOCIAL IMPACT TAB (PHASE 9) */}
       {activeTab === "donation" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
-              Student Welfare & Social Impact
-            </h1>
-            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
-              Support underprivileged peer tuition. Rule: <strong>৳100 Donated = 1 Donation Point</strong>.
-            </p>
-          </div>
-
-          {/* RANK SUMMARY CARDS */}
-          <div className="ms-grid-3">
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Class Rank</span>
-              <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankClass}</h2>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "#D35400", fontWeight: 600 }}>CSE 1st Year (Section A)</p>
+          
+          {/* HEADER */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                  Student Welfare & Social Impact Fund
+                </h1>
+                <span style={{ fontSize: "0.74rem", background: "rgba(16, 185, 129, 0.12)", color: "#047857", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                  ● Peer-to-Peer Tuition Assistance
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: "0.9rem", color: "#66564A" }}>
+                Demonstration welfare fund supporting underprivileged peer tuition. Formula: <strong>৳100 Donated = 1 Impact Point</strong>.
+              </p>
             </div>
 
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Department Rank</span>
-              <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankDept}</h2>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "#66564A" }}>Computer Science & Eng.</p>
-            </div>
-
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>National Leaderboard</span>
-              <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankNational}</h2>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "#047857", fontWeight: 600 }}>Bangladesh Institutions</p>
+            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "14px", textAlign: "right" }}>
+              <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase" }}>My Impact Points</span>
+              <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#D35400", margin: "2px 0 0" }}>
+                {store.donations.points} Pts
+              </div>
             </div>
           </div>
 
-          <div className="ms-grid-2">
-            {/* DONATION FORM */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+          {/* 5-TIER MULTI-LEVEL RANKING DOSSIER */}
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px" }}>
+            <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+              <Award size={16} style={{ color: "#D35400" }} /> Institutional Impact Standing (5 Tiers)
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Class Rank</span>
+                <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankClass}</h3>
+                <span style={{ fontSize: "0.76rem", color: "#D35400", fontWeight: 700 }}>CSE 1st Year</span>
+              </div>
+
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Section Rank</span>
+                <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#2</h3>
+                <span style={{ fontSize: "0.76rem", color: "#66564A", fontWeight: 700 }}>Section A Cohort</span>
+              </div>
+
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Department Rank</span>
+                <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankDept}</h3>
+                <span style={{ fontSize: "0.76rem", color: "#66564A", fontWeight: 700 }}>CSE Dept Overall</span>
+              </div>
+
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Institution Rank</span>
+                <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankInstitution}</h3>
+                <span style={{ fontSize: "0.76rem", color: "#66564A", fontWeight: 700 }}>Dhaka City College</span>
+              </div>
+
+              <div style={{ background: "#FDF9F3", border: "1.5px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Nationwide Rank</span>
+                <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankNational}</h3>
+                <span style={{ fontSize: "0.76rem", color: "#047857", fontWeight: 700 }}>Bangladesh Overall</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            
+            {/* DONATION FORM & PRESET AMOUNTS */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
+              <h3 style={{ margin: "0 0 4px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
                 Make a Welfare Contribution
               </h3>
+              <p style={{ margin: "0 0 16px", fontSize: "0.84rem", color: "#66564A" }}>
+                Select a preset contribution amount or enter a custom amount.
+              </p>
 
               {donationFeedback && (
                 <div style={{ background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "10px 14px", borderRadius: "10px", color: "#047857", fontSize: "0.85rem", marginBottom: "14px", fontWeight: 600 }}>
@@ -1651,24 +1689,73 @@ export function StudentPanel({
                 </div>
               )}
 
-              <form onSubmit={handleDonationSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <form onSubmit={handleDonationSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                
+                {/* PRESET AMOUNT CHIPS */}
+                <div>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "8px" }}>
+                    Select Preset Amount:
+                  </label>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {[100, 200, 500, 1000].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setDonationAmount(preset)}
+                        style={{
+                          background: donationAmount === preset ? "#D35400" : "#FDF9F3",
+                          color: donationAmount === preset ? "#FFFFFF" : "#241A14",
+                          border: donationAmount === preset ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.35)",
+                          padding: "8px 16px",
+                          borderRadius: "10px",
+                          fontSize: "0.9rem",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "all 0.15s ease",
+                        }}
+                      >
+                        ৳{preset}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setDonationAmount(1500)}
+                      style={{
+                        background: donationAmount > 1000 ? "#D35400" : "#FDF9F3",
+                        color: donationAmount > 1000 ? "#FFFFFF" : "#241A14",
+                        border: donationAmount > 1000 ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.35)",
+                        padding: "8px 16px",
+                        borderRadius: "10px",
+                        fontSize: "0.9rem",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Custom Amount
+                    </button>
+                  </div>
+                </div>
+
+                {/* AMOUNT INPUT FIELD */}
                 <div>
                   <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "6px" }}>
-                    Donation Amount (৳)
+                    Contribution Amount (৳)
                   </label>
                   <input
                     type="number"
                     min="100"
-                    step="100"
+                    step="50"
                     value={donationAmount}
                     onChange={(e) => setDonationAmount(Number(e.target.value))}
-                    style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "1.1rem", fontWeight: 700 }}
+                    style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "1.1rem", fontWeight: 800 }}
                   />
-                  <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "4px", display: "block" }}>
-                    Will earn: <strong style={{ color: "#D35400" }}>{Math.floor(donationAmount / 100)} Impact Points</strong>
-                  </span>
+                  <div style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "4px", display: "flex", justifyContent: "space-between" }}>
+                    <span>Calculated Award: <strong style={{ color: "#D35400" }}>{Math.floor(donationAmount / 100)} Impact Points</strong></span>
+                    <span>Ratio: ৳100 = 1 Point</span>
+                  </div>
                 </div>
 
+                {/* PAYMENT METHOD SELECTOR (SUPPORTING BKASH) */}
                 <div>
                   <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "6px" }}>
                     Payment Method
@@ -1676,25 +1763,31 @@ export function StudentPanel({
                   <select
                     value={donationMethod}
                     onChange={(e) => setDonationMethod(e.target.value)}
-                    style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem" }}
+                    style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem", fontWeight: 600 }}
                   >
-                    <option value="bKash Mobile Banking">bKash Mobile Banking</option>
+                    <option value="bKash Mobile Banking">bKash Mobile Banking (Primary Gateway)</option>
+                    <option value="Dutch-Bangla Rocket">Dutch-Bangla Rocket</option>
                     <option value="City Bank Visa Debit">City Bank Visa Debit</option>
-                    <option value="Neo Wallet Balance">Neo Digital Wallet ({formatTaka(store.balances.walletBalance, false)})</option>
+                    <option value="Neo Wallet Balance">Neo Digital Wallet Balance ({formatTaka(store.balances.walletBalance, false)})</option>
                   </select>
                 </div>
 
-                <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontSize: "0.92rem", fontWeight: 700, marginTop: "6px" }}>
-                  <HeartHandshake size={18} /> Confirm Donation of {formatTaka(donationAmount, false)}
+                <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontSize: "0.92rem", fontWeight: 700, marginTop: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                  <HeartHandshake size={18} /> Confirm Contribution of {formatTaka(donationAmount, false)}
                 </button>
               </form>
             </div>
 
-            {/* LEADERBOARD */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
-                Department Top Donors
-              </h3>
+            {/* TOP CONTRIBUTORS LEADERBOARD */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                  Department Top Contributors
+                </h3>
+                <span style={{ fontSize: "0.75rem", background: "#FFF7E6", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, border: "1px solid rgba(211, 84, 0, 0.3)" }}>
+                  Dhaka City College CSE
+                </span>
+              </div>
               
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
@@ -1702,6 +1795,7 @@ export function StudentPanel({
                   { rank: 2, name: "Anika Tabassum", points: 12, amount: 1200, avatar: "🥈" },
                   { rank: 3, name: store.studentProfile.name + " (You)", points: store.donations.points, amount: store.donations.totalDonated, avatar: "🥉" },
                   { rank: 4, name: "Sajid Khan", points: 4, amount: 400, avatar: "4" },
+                  { rank: 5, name: "Aria Rahman", points: 2, amount: 200, avatar: "5" },
                 ].map((user) => (
                   <div
                     key={user.rank}
@@ -1710,23 +1804,24 @@ export function StudentPanel({
                       justifyContent: "space-between",
                       alignItems: "center",
                       padding: "12px 14px",
-                      background: user.rank === 3 ? "#FDF9F3" : "#FFFFFF",
+                      background: user.rank === 3 ? "#FFF7E6" : "#FDF9F3",
                       borderRadius: "10px",
-                      border: user.rank === 3 ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.2)",
+                      border: user.rank === 3 ? "1.5px solid #D35400" : "1px solid rgba(196, 154, 108, 0.2)",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span style={{ fontSize: "1.1rem" }}>{user.avatar}</span>
                       <div>
                         <h5 style={{ margin: 0, fontSize: "0.9rem", fontWeight: 700, color: "#241A14" }}>{user.name}</h5>
-                        <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{formatTaka(user.amount, false)} Donated</span>
+                        <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{formatTaka(user.amount, false)} Total Donated</span>
                       </div>
                     </div>
-                    <span style={{ fontWeight: 800, color: "#D35400", fontSize: "0.92rem" }}>{user.points} Pts</span>
+                    <span style={{ fontWeight: 800, color: "#D35400", fontSize: "0.92rem" }}>{user.points} Impact Pts</span>
                   </div>
                 ))}
               </div>
             </div>
+
           </div>
 
         </div>

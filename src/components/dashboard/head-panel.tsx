@@ -300,63 +300,161 @@ export function HeadPanel({
         </div>
       )}
 
-      {/* 3. HEAD TROPHY & IMPACT CENTER TAB 🏆 */}
+      {/* 3. HEAD TROPHY & INSTITUTION IMPACT CENTER (PHASE 9) 🏆 */}
       {activeTab === "trophy" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          {/* HEADER WITH SMALL TROPHY ICON */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <div style={{ width: "56px", height: "56px", background: "rgba(211, 84, 0, 0.1)", borderRadius: "50%", display: "grid", placeItems: "center", fontSize: "2rem" }}>
-                🏆
+              <div style={{ width: "52px", height: "52px", background: "rgba(211, 84, 0, 0.12)", border: "1px solid #D35400", borderRadius: "14px", display: "grid", placeItems: "center", color: "#D35400" }}>
+                <Trophy size={28} />
               </div>
               <div>
-                <h1 style={{ margin: "0 0 2px", fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>Dhaka City College Impact Center</h1>
-                <p style={{ margin: 0, fontSize: "0.9rem", color: "#66564A" }}>
-                  Institutional Philanthropy & Student Welfare Leaderboard
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
+                    Institution Impact & Student Welfare
+                  </h1>
+                  <span style={{ fontSize: "0.74rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, color: "#D35400" }}>
+                    Dhaka City College
+                  </span>
+                </div>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Executive oversight of student welfare fund contributions, rankings, and peer tuition assistance grants.
                 </p>
               </div>
             </div>
 
-            <div style={{ textAlign: "right" }}>
-              <span style={{ fontSize: "0.78rem", textTransform: "uppercase", color: "#66564A", fontWeight: 700 }}>National Ranking</span>
-              <h2 style={{ margin: "2px 0 0", fontSize: "1.8rem", fontWeight: 800, color: "#D35400" }}>#2 Overall</h2>
+            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+              <div style={{ textAlign: "right" }}>
+                <span style={{ fontSize: "0.74rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>National Ranking</span>
+                <h2 style={{ margin: "2px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#D35400" }}>#18 Nationwide</h2>
+              </div>
             </div>
           </div>
 
-          <div className="ms-grid-2">
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>Top Donating Departments</h3>
+          {/* METRIC SUMMARY CARDS */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+            <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "14px", padding: "20px" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Total Demo Contribution Raised</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                {formatTaka(84500, false)}
+              </h2>
+              <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 600, marginTop: "2px", display: "block" }}>
+                100% Allocated for Peer Tuition Grants
+              </span>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Total Institution Impact Points</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#241A14" }}>
+                845 Impact Pts
+              </h2>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
+                Formula: ৳100 = 1 Point
+              </span>
+            </div>
+
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Active Student Donors</span>
+              <h2 style={{ margin: "4px 0 0", fontSize: "2rem", fontWeight: 800, color: "#047857" }}>
+                142 Students
+              </h2>
+              <span style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "2px", display: "block" }}>
+                Participating across all departments
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            
+            {/* TOP CONTRIBUTORS LEADERBOARD */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                  Top Student Contributors
+                </h3>
+                <span style={{ fontSize: "0.76rem", color: "#8C7A6A", fontWeight: 600 }}>
+                  Institution Top Rankings
+                </span>
+              </div>
+
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
-                  { rank: "1st", dept: "Computer Science & Engineering", amount: 42000, points: 420, icon: "🥇" },
-                  { rank: "2nd", dept: "Business Administration (BBA)", amount: 26500, points: 265, icon: "🥈" },
-                  { rank: "3rd", dept: "Electrical & Electronic Eng", amount: 16000, points: 160, icon: "🥉" },
-                ].map((item, idx) => (
-                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#FDF9F3", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span style={{ fontSize: "1.4rem" }}>{item.icon}</span>
+                  { rank: 1, name: "Tanvir Rahman", dept: "CSE 3rd Sem", amount: 2500, points: 25, badge: "🥇" },
+                  { rank: 2, name: "Anika Tabassum", dept: "BBA 2nd Sem", amount: 1200, points: 12, badge: "🥈" },
+                  { rank: 3, name: store.studentProfile.name, dept: "CSE 1st Year", amount: store.donations.totalDonated, points: store.donations.points, badge: "🥉" },
+                  { rank: 4, name: "Sajid Khan", dept: "EEE 1st Sem", amount: 400, points: 4, badge: "4" },
+                  { rank: 5, name: "Aria Rahman", dept: "CSE 3rd Sem", amount: 200, points: 2, badge: "5" },
+                ].map((st) => (
+                  <div
+                    key={st.rank}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "12px 14px",
+                      background: st.rank <= 3 ? "#FFF7E6" : "#FDF9F3",
+                      borderRadius: "10px",
+                      border: st.rank <= 3 ? "1px solid rgba(211, 84, 0, 0.3)" : "1px solid rgba(196, 154, 108, 0.2)",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <span style={{ fontSize: "1.1rem" }}>{st.badge}</span>
                       <div>
-                        <h4 style={{ margin: 0, color: "#241A14", fontSize: "0.92rem", fontWeight: 700 }}>{item.dept}</h4>
-                        <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{item.points} Total Points</span>
+                        <h5 style={{ margin: 0, fontSize: "0.9rem", fontWeight: 700, color: "#241A14" }}>{st.name}</h5>
+                        <span style={{ fontSize: "0.78rem", color: "#66564A" }}>{st.dept} • {formatTaka(st.amount, false)}</span>
                       </div>
                     </div>
-                    <span style={{ fontWeight: 800, color: "#D35400", fontSize: "1rem" }}>{formatTaka(item.amount, false)}</span>
+                    <span style={{ fontWeight: 800, color: "#D35400", fontSize: "0.92rem" }}>{st.points} Pts</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "24px" }}>
-              <h3 style={{ margin: "0 0 16px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>Welfare Fund Utilization</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #047857", color: "#241A14", fontSize: "0.88rem" }}>
-                  <strong style={{ color: "#047857" }}>Emergency Medical Support:</strong> ৳35,000 disbursed to 7 students.
-                </div>
-                <div style={{ padding: "14px 16px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #D35400", color: "#241A14", fontSize: "0.88rem" }}>
-                  <strong style={{ color: "#D35400" }}>Partial Fee Subsidy:</strong> ৳49,500 offset for hardship cases.
+            {/* DEPARTMENT BREAKDOWN & DISBURSEMENT ALLOCATION */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                  Departmental Contribution Breakdown
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {[
+                    { dept: "Computer Science & Engineering", amount: 42000, points: 420, icon: "💻" },
+                    { dept: "Business Administration (BBA)", amount: 26500, points: 265, icon: "📊" },
+                    { dept: "Electrical & Electronic Eng", amount: 16000, points: 160, icon: "⚡" },
+                  ].map((item, idx) => (
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: "#FDF9F3", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ fontSize: "1.2rem" }}>{item.icon}</span>
+                        <div>
+                          <h4 style={{ margin: 0, color: "#241A14", fontSize: "0.88rem", fontWeight: 700 }}>{item.dept}</h4>
+                          <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{item.points} Total Points</span>
+                        </div>
+                      </div>
+                      <strong style={{ color: "#D35400", fontSize: "0.95rem" }}>{formatTaka(item.amount, false)}</strong>
+                    </div>
+                  ))}
                 </div>
               </div>
+
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
+                  Demo Fund Disbursement & Impact Allocation
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div style={{ padding: "12px 14px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #047857", color: "#241A14", fontSize: "0.85rem" }}>
+                    <strong style={{ color: "#047857" }}>Emergency Medical Relief:</strong> ৳35,000 disbursed to 7 students.
+                  </div>
+                  <div style={{ padding: "12px 14px", background: "#FDF9F3", borderRadius: "10px", borderLeft: "4px solid #D35400", color: "#241A14", fontSize: "0.85rem" }}>
+                    <strong style={{ color: "#D35400" }}>Tuition Hardship Subsidies:</strong> ৳49,500 offset for partial payment applicants.
+                  </div>
+                </div>
+              </div>
+
             </div>
+
           </div>
 
         </div>

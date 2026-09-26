@@ -435,6 +435,68 @@ export function AdminPanel({
               </tbody>
             </table>
           </div>
+
+          {/* PHASE 9 — STUDENT WELFARE & DONATIONS AUDIT LEDGER */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", marginTop: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Student Welfare & Impact Donations Audit Ledger
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                  Real-time audit log of student welfare contributions, gateway methods, and earned impact points.
+                </p>
+              </div>
+
+              <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "4px 12px", borderRadius: "999px", fontWeight: 700, color: "#D35400" }}>
+                Formula: ৳100 Donated = 1 Impact Point
+              </span>
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Amount Donated</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Points Earned</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Payment Source</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Logged Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { student: store.studentProfile.name, id: store.studentProfile.studentId, amount: store.donations.totalDonated, points: store.donations.points, method: "bKash Mobile Banking", date: "2026-09-25 10:15 AM" },
+                    { student: "Tanvir Rahman", id: "DCC-CSE-24-9001", amount: 2500, points: 25, method: "bKash Mobile Banking", date: "2026-09-24 04:30 PM" },
+                    { student: "Anika Tabassum", id: "DCC-CSE-24-9002", amount: 1200, points: 12, method: "City Bank Visa Debit", date: "2026-09-22 01:10 PM" },
+                    { student: "Sajid Khan", id: "DCC-EEE-24-8840", amount: 400, points: 4, method: "Dutch-Bangla Rocket", date: "2026-09-20 09:45 AM" },
+                    { student: "Aria Rahman", id: "DCC-2024-9001", amount: 200, points: 2, method: "bKash Mobile Banking", date: "2026-09-18 11:20 AM" },
+                  ].map((record, index) => (
+                    <tr key={index} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <td style={{ padding: "12px 16px" }}>
+                        <strong style={{ color: "#241A14", display: "block" }}>{record.student}</strong>
+                        <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>ID: {record.id}</span>
+                      </td>
+                      <td style={{ padding: "12px 16px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                        {formatTaka(record.amount, false)}
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{ background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 800 }}>
+                          +{record.points} Impact Pts
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "#66564A" }}>
+                        {record.method}
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "#8C7A6A", fontSize: "0.82rem" }}>
+                        {record.date}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 
@@ -639,6 +701,68 @@ export function AdminPanel({
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* PHASE 9 — STUDENT WELFARE & DONATIONS AUDIT LEDGER */}
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", marginTop: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                  Student Welfare & Impact Donations Audit Ledger
+                </h3>
+                <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                  Real-time audit log of student welfare contributions, gateway methods, and earned impact points.
+                </p>
+              </div>
+
+              <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "4px 12px", borderRadius: "999px", fontWeight: 700, color: "#D35400" }}>
+                Formula: ৳100 Donated = 1 Impact Point
+              </span>
+            </div>
+
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Amount Donated</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Points Earned</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Payment Source</th>
+                    <th style={{ padding: "12px 16px", fontWeight: 700 }}>Logged Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { student: store.studentProfile.name, id: store.studentProfile.studentId, amount: store.donations.totalDonated, points: store.donations.points, method: "bKash Mobile Banking", date: "2026-09-25 10:15 AM" },
+                    { student: "Tanvir Rahman", id: "DCC-CSE-24-9001", amount: 2500, points: 25, method: "bKash Mobile Banking", date: "2026-09-24 04:30 PM" },
+                    { student: "Anika Tabassum", id: "DCC-CSE-24-9002", amount: 1200, points: 12, method: "City Bank Visa Debit", date: "2026-09-22 01:10 PM" },
+                    { student: "Sajid Khan", id: "DCC-EEE-24-8840", amount: 400, points: 4, method: "Dutch-Bangla Rocket", date: "2026-09-20 09:45 AM" },
+                    { student: "Aria Rahman", id: "DCC-2024-9001", amount: 200, points: 2, method: "bKash Mobile Banking", date: "2026-09-18 11:20 AM" },
+                  ].map((record, index) => (
+                    <tr key={index} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <td style={{ padding: "12px 16px" }}>
+                        <strong style={{ color: "#241A14", display: "block" }}>{record.student}</strong>
+                        <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>ID: {record.id}</span>
+                      </td>
+                      <td style={{ padding: "12px 16px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                        {formatTaka(record.amount, false)}
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <span style={{ background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: 800 }}>
+                          +{record.points} Impact Pts
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "#66564A" }}>
+                        {record.method}
+                      </td>
+                      <td style={{ padding: "12px 16px", color: "#8C7A6A", fontSize: "0.82rem" }}>
+                        {record.date}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
