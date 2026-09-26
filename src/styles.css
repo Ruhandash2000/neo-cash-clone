@@ -631,35 +631,37 @@ button { font: inherit; }
    ========================================================================== */
 
 :root {
-  --ms-bg: #0D182A;
-  --ms-surface: #132238;
-  --ms-surface-blue: #1E3A8A;
-  --ms-border: #1E3A8A;
-  --ms-primary: #4F46E5;
-  --ms-primary-hover: #4338CA;
-  --ms-accent: #A788FA;
-  --ms-lavender: #D8B4FE;
-  --ms-light: #F3EBFF;
-  --ms-text-main: #F3EBFF;
-  --ms-text-muted: #94A3B8;
-  --ms-text-dim: #64748B;
-  --ms-success: #10B981;
-  --ms-warning: #F59E0B;
-  --ms-error: #EF4444;
-  --ms-pending: #3B82F6;
+  --ms-bg: #FFF7E6;
+  --ms-surface: #FFFFFF;
+  --ms-surface-blue: #FDF9F3;
+  --ms-border: rgba(196, 154, 108, 0.3);
+  --ms-primary: #D35400;
+  --ms-primary-hover: #B84700;
+  --ms-accent: #FF8C42;
+  --ms-lavender: #F7B733;
+  --ms-light: #1C140E;
+  --ms-text-main: #1C140E;
+  --ms-text-muted: #4A3B30;
+  --ms-text-dim: #7A685A;
+  --ms-success: #047857;
+  --ms-warning: #B45309;
+  --ms-error: #BE123C;
+  --ms-pending: #D35400;
 }
 
 .dash-midnight {
   min-height: 100vh;
   background-color: var(--ms-bg);
+  background-image: radial-gradient(circle at 50% 0%, rgba(255, 140, 66, 0.12) 0%, #FFF7E6 75%);
+  background-attachment: fixed;
   color: var(--ms-text-main);
   font-family: var(--font-body, system-ui, sans-serif);
 }
 
 /* Demo Role Switcher Top Banner */
 .demo-role-bar {
-  background: linear-gradient(90deg, #1E3A8A 0%, #0D182A 50%, #4F46E5 100%);
-  border-bottom: 1px solid rgba(167, 136, 250, 0.25);
+  background: linear-gradient(90deg, #211710 0%, #3D2B1F 50%, #D35400 100%);
+  border-bottom: 1px solid rgba(196, 154, 108, 0.35);
   padding: 8px 16px;
   display: flex;
   align-items: center;
@@ -667,6 +669,7 @@ button { font: inherit; }
   gap: 12px;
   font-size: 0.85rem;
   z-index: 50;
+  color: #FFF7E6;
 }
 .demo-role-pills {
   display: flex;
@@ -674,9 +677,9 @@ button { font: inherit; }
   gap: 6px;
 }
 .demo-role-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: var(--ms-text-muted);
+  background: rgba(255, 247, 230, 0.12);
+  border: 1px solid rgba(255, 247, 230, 0.2);
+  color: #EAD9C6;
   padding: 4px 12px;
   border-radius: 999px;
   font-size: 0.78rem;
@@ -685,14 +688,14 @@ button { font: inherit; }
   transition: all 0.2s ease;
 }
 .demo-role-btn:hover {
-  background: rgba(167, 136, 250, 0.2);
+  background: rgba(255, 140, 66, 0.25);
   color: #FFF;
 }
 .demo-role-btn.is-active {
   background: var(--ms-primary);
   color: #FFF;
   border-color: var(--ms-accent);
-  box-shadow: 0 0 12px rgba(79, 70, 229, 0.5);
+  box-shadow: 0 0 12px rgba(211, 84, 0, 0.5);
 }
 
 /* Shell Layout */
@@ -702,19 +705,20 @@ button { font: inherit; }
 }
 .ms-sidebar {
   width: 260px;
-  background-color: var(--ms-surface);
+  background-color: #FFFFFF;
   border-right: 1px solid var(--ms-border);
   display: flex;
   flex-direction: column;
   padding: 20px 16px;
   flex-shrink: 0;
+  box-shadow: 4px 0 15px rgba(28, 20, 14, 0.03);
 }
 .ms-brand {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 8px 20px;
-  border-bottom: 1px solid rgba(30, 58, 138, 0.5);
+  border-bottom: 1px solid rgba(196, 154, 108, 0.25);
   margin-bottom: 16px;
 }
 .ms-brand-logo {
@@ -728,9 +732,9 @@ button { font: inherit; }
   padding: 2px 8px;
   border-radius: 999px;
   font-weight: 700;
-  background: rgba(167, 136, 250, 0.15);
-  color: var(--ms-accent);
-  border: 1px solid rgba(167, 136, 250, 0.3);
+  background: rgba(211, 84, 0, 0.12);
+  color: var(--ms-primary);
+  border: 1px solid rgba(211, 84, 0, 0.3);
 }
 
 .ms-nav-list {
@@ -759,18 +763,18 @@ button { font: inherit; }
   transition: all 0.2s ease;
 }
 .ms-nav-item button:hover {
-  background: rgba(30, 58, 138, 0.4);
-  color: var(--ms-light);
+  background: rgba(255, 140, 66, 0.12);
+  color: var(--ms-primary);
 }
 .ms-nav-item button.is-active {
-  background: linear-gradient(90deg, var(--ms-primary) 0%, rgba(79, 70, 229, 0.7) 100%);
+  background: linear-gradient(90deg, #D35400 0%, #FF8C42 100%);
   color: #FFFFFF;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  box-shadow: 0 4px 14px rgba(211, 84, 0, 0.3);
 }
 
 .ms-user-area {
   padding-top: 16px;
-  border-top: 1px solid rgba(30, 58, 138, 0.5);
+  border-top: 1px solid rgba(196, 154, 108, 0.25);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -786,7 +790,7 @@ button { font: inherit; }
 }
 .ms-header {
   height: 64px;
-  background-color: rgba(19, 34, 56, 0.8);
+  background-color: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--ms-border);
   display: flex;
@@ -808,8 +812,12 @@ button { font: inherit; }
   padding: 24px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.ms-card:hover {
-  border-color: rgba(167, 136, 250, 0.4);
+.ms-card:hover,
+.ms-card-hover:hover {
+  border-color: rgba(167, 139, 250, 0.4) !important;
+}
+.ms-table-row-hover:hover {
+  background: rgba(30, 58, 138, 0.35) !important;
 }
 
 .ms-grid-3 {

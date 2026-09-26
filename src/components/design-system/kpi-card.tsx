@@ -25,24 +25,33 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     switch (variant) {
       case "primary":
         return {
-          background: "linear-gradient(135deg, rgba(79, 70, 229, 0.25) 0%, rgba(30, 58, 138, 0.4) 100%)",
-          border: "1px solid rgba(79, 70, 229, 0.45)",
-          iconBg: "rgba(79, 70, 229, 0.3)",
-          iconColor: "#A78BFA",
+          background: "linear-gradient(135deg, #D35400 0%, #B84700 100%)",
+          border: "1px solid #D35400",
+          titleColor: "#FFF7E6",
+          valueColor: "#FFFFFF",
+          subtitleColor: "#EAD9C6",
+          iconBg: "rgba(255, 247, 230, 0.2)",
+          iconColor: "#FFF7E6",
         };
       case "accent":
         return {
-          background: "linear-gradient(135deg, rgba(167, 139, 250, 0.15) 0%, rgba(30, 58, 138, 0.3) 100%)",
-          border: "1px solid rgba(167, 139, 250, 0.35)",
-          iconBg: "rgba(167, 139, 250, 0.25)",
-          iconColor: "#D8B4FE",
+          background: "#FDF9F3",
+          border: "1px solid rgba(247, 183, 51, 0.4)",
+          titleColor: "#7A685A",
+          valueColor: "#D35400",
+          subtitleColor: "#8A7667",
+          iconBg: "rgba(247, 183, 51, 0.2)",
+          iconColor: "#B45309",
         };
       default:
         return {
-          background: "rgba(30, 58, 138, 0.25)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          iconBg: "rgba(30, 58, 138, 0.4)",
-          iconColor: "#94A3B8",
+          background: "#FFFFFF",
+          border: "1px solid rgba(196, 154, 108, 0.3)",
+          titleColor: "#7A685A",
+          valueColor: "#1C140E",
+          subtitleColor: "#8A7667",
+          iconBg: "rgba(196, 154, 108, 0.15)",
+          iconColor: "#D35400",
         };
     }
   };
@@ -55,26 +64,26 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       style={{
         background: vStyle.background,
         border: vStyle.border,
-        borderRadius: "14px",
+        borderRadius: "10px",
         padding: "20px 22px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
         gap: "14px",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
-        transition: "all 0.2s ease",
+        boxShadow: "0 2px 10px rgba(196, 154, 108, 0.08)",
+        transition: "all 0.18s ease",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <span style={{ fontSize: "0.8rem", fontWeight: 700, color: vStyle.titleColor, textTransform: "uppercase", letterSpacing: "0.05em" }}>
           {title}
         </span>
         {icon && (
           <div
             style={{
-              width: "38px",
-              height: "38px",
-              borderRadius: "10px",
+              width: "36px",
+              height: "36px",
+              borderRadius: "8px",
               background: vStyle.iconBg,
               color: vStyle.iconColor,
               display: "grid",
@@ -87,15 +96,15 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       </div>
 
       <div>
-        <h3 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.02em", fontFamily: "Inter, sans-serif" }}>
+        <h3 style={{ margin: 0, fontSize: "1.875rem", fontWeight: 800, color: vStyle.valueColor, letterSpacing: "-0.02em", fontFamily: "Inter, sans-serif" }}>
           {formatTaka(value)}
         </h3>
       </div>
 
       {(subtitle || change) && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "8px", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "8px", borderTop: "1px solid rgba(196, 154, 108, 0.15)" }}>
           {subtitle && (
-            <span style={{ fontSize: "0.78rem", color: "#64748B" }}>
+            <span style={{ fontSize: "0.78rem", color: vStyle.subtitleColor, fontWeight: 500 }}>
               {subtitle}
             </span>
           )}
@@ -110,17 +119,21 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 padding: "2px 8px",
                 borderRadius: "999px",
                 background:
-                  trend === "up"
+                  variant === "primary"
+                    ? "rgba(255, 247, 230, 0.2)"
+                    : trend === "up"
                     ? "rgba(16, 185, 129, 0.12)"
                     : trend === "down"
-                    ? "rgba(239, 68, 68, 0.12)"
-                    : "rgba(255, 255, 255, 0.08)",
+                    ? "rgba(225, 29, 72, 0.12)"
+                    : "rgba(196, 154, 108, 0.15)",
                 color:
-                  trend === "up"
-                    ? "#34D399"
+                  variant === "primary"
+                    ? "#FFF7E6"
+                    : trend === "up"
+                    ? "#047857"
                     : trend === "down"
-                    ? "#F87171"
-                    : "#94A3B8",
+                    ? "#BE123C"
+                    : "#7A685A",
               }}
             >
               {trend === "up" && <TrendingUp size={12} />}

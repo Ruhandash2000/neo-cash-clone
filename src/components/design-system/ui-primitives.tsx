@@ -24,7 +24,7 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
       justifyContent: "center",
       gap: "8px",
       fontWeight: 600,
-      borderRadius: "10px",
+      borderRadius: "8px",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.6 : 1,
       transition: "all 0.18s ease",
@@ -43,36 +43,36 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
       case "primary":
         return {
           ...base,
-          background: "linear-gradient(135deg, #4F46E5 0%, #3730A3 100%)",
+          background: "#D35400",
           color: "#FFFFFF",
-          boxShadow: "0 4px 14px rgba(79, 70, 229, 0.35)",
+          boxShadow: "0 2px 10px rgba(211, 84, 0, 0.25)",
         };
       case "secondary":
         return {
           ...base,
-          background: "rgba(30, 58, 138, 0.4)",
-          color: "#F3E8FF",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
+          background: "#FDF9F3",
+          color: "#4A3B30",
+          border: "1px solid rgba(196, 154, 108, 0.4)",
         };
       case "outline":
         return {
           ...base,
           background: "transparent",
-          color: "#A78BFA",
-          border: "1px solid rgba(167, 139, 250, 0.4)",
+          color: "#D35400",
+          border: "1px solid rgba(211, 84, 0, 0.45)",
         };
       case "danger":
         return {
           ...base,
-          background: "rgba(239, 68, 68, 0.15)",
-          color: "#FCA5A5",
-          border: "1px solid rgba(239, 68, 68, 0.35)",
+          background: "rgba(225, 29, 72, 0.12)",
+          color: "#BE123C",
+          border: "1px solid rgba(225, 29, 72, 0.3)",
         };
       case "ghost":
         return {
           ...base,
           background: "transparent",
-          color: "#94A3B8",
+          color: "#7A685A",
         };
       default:
         return base;
@@ -98,13 +98,13 @@ export const NeoInput: React.FC<NeoInputProps> = ({ label, icon, error, style, .
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%" }}>
       {label && (
-        <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#7A685A", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           {label}
         </label>
       )}
       <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
         {icon && (
-          <span style={{ position: "absolute", left: "12px", color: "#64748B", pointerEvents: "none", display: "flex" }}>
+          <span style={{ position: "absolute", left: "12px", color: "#8A7667", pointerEvents: "none", display: "flex" }}>
             {icon}
           </span>
         )}
@@ -112,19 +112,20 @@ export const NeoInput: React.FC<NeoInputProps> = ({ label, icon, error, style, .
           style={{
             width: "100%",
             padding: icon ? "10px 14px 10px 40px" : "10px 14px",
-            background: "rgba(13, 24, 42, 0.6)",
-            border: error ? "1px solid #EF4444" : "1px solid rgba(255, 255, 255, 0.12)",
-            borderRadius: "10px",
-            color: "#FFFFFF",
+            background: "#FFFFFF",
+            border: error ? "1px solid #BE123C" : "1px solid rgba(196, 154, 108, 0.35)",
+            borderRadius: "8px",
+            color: "#1C140E",
             outline: "none",
             fontSize: "0.9rem",
             transition: "border-color 0.2s ease",
+            boxShadow: "0 1px 3px rgba(196, 154, 108, 0.08)",
             ...style,
           }}
           {...props}
         />
       </div>
-      {error && <span style={{ fontSize: "0.76rem", color: "#F87171" }}>{error}</span>}
+      {error && <span style={{ fontSize: "0.76rem", color: "#BE123C" }}>{error}</span>}
     </div>
   );
 };
@@ -156,8 +157,8 @@ export const NeoModal: React.FC<NeoModalProps> = ({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(13, 24, 42, 0.85)",
-        backdropFilter: "blur(6px)",
+        background: "rgba(33, 23, 16, 0.65)",
+        backdropFilter: "blur(4px)",
         zIndex: 1000,
         display: "grid",
         placeItems: "center",
@@ -167,26 +168,26 @@ export const NeoModal: React.FC<NeoModalProps> = ({
     >
       <div
         style={{
-          background: "#0D182A",
-          border: "1px solid rgba(167, 139, 250, 0.3)",
-          borderRadius: "16px",
+          background: "#FFF7E6",
+          border: "1px solid rgba(196, 154, 108, 0.4)",
+          borderRadius: "14px",
           maxWidth,
           width: "100%",
           padding: "28px",
-          boxShadow: "0 24px 48px rgba(0, 0, 0, 0.6)",
+          boxShadow: "0 20px 40px rgba(33, 23, 16, 0.25)",
           maxHeight: "90vh",
           overflowY: "auto",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", borderBottom: "1px solid rgba(255, 255, 255, 0.08)", paddingBottom: "16px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "16px" }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: "1.2rem", color: "#FFFFFF", fontWeight: 700 }}>{title}</h3>
-            {subtitle && <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "#94A3B8" }}>{subtitle}</p>}
+            <h3 style={{ margin: 0, fontSize: "1.2rem", color: "#1C140E", fontWeight: 700 }}>{title}</h3>
+            {subtitle && <p style={{ margin: "4px 0 0", fontSize: "0.82rem", color: "#7A685A" }}>{subtitle}</p>}
           </div>
           <button
             type="button"
             onClick={onClose}
-            style={{ background: "none", border: "none", color: "#64748B", fontSize: "1.2rem", cursor: "pointer", padding: "4px" }}
+            style={{ background: "none", border: "none", color: "#8A7667", fontSize: "1.2rem", cursor: "pointer", padding: "4px" }}
           >
             ✕
           </button>
@@ -195,7 +196,7 @@ export const NeoModal: React.FC<NeoModalProps> = ({
         <div style={{ marginBottom: footer ? "20px" : 0 }}>{children}</div>
 
         {footer && (
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", borderTop: "1px solid rgba(255, 255, 255, 0.08)", paddingTop: "16px" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", borderTop: "1px solid rgba(196, 154, 108, 0.25)", paddingTop: "16px" }}>
             {footer}
           </div>
         )}

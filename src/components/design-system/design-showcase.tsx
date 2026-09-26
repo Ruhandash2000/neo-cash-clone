@@ -58,7 +58,7 @@ export function DesignShowcase() {
       key: "id",
       header: "Transaction ID",
       render: (item) => (
-        <div style={{ fontWeight: 700, color: NEO_TOKENS.colors.accentPurple }}>
+        <div style={{ fontWeight: 700, color: "#D35400" }}>
           {item.id}
         </div>
       ),
@@ -68,15 +68,15 @@ export function DesignShowcase() {
       header: "Description & Category",
       render: (item) => (
         <div>
-          <div style={{ fontWeight: 600, color: "#FFF" }}>{item.title}</div>
-          <div style={{ fontSize: "0.76rem", color: "#64748B" }}>{item.category} • {item.date}</div>
+          <div style={{ fontWeight: 600, color: "#1C140E" }}>{item.title}</div>
+          <div style={{ fontSize: "0.76rem", color: "#7A685A" }}>{item.category} • {item.date}</div>
         </div>
       ),
     },
     {
       key: "reference",
       header: "Reference",
-      render: (item) => <span style={{ fontFamily: "monospace", fontSize: "0.82rem", color: "#94A3B8" }}>{item.reference}</span>,
+      render: (item) => <span style={{ fontFamily: "monospace", fontSize: "0.82rem", color: "#8A7667" }}>{item.reference}</span>,
     },
     {
       key: "status",
@@ -88,7 +88,7 @@ export function DesignShowcase() {
       header: "Amount",
       align: "right",
       render: (item) => (
-        <span style={{ fontWeight: 700, color: item.status === "paid" ? "#34D399" : "#FFF", fontSize: "0.95rem" }}>
+        <span style={{ fontWeight: 700, color: item.status === "paid" ? "#047857" : "#1C140E", fontSize: "0.95rem" }}>
           ৳{item.amount.toLocaleString("en-BD", { minimumFractionDigits: 2 })}
         </span>
       ),
@@ -100,28 +100,29 @@ export function DesignShowcase() {
       {/* HEADER BANNER */}
       <div
         style={{
-          background: "linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(79, 70, 229, 0.25) 100%)",
-          border: "1px solid rgba(167, 139, 250, 0.3)",
-          borderRadius: "16px",
+          background: "linear-gradient(135deg, #FDF9F3 0%, #F5EBDF 100%)",
+          border: "1px solid rgba(196, 154, 108, 0.4)",
+          borderRadius: "14px",
           padding: "24px 28px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          boxShadow: "0 2px 10px rgba(196, 154, 108, 0.08)",
         }}
       >
         <div>
-          <span style={{ fontSize: "0.78rem", fontWeight: 700, color: NEO_TOKENS.colors.accentPurple, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-            Phase 1 • Design Foundation Showcase
+          <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            Phase 1 • Autumn Vibes Institutional Design System
           </span>
-          <h2 style={{ fontSize: "1.6rem", margin: "6px 0 4px", color: "#FFF", fontWeight: 800 }}>
-            Neo Cash AI Institutional Design System
+          <h2 style={{ fontSize: "1.6rem", margin: "6px 0 4px", color: "#1C140E", fontWeight: 800 }}>
+            Neo Cash AI Warm Financial Operating System
           </h2>
-          <p style={{ margin: 0, fontSize: "0.88rem", color: "#94A3B8" }}>
-            Enterprise midnight sky tokens, typography, status indicators, KPI cards, high-density financial tables, and layout primitives.
+          <p style={{ margin: 0, fontSize: "0.88rem", color: "#7A685A" }}>
+            Official Autumn Vibes tokens, typography scale, 10 institutional status badges, KPI cards, high-density financial tables, and layout primitives.
           </p>
         </div>
 
-        <NeoButton variant="outline" icon={<Sparkles size={16} />} onClick={() => setModalOpen(true)}>
+        <NeoButton variant="primary" icon={<Sparkles size={16} />} onClick={() => setModalOpen(true)}>
           Test Modal Dialog
         </NeoButton>
       </div>
@@ -129,49 +130,50 @@ export function DesignShowcase() {
       {/* 1. COLOR SYSTEM */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <Palette size={20} style={{ color: NEO_TOKENS.colors.accentPurple }} />
-          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#FFF", fontWeight: 700 }}>
-            1. Color Tokens (Midnight Sky Palette)
+          <Palette size={20} style={{ color: "#D35400" }} />
+          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
+            1. Official "Autumn Vibes" Color System
           </h3>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "14px" }}>
           {[
-            { label: "Deep Background", hex: "#0D182A", bg: "#0D182A", border: "1px solid rgba(255,255,255,0.2)" },
-            { label: "Surface Blue", hex: "#1E3A8A", bg: "#1E3A8A" },
-            { label: "Primary Action", hex: "#4F46E5", bg: "#4F46E5" },
-            { label: "Accent Purple", hex: "#A78BFA", bg: "#A78BFA" },
-            { label: "Highlight Soft", hex: "#D8B4FE", bg: "#D8B4FE" },
-            { label: "Subtle Light", hex: "#F3E8FF", bg: "#F3E8FF", textDark: true },
+            { label: "Primary Burnt Orange", hex: "#D35400", bg: "#D35400", textDark: false },
+            { label: "Warm Orange", hex: "#FF8C42", bg: "#FF8C42", textDark: false },
+            { label: "Golden Yellow", hex: "#F7B733", bg: "#F7B733", textDark: true },
+            { label: "Warm Taupe", hex: "#C49A6C", bg: "#C49A6C", textDark: false },
+            { label: "Soft Beige", hex: "#EAD9C6", bg: "#EAD9C6", textDark: true },
+            { label: "Warm Ivory", hex: "#FFF7E6", bg: "#FFF7E6", border: "1px solid rgba(196,154,108,0.4)", textDark: true },
           ].map((c) => (
             <div
               key={c.hex}
               style={{
-                background: "rgba(30, 58, 138, 0.25)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                borderRadius: "12px",
+                background: "#FFFFFF",
+                border: "1px solid rgba(196, 154, 108, 0.3)",
+                borderRadius: "10px",
                 padding: "14px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
+                boxShadow: "0 2px 6px rgba(196, 154, 108, 0.06)",
               }}
             >
               <div
                 style={{
                   height: "48px",
-                  borderRadius: "8px",
+                  borderRadius: "6px",
                   background: c.bg,
                   border: c.border || "none",
                   display: "grid",
                   placeItems: "center",
                   fontWeight: 700,
-                  fontSize: "0.8rem",
-                  color: c.textDark ? "#0D182A" : "#FFF",
+                  fontSize: "0.82rem",
+                  color: c.textDark ? "#1C140E" : "#FFF7E6",
                 }}
               >
                 {c.hex}
               </div>
-              <span style={{ fontSize: "0.8rem", color: "#94A3B8", fontWeight: 600 }}>{c.label}</span>
+              <span style={{ fontSize: "0.8rem", color: "#4A3B30", fontWeight: 600 }}>{c.label}</span>
             </div>
           ))}
         </div>
@@ -180,31 +182,31 @@ export function DesignShowcase() {
       {/* 2. TYPOGRAPHY SYSTEM */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <Type size={20} style={{ color: NEO_TOKENS.colors.accentPurple }} />
-          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#FFF", fontWeight: 700 }}>
-            2. Typography & Financial Currency Hierarchy
+          <Type size={20} style={{ color: "#D35400" }} />
+          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
+            2. Typography & Financial Currency Scale
           </h3>
         </div>
 
-        <div style={{ background: "rgba(30, 58, 138, 0.25)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px", boxShadow: "0 2px 6px rgba(196, 154, 108, 0.06)" }}>
           <div>
-            <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase" }}>Financial Numbers (Tabular Bold)</span>
-            <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#FFF", fontFamily: "Inter, sans-serif" }}>
-              ৳24,580.00 <span style={{ fontSize: "1rem", color: "#34D399", fontWeight: 600 }}>Available Balance</span>
+            <span style={{ fontSize: "0.75rem", color: "#7A685A", textTransform: "uppercase" }}>Financial Numbers (Tabular Bold)</span>
+            <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#1C140E", fontFamily: "Inter, sans-serif" }}>
+              ৳24,580.00 <span style={{ fontSize: "1rem", color: "#047857", fontWeight: 600 }}>Available Balance</span>
             </div>
           </div>
           <div>
-            <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase" }}>Page Title (24px Bold)</span>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "#FFF" }}>Institutional Financial Operations Center</div>
+            <span style={{ fontSize: "0.75rem", color: "#7A685A", textTransform: "uppercase" }}>Page Title (28–34px Bold)</span>
+            <div style={{ fontSize: "1.875rem", fontWeight: 700, color: "#1C140E" }}>Institutional Financial Operations Center</div>
           </div>
           <div>
-            <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase" }}>Section Header (18px Medium)</span>
-            <div style={{ fontSize: "1.125rem", fontWeight: 600, color: "#A78BFA" }}>Pending Fee Adjustments & Approval Applications</div>
+            <span style={{ fontSize: "0.75rem", color: "#7A685A", textTransform: "uppercase" }}>Section Header (17–21px Semibold)</span>
+            <div style={{ fontSize: "1.1875rem", fontWeight: 600, color: "#D35400" }}>Pending Fee Adjustments & Waiver Applications</div>
           </div>
           <div>
-            <span style={{ fontSize: "0.75rem", color: "#64748B", textTransform: "uppercase" }}>Body & Metadata (14px / 12px)</span>
-            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#94A3B8" }}>
-              All financial records are cryptographically verified and backed by Neo Cash AI Security.
+            <span style={{ fontSize: "0.75rem", color: "#7A685A", textTransform: "uppercase" }}>Body & Metadata (14px / 12px)</span>
+            <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#4A3B30" }}>
+              All financial transactions are cryptographically verified and backed by Neo Cash AI Security.
             </p>
           </div>
         </div>
@@ -213,17 +215,17 @@ export function DesignShowcase() {
       {/* 3. BUTTONS & FORM CONTROLS */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <Layers size={20} style={{ color: NEO_TOKENS.colors.accentPurple }} />
-          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#FFF", fontWeight: 700 }}>
-            3. Button Variants & Form Controls
+          <Layers size={20} style={{ color: "#D35400" }} />
+          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
+            3. Button System & Form Controls
           </h3>
         </div>
 
-        <div style={{ background: "rgba(30, 58, 138, 0.25)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "14px", padding: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", padding: "20px", display: "flex", flexDirection: "column", gap: "20px", boxShadow: "0 2px 6px rgba(196, 154, 108, 0.06)" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
-            <NeoButton variant="primary" icon={<CreditCard size={16} />}>Primary Action</NeoButton>
-            <NeoButton variant="secondary">Secondary Button</NeoButton>
-            <NeoButton variant="outline" icon={<ShieldCheck size={16} />}>Outline Badge</NeoButton>
+            <NeoButton variant="primary" icon={<CreditCard size={16} />}>Primary Burnt Orange</NeoButton>
+            <NeoButton variant="secondary">Secondary Soft Taupe</NeoButton>
+            <NeoButton variant="outline" icon={<ShieldCheck size={16} />}>Outline Accent</NeoButton>
             <NeoButton variant="danger">Danger Action</NeoButton>
             <NeoButton variant="ghost">Ghost Button</NeoButton>
           </div>
@@ -248,13 +250,13 @@ export function DesignShowcase() {
       {/* 4. STATUS SYSTEM */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <CheckCircle2 size={20} style={{ color: NEO_TOKENS.colors.accentPurple }} />
-          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#FFF", fontWeight: 700 }}>
-            4. Institutional Status Language System (10 States)
+          <CheckCircle2 size={20} style={{ color: "#D35400" }} />
+          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
+            4. 10 Standardized Institutional Status Badges
           </h3>
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", background: "rgba(30, 58, 138, 0.25)", padding: "18px", borderRadius: "14px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", background: "#FFFFFF", padding: "18px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.3)", boxShadow: "0 2px 6px rgba(196, 154, 108, 0.06)" }}>
           {(["paid", "due", "overdue", "pending", "approved", "rejected", "under_review", "action_required", "verified", "failed"] as StatusType[]).map((st) => (
             <StatusBadge key={st} status={st} />
           ))}
@@ -264,9 +266,9 @@ export function DesignShowcase() {
       {/* 5. FINANCIAL KPI CARDS GRID */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <LayoutGrid size={20} style={{ color: NEO_TOKENS.colors.accentPurple }} />
-          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#FFF", fontWeight: 700 }}>
-            5. Reusable KPI Cards (4-Column Layout)
+          <LayoutGrid size={20} style={{ color: "#D35400" }} />
+          <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
+            5. Financial Summary KPI Cards (4-Column Layout)
           </h3>
         </div>
 
@@ -312,8 +314,8 @@ export function DesignShowcase() {
       <section>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Clock size={20} style={{ color: NEO_TOKENS.colors.accentPurple }} />
-            <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#FFF", fontWeight: 700 }}>
+            <Clock size={20} style={{ color: "#D35400" }} />
+            <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
               6. High-Density Financial Data Table
             </h3>
           </div>
@@ -328,10 +330,10 @@ export function DesignShowcase() {
                   padding: "5px 12px",
                   fontSize: "0.78rem",
                   fontWeight: 600,
-                  borderRadius: "8px",
-                  background: selectedStatus === st ? "#4F46E5" : "rgba(30, 58, 138, 0.3)",
-                  color: "#FFF",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "6px",
+                  background: selectedStatus === st ? "#D35400" : "#FDF9F3",
+                  color: selectedStatus === st ? "#FFFFFF" : "#7A685A",
+                  border: "1px solid rgba(196, 154, 108, 0.35)",
                   cursor: "pointer",
                   textTransform: "capitalize",
                 }}
@@ -350,7 +352,7 @@ export function DesignShowcase() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Institutional Design System Verification"
-        subtitle="Phase 1 Design Foundation Component Test Modal"
+        subtitle="Autumn Vibes Palette Component Test Modal"
         footer={
           <>
             <NeoButton variant="secondary" onClick={() => setModalOpen(false)}>
@@ -362,12 +364,12 @@ export function DesignShowcase() {
           </>
         }
       >
-        <div style={{ padding: "12px 0", color: "#94A3B8", fontSize: "0.9rem" }}>
+        <div style={{ padding: "12px 0", color: "#4A3B30", fontSize: "0.9rem" }}>
           <p style={{ margin: "0 0 12px" }}>
-            This modal dialog demonstrates backdrop blur, controlled border radius (16px), 1px subtle borders, clean action buttons, and keyboard escape handling.
+            This modal dialog demonstrates backdrop blur, controlled 14px border radius, 1px subtle taupe borders, clean Burnt Orange action buttons, and keyboard escape handling.
           </p>
-          <div style={{ background: "rgba(30, 58, 138, 0.3)", padding: "14px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.08)" }}>
-            <span style={{ color: "#34D399", fontWeight: 700 }}>✓ Design System Status: Verified & Production Ready</span>
+          <div style={{ background: "#FDF9F3", padding: "14px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.35)" }}>
+            <span style={{ color: "#047857", fontWeight: 700 }}>✓ Design System Status: Verified & Production Ready</span>
           </div>
         </div>
       </NeoModal>

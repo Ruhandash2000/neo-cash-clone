@@ -192,15 +192,15 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
             )}
 
             {/* DESIGN SYSTEM SHOWCASE LINK */}
-            <li className="ms-nav-item" style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed rgba(167, 139, 250, 0.3)" }}>
+            <li className="ms-nav-item" style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed rgba(196, 154, 108, 0.3)" }}>
               <button className={activeTab === "design" ? "is-active" : ""} onClick={() => setActiveTab("design")}>
-                <Palette size={18} style={{ color: "#A78BFA" }} /> Design Showcase
+                <Palette size={18} style={{ color: "#D35400" }} /> Design Showcase
               </button>
             </li>
 
             {/* COMMON LOGOUT ITEM IN SIDEBAR NAV */}
             <li className="ms-nav-item" style={{ marginTop: "8px" }}>
-              <button type="button" onClick={onSignOut} style={{ color: "#EF4444" }}>
+              <button type="button" onClick={onSignOut} style={{ color: "#BE123C" }}>
                 <LogOut size={18} /> Logout
               </button>
             </li>
@@ -208,7 +208,7 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
 
           <div className="ms-user-area">
             <div>
-              <p style={{ margin: 0, fontWeight: "700", fontSize: "0.88rem", color: "#FFF" }}>
+              <p style={{ margin: 0, fontWeight: "700", fontSize: "0.88rem", color: "#1C140E" }}>
                 {store.role === "student" ? store.studentProfile.name : store.role === "admin" ? "Refat Rahman" : "Prof. Dr. M. A. Karim"}
               </p>
               <span style={{ fontSize: "0.75rem", color: "var(--ms-text-muted)" }}>
@@ -223,10 +223,10 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 alignItems: "center",
                 gap: "5px",
                 padding: "6px 10px",
-                background: "rgba(239, 68, 68, 0.15)",
-                border: "1px solid rgba(239, 68, 68, 0.35)",
+                background: "rgba(225, 29, 72, 0.08)",
+                border: "1px solid rgba(225, 29, 72, 0.25)",
                 borderRadius: "8px",
-                color: "#FCA5A5",
+                color: "#BE123C",
                 fontSize: "0.78rem",
                 fontWeight: "600",
                 cursor: "pointer",
@@ -243,7 +243,7 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
           {/* HEADER BAR */}
           <header className="ms-header">
             <div>
-              <h1 style={{ fontSize: "1.2rem", margin: 0, color: "#FFF" }}>
+              <h1 style={{ fontSize: "1.2rem", margin: 0, color: "#1C140E", fontWeight: "700" }}>
                 {store.selectedInstitution.name}
               </h1>
               <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>
@@ -256,11 +256,11 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
               <button
                 type="button"
                 onClick={() => setShowNotifDrawer(true)}
-                style={{ position: "relative", background: "rgba(30, 58, 138, 0.4)", border: "1px solid var(--ms-border)", padding: "8px", borderRadius: "10px", color: "var(--ms-light)", cursor: "pointer" }}
+                style={{ position: "relative", background: "#FDF9F3", border: "1px solid var(--ms-border)", padding: "8px", borderRadius: "10px", color: "#D35400", cursor: "pointer" }}
               >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                  <span style={{ position: "absolute", top: "-4px", right: "-4px", width: "16px", height: "16px", borderRadius: "50%", background: "var(--ms-error)", color: "#FFF", fontSize: "0.68rem", fontWeight: "800", display: "grid", placeItems: "center" }}>
+                  <span style={{ position: "absolute", top: "-4px", right: "-4px", width: "16px", height: "16px", borderRadius: "50%", background: "#BE123C", color: "#FFF", fontSize: "0.68rem", fontWeight: "800", display: "grid", placeItems: "center" }}>
                     {unreadCount}
                   </span>
                 )}
@@ -280,10 +280,10 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                   alignItems: "center",
                   gap: "6px",
                   padding: "7px 14px",
-                  background: "rgba(239, 68, 68, 0.15)",
-                  border: "1px solid rgba(239, 68, 68, 0.35)",
+                  background: "rgba(225, 29, 72, 0.08)",
+                  border: "1px solid rgba(225, 29, 72, 0.25)",
                   borderRadius: "10px",
-                  color: "#FCA5A5",
+                  color: "#BE123C",
                   fontSize: "0.82rem",
                   fontWeight: "700",
                   cursor: "pointer",
