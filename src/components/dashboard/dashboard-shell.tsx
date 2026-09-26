@@ -217,6 +217,11 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                     <Layers size={18} /> Academic Structure
                   </button>
                 </li>
+                <li className="ms-nav-item">
+                  <button className={activeTab === "analytics" ? "is-active" : ""} onClick={() => setActiveTab("analytics")}>
+                    <Activity size={18} /> Financial Intelligence
+                  </button>
+                </li>
               </>
             )}
 

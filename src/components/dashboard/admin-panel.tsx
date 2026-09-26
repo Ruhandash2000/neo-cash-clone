@@ -18,7 +18,7 @@ import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
   CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy, Bell, Zap,
-  Eye, Edit3, UserCheck, CreditCard, History, Wallet, Calendar, Award, Mail, Phone, Shield, CheckSquare, Layers, Activity, UserX, ChevronRight, Download
+  Eye, Edit3, UserCheck, CreditCard, History, Wallet, Calendar, Award, Mail, Phone, Shield, CheckSquare, Layers, Activity, UserX, ChevronRight, Download, PhoneCall, AlertCircle
 } from "lucide-react";
 
 export function AdminPanel({
@@ -234,6 +234,71 @@ export function AdminPanel({
   };
 
   // Phase 13 — Academic Structure Management State
+  
+  // Phase 17 — Financial Intelligence & Admin Contact Operations State
+  const [riskFilter, setRiskFilter] = useState<"all" | "overdue" | "ignored_reminders" | "failed_payment" | "repeated_delay">("all");
+  const [contactModalStudent, setContactModalStudent] = useState<StudentRecord | null>(null);
+  const [contactChannel, setContactChannel] = useState<"email" | "sms" | "call">("email");
+  const [contactEmailSubject, setContactEmailSubject] = useState("");
+  const [contactEmailBody, setContactEmailBody] = useState("");
+  const [contactSmsBody, setContactSmsBody] = useState("");
+  const [callState, setCallState] = useState<"idle" | "dialing" | "connected" | "ended">("idle");
+  const [callNotes, setCallNotes] = useState("");
+
+  const handleOpenContactModal = (student: StudentRecord, defaultChannel: "email" | "sms" | "call" = "email") => {
+    setContactModalStudent(student);
+    setContactChannel(defaultChannel);
+    setContactEmailSubject(`[Notice] Financial Context & Payment Assistance — ${student.name} (${student.studentId})`);
+    setContactEmailBody(`Dear ${student.name},\n\nWe are writing from the Dhaka City College Accounts Office regarding your outstanding tuition balance of ৳${(student.totalDues || 6500).toLocaleString()}.\n\nIf you are experiencing financial hardship, you can submit a Partial Payment Application directly through your Neo Cash portal or request a deadline extension.\n\nPlease contact us or reply to this notice.\n\nWarm regards,\nAccounts & Financial Services\nDhaka City College`);
+    setContactSmsBody(`Dhaka City College Notice: Dear ${student.name}, your tuition balance of ৳${(student.totalDues || 6500).toLocaleString()} is pending. Submit a partial payment request via Neo Cash or call +880 2-9661234.`);
+    setCallState("idle");
+    setCallNotes("");
+  };
+
+  const handleSendDemoEmail = () => {
+    if (!contactModalStudent) return;
+    actions.addNotification({
+      title: `Admin Contact (Email Sent)`,
+      message: `Official notice emailed to ${contactModalStudent.name} (${contactModalStudent.email}): "${contactEmailSubject}"`,
+      type: "info",
+      category: "email",
+    });
+    alert(`Demo Email dispatched successfully to ${contactModalStudent.name} (${contactModalStudent.email})!\n\nLogged to activity audit trail.`);
+    setContactModalStudent(null);
+  };
+
+  const handleSendDemoSms = () => {
+    if (!contactModalStudent) return;
+    actions.addNotification({
+      title: `Admin Contact (SMS Sent)`,
+      message: `SMS dispatched to ${contactModalStudent.name} (${contactModalStudent.phone}): "${contactSmsBody.slice(0, 60)}..."`,
+      type: "info",
+      category: "institution",
+    });
+    alert(`Demo SMS dispatched to ${contactModalStudent.phone}!\n\nLogged to activity audit trail.`);
+    setContactModalStudent(null);
+  };
+
+  const handleStartDemoCall = () => {
+    setCallState("dialing");
+    setTimeout(() => {
+      setCallState("connected");
+    }, 1200);
+  };
+
+  const handleLogCallOutcome = () => {
+    if (!contactModalStudent) return;
+    const outcomeText = callNotes.trim() || "Discussed payment options and informed student regarding partial payment application.";
+    actions.addNotification({
+      title: `Admin Phone Call Logged`,
+      message: `Voice call completed with ${contactModalStudent.name} (+880 ${contactModalStudent.phone}). Outcome: ${outcomeText}`,
+      type: "success",
+      category: "institution",
+    });
+    alert(`Call outcome logged for ${contactModalStudent.name}!\n\nDetails saved to institutional record.`);
+    setContactModalStudent(null);
+  };
+
   const [academicSubTab, setAcademicSubTab] = useState<"structure" | "promotion" | "sections">("structure");
 
   // Creation forms state
@@ -3991,6 +4056,746 @@ export function AdminPanel({
 
 
       {/* PHASE 14 — SAFETY BULK ASSIGNMENT CONFIRMATION MODAL */}
+      
+      {/* PHASE 17 — ADMIN FINANCIAL INTELLIGENCE & ANALYTICS */}
+      {activeTab === "analytics" && (() => {
+        const riskAccountsData = store.students.map((student) => {
+          let reasons: Array<"overdue" | "ignored_reminders" | "failed_payment" | "repeated_delay"> = [];
+          let overdueDays = 0;
+          let remindersSent = 2;
+          let remindersOpened = 0;
+          let failedPaymentCount = 0;
+
+          if (student.studentId.includes("1024") || student.id === "stu-1") {
+            reasons = ["overdue", "ignored_reminders", "repeated_delay"];
+            overdueDays = 18;
+            remindersSent = 4;
+            remindersOpened = 0;
+            failedPaymentCount = 1;
+          } else if (student.id === "stu-2" || student.name.includes("Aria")) {
+            reasons = ["failed_payment", "ignored_reminders"];
+            overdueDays = 5;
+            remindersSent = 3;
+            remindersOpened = 0;
+            failedPaymentCount = 2;
+          } else if (student.id === "stu-3" || student.name.includes("Siddique")) {
+            reasons = ["overdue"];
+            overdueDays = 12;
+            remindersSent = 2;
+            remindersOpened = 1;
+            failedPaymentCount = 0;
+          } else if (student.feeStatus === "Overdue" || student.status === "Overdue") {
+            reasons = ["overdue", "ignored_reminders"];
+            overdueDays = 15;
+            remindersSent = 3;
+            remindersOpened = 0;
+            failedPaymentCount = 0;
+          } else if (student.name.includes("Mahmudul")) {
+            reasons = ["repeated_delay", "overdue"];
+            overdueDays = 22;
+            remindersSent = 4;
+            remindersOpened = 0;
+            failedPaymentCount = 0;
+          } else {
+            reasons = ["overdue"];
+            overdueDays = 8;
+            remindersSent = 2;
+            remindersOpened = 0;
+          }
+
+          return {
+            ...student,
+            riskReasons: reasons,
+            overdueDays,
+            remindersSent,
+            remindersOpened,
+            failedPaymentCount,
+          };
+        });
+
+        const filteredRiskAccounts = riskAccountsData.filter((acc) => {
+          if (riskFilter === "all") return true;
+          return acc.riskReasons.includes(riskFilter);
+        });
+
+        const totalOverdueCount = riskAccountsData.filter(a => a.riskReasons.includes("overdue")).length;
+        const totalIgnoredRemindersCount = riskAccountsData.filter(a => a.riskReasons.includes("ignored_reminders")).length;
+        const totalFailedPaymentsCount = riskAccountsData.filter(a => a.riskReasons.includes("failed_payment")).length;
+
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            
+            {/* HEADER BANNER */}
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                    📊 Financial Operations & Intelligence
+                  </span>
+                  <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
+                </div>
+                <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
+                  Institutional Revenue & Account Attention Intelligence
+                </h1>
+                <p style={{ margin: "4px 0 0", fontSize: "0.9rem", color: "#66564A" }}>
+                  Comprehensive revenue performance, collection trajectories, dynamic alert notifications, and human evaluation queue.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  type="button"
+                  className="ms-btn-primary"
+                  onClick={() => setActiveTab("overview")}
+                  style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
+                >
+                  ← Operations Center
+                </button>
+              </div>
+            </div>
+
+            {/* 1. FINANCIAL ANALYTICS SUMMARY MATRIX (4 CORE KPIS) */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+              
+              {/* COLLECTION RATE */}
+              <div style={{ background: "#FFFFFF", border: "2px solid #047857", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#047857", textTransform: "uppercase", letterSpacing: "0.04em" }}>Collection Rate</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2.2rem", fontWeight: 800, color: "#241A14" }}>82.4%</span>
+                </div>
+                <div>
+                  <div style={{ width: "100%", height: "6px", background: "#FDF9F3", border: "1px solid rgba(4, 120, 87, 0.3)", borderRadius: "999px", marginBottom: "6px", overflow: "hidden" }}>
+                    <div style={{ width: "82.4%", height: "100%", background: "#047857", borderRadius: "999px" }} />
+                  </div>
+                  <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>
+                    Target: 85.0% • ৳48,20,000 Collected
+                  </span>
+                </div>
+              </div>
+
+              {/* TOTAL OUTSTANDING */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>Total Outstanding</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(1480000, false)}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "#66564A", fontWeight: 600 }}>
+                  Due Soon: ৳10.85L • Overdue: ৳3.95L
+                </span>
+              </div>
+
+              {/* TOTAL PAID */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.04em" }}>Total Paid Balance</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(4820000, false)}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  <CheckCircle2 size={14} /> 1,526 Settled Transactions
+                </span>
+              </div>
+
+              {/* TOTAL OVERDUE */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(190, 18, 60, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <span style={{ fontSize: "0.74rem", fontWeight: 800, color: "#BE123C", textTransform: "uppercase", letterSpacing: "0.04em" }}>Overdue Dues</span>
+                <div style={{ margin: "12px 0 4px" }}>
+                  <span style={{ fontSize: "2rem", fontWeight: 800, color: "#BE123C", fontFeatureSettings: "'tnum'" }}>
+                    {formatTaka(395000, false)}
+                  </span>
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "#BE123C", fontWeight: 700 }}>
+                  23 Overdue Student Profiles
+                </span>
+              </div>
+
+            </div>
+
+            {/* 2. OPERATIONAL ALERTS CENTER (4 EXPLICIT ALERTS) */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, color: "#241A14" }}>
+                    Operational Financial Alerts & System Triggers
+                  </h3>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                    Real-time exception triggers requiring administrative attention or follow-up.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px" }}>
+                
+                {/* ALERT 1: OVERDUE FEES */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #BE123C", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#BE123C", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <AlertTriangle size={18} /> Overdue Fees Alert
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      23 students have overdue fees.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      Total unpaid past deadline: ৳3,95,000
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRiskFilter("overdue")}
+                    style={{ background: "#BE123C", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    Inspect Overdue Accounts →
+                  </button>
+                </div>
+
+                {/* ALERT 2: UNOPENED REMINDERS */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #D35400", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#D35400", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <Bell size={18} /> Reminder Engagement Alert
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      12 students have not opened reminders.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      Automated weekly notices unopened for 14+ days
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRiskFilter("ignored_reminders")}
+                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    View Unresponsive Profiles →
+                  </button>
+                </div>
+
+                {/* ALERT 3: FAILED PAYMENTS */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #9A6600", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#9A6600", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <XCircle size={18} /> Gateway Exception Alert
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      5 payments failed.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      Gateway timeouts on bKash & Card channels
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRiskFilter("failed_payment")}
+                    style={{ background: "#9A6600", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    Inspect Failed Attempts →
+                  </button>
+                </div>
+
+                {/* ALERT 4: PARTIAL PAYMENT QUEUE */}
+                <div style={{ background: "#FDF9F3", borderLeft: "4px solid #047857", borderTop: "1px solid rgba(196, 154, 108, 0.3)", borderRight: "1px solid rgba(196, 154, 108, 0.3)", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "10px" }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#047857", fontWeight: 800, fontSize: "0.9rem", marginBottom: "4px" }}>
+                      <ShieldCheck size={18} /> Hardship Applications
+                    </div>
+                    <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>
+                      8 partial-payment requests awaiting review.
+                    </p>
+                    <span style={{ fontSize: "0.76rem", color: "#66564A", display: "block", marginTop: "2px" }}>
+                      AI signature matched dossiers pending Admin verification
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("applications")}
+                    style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", alignSelf: "flex-start" }}
+                  >
+                    Open Review Queue →
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* 3. PAYMENT TREND & FEE PERFORMANCE ANALYTICS */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+              
+              {/* PAYMENT COLLECTION TREND */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                    Payment Collection Trend Trajectory
+                  </h3>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                    Monthly revenue intake vs target benchmarks for Fall 2026.
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  {[
+                    { month: "July 2026", collected: 1250000, target: 1500000, pct: 83.3 },
+                    { month: "August 2026", collected: 1820000, target: 2000000, pct: 91.0 },
+                    { month: "September 2026 (Active)", collected: 1750000, target: 2350000, pct: 74.4 },
+                    { month: "October 2026 (Forecast)", collected: 1030000, target: 1200000, pct: 85.8 },
+                  ].map((item, idx) => (
+                    <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.88rem" }}>
+                        <span style={{ fontWeight: 800, color: "#241A14" }}>{item.month}</span>
+                        <span style={{ fontWeight: 800, color: item.pct >= 85 ? "#047857" : "#D35400" }}>
+                          {formatTaka(item.collected, false)} / {formatTaka(item.target, false)} ({item.pct}%)
+                        </span>
+                      </div>
+                      <div style={{ width: "100%", height: "8px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "999px", overflow: "hidden" }}>
+                        <div style={{ width: `${item.pct}%`, height: "100%", background: item.pct >= 85 ? "#047857" : "#D35400", borderRadius: "999px" }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* FEE PERFORMANCE BREAKDOWN */}
+              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                    Fee Type Performance Breakdown
+                  </h3>
+                  <p style={{ margin: "2px 0 0", fontSize: "0.84rem", color: "#66564A" }}>
+                    Collection efficiency across different institutional fee categories.
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {[
+                    { title: "Semester Tuition Fee", category: "Tuition", collected: 3250000, total: 3800000, pct: 85.5 },
+                    { title: "Lab & Tech Facilities Fee", category: "Lab & Tech", collected: 840000, total: 920000, pct: 91.3 },
+                    { title: "Semester Exam & Evaluation", category: "Exam", collected: 520000, total: 660000, pct: 78.8 },
+                    { title: "Library & Digital Resources", category: "Library", collected: 210000, total: 220000, pct: 95.4 },
+                    { title: "Hostel & Amenities Fee", category: "Hostel", collected: 180000, total: 250000, pct: 72.0 },
+                  ].map((fee, idx) => (
+                    <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <strong style={{ fontSize: "0.88rem", color: "#241A14", display: "block" }}>{fee.title}</strong>
+                        <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{fee.category} Category</span>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <strong style={{ fontSize: "0.92rem", color: "#241A14", display: "block", fontFeatureSettings: "'tnum'" }}>
+                          {formatTaka(fee.collected, false)}
+                        </strong>
+                        <span style={{ fontSize: "0.74rem", color: fee.pct >= 85 ? "#047857" : "#D35400", fontWeight: 700 }}>
+                          {fee.pct}% Collected
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* 4. STUDENT RISK & HUMAN ATTENTION ENGINE (NEEDS ADMIN ATTENTION) */}
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
+              
+              {/* SECTION TITLE & HUMAN GOVERNANCE MANDATE */}
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: "1.3rem", fontWeight: 800, color: "#241A14" }}>
+                      Accounts Requiring Human Attention
+                    </h2>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.86rem", color: "#66564A" }}>
+                      Flagged student profiles requiring human evaluation, outreach, or payment assistance.
+                    </p>
+                  </div>
+
+                  {/* HUMAN POLICY MANDATE ALERT */}
+                  <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "12px", padding: "10px 16px", maxWidth: "480px", fontSize: "0.78rem", color: "#241A14", lineHeight: 1.4 }}>
+                    <strong style={{ color: "#D35400", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Shield size={14} /> HUMAN GOVERNANCE POLICY
+                    </strong>
+                    The AI system flags potential risk factors but does <strong>NOT automatically penalize, suspend, or block student accounts</strong>. Administrators decide appropriate support actions.
+                  </div>
+                </div>
+              </div>
+
+              {/* RISK ATTENTION FILTER TABS */}
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "12px" }}>
+                {[
+                  { key: "all", label: `All Risk Accounts (${riskAccountsData.length})` },
+                  { key: "overdue", label: `Overdue Fees (${totalOverdueCount})` },
+                  { key: "ignored_reminders", label: `Ignored Reminders (${totalIgnoredRemindersCount})` },
+                  { key: "failed_payment", label: `Failed Payments (${totalFailedPaymentsCount})` },
+                  { key: "repeated_delay", label: "Repeated Delays (8)" },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setRiskFilter(tab.key as any)}
+                    style={{
+                      background: riskFilter === tab.key ? "#D35400" : "#FDF9F3",
+                      color: riskFilter === tab.key ? "#FFFFFF" : "#66564A",
+                      border: "1px solid rgba(196, 154, 108, 0.3)",
+                      padding: "7px 14px",
+                      borderRadius: "8px",
+                      fontSize: "0.82rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* RISK ATTENTION ACCOUNTS TABLE */}
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                  <thead>
+                    <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Profile</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Risk Status</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Possible Risk Reason(s)</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700 }}>Financial Context</th>
+                      <th style={{ padding: "12px 16px", fontWeight: 700, textAlign: "right" }}>Admin Contact Suite</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRiskAccounts.map((student) => (
+                      <tr key={student.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                        
+                        {/* STUDENT PROFILE */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#D35400", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "0.9rem" }}>
+                              {student.name.charAt(0)}
+                            </div>
+                            <div>
+                              <strong style={{ color: "#241A14", display: "block" }}>{student.name}</strong>
+                              <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>
+                                {student.studentId} • {student.department} ({student.classYear})
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* RISK STATUS */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <span style={{ background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "4px 10px", borderRadius: "999px", fontSize: "0.76rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <AlertTriangle size={12} /> Needs Admin Attention
+                          </span>
+                        </td>
+
+                        {/* POSSIBLE REASONS */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                            {student.riskReasons.map((r, idx) => (
+                              <span key={idx} style={{
+                                fontSize: "0.72rem",
+                                padding: "2px 8px",
+                                borderRadius: "6px",
+                                fontWeight: 700,
+                                background: r === "overdue" ? "rgba(190, 18, 60, 0.1)" : r === "ignored_reminders" ? "rgba(211, 84, 0, 0.1)" : r === "failed_payment" ? "rgba(154, 102, 0, 0.1)" : "rgba(37, 99, 235, 0.1)",
+                                color: r === "overdue" ? "#BE123C" : r === "ignored_reminders" ? "#D35400" : r === "failed_payment" ? "#9A6600" : "#1D4ED8",
+                              }}>
+                                {r === "overdue" ? `🔴 Overdue (${student.overdueDays} days)` : r === "ignored_reminders" ? `🟡 Ignored Reminders (${student.remindersSent} sent)` : r === "failed_payment" ? `🟠 Failed Payment (${student.failedPaymentCount}x)` : `🟣 Repeated Delay`}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+
+                        {/* FINANCIAL CONTEXT */}
+                        <td style={{ padding: "14px 16px" }}>
+                          <strong style={{ color: "#BE123C", fontFeatureSettings: "'tnum'", display: "block" }}>
+                            {formatTaka(student.totalDues || 6500, false)}
+                          </strong>
+                          <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>
+                            Wallet: {formatTaka(student.walletBalance || 0, false)}
+                          </span>
+                        </td>
+
+                        {/* ADMIN CONTACT ACTIONS */}
+                        <td style={{ padding: "14px 16px", textAlign: "right" }}>
+                          <div style={{ display: "inline-flex", gap: "6px" }}>
+                            
+                            {/* EMAIL BUTTON */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenContactModal(student, "email")}
+                              title="Send Email Notice"
+                              style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                              <Mail size={14} /> Email
+                            </button>
+
+                            {/* SMS / PHONE BUTTON */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenContactModal(student, "sms")}
+                              title="Send SMS / Phone Message"
+                              style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                              <Phone size={14} /> SMS
+                            </button>
+
+                            {/* VOICE CALL BUTTON */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenContactModal(student, "call")}
+                              title="Initiate Demo Voice Call"
+                              style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "6px 10px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                              <PhoneCall size={14} /> Call
+                            </button>
+
+                          </div>
+                        </td>
+
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+          </div>
+        );
+      })()}
+
+
+      
+      {/* DEMO CONTACT OPERATIONS CENTER MODAL (PHASE 17) */}
+      {contactModalStudent && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
+          <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "640px", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
+            
+            {/* HEADER */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#D35400", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem" }}>
+                  {contactModalStudent.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: "#241A14" }}>
+                    Admin Contact Operations — {contactModalStudent.name}
+                  </h3>
+                  <span style={{ fontSize: "0.82rem", color: "#8C7A6A" }}>
+                    ID: {contactModalStudent.studentId} • {contactModalStudent.department} ({contactModalStudent.classYear})
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContactModalStudent(null)}
+                style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* CHANNEL SELECTION TABS */}
+            <div style={{ display: "flex", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", padding: "4px" }}>
+              <button
+                type="button"
+                onClick={() => setContactChannel("email")}
+                style={{ flex: 1, padding: "8px", border: "none", borderRadius: "8px", background: contactChannel === "email" ? "#FFFFFF" : "transparent", color: contactChannel === "email" ? "#D35400" : "#66564A", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: contactChannel === "email" ? "0 2px 4px rgba(0,0,0,0.05)" : "none" }}
+              >
+                <Mail size={16} /> Email Channel
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactChannel("sms")}
+                style={{ flex: 1, padding: "8px", border: "none", borderRadius: "8px", background: contactChannel === "sms" ? "#FFFFFF" : "transparent", color: contactChannel === "sms" ? "#D35400" : "#66564A", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: contactChannel === "sms" ? "0 2px 4px rgba(0,0,0,0.05)" : "none" }}
+              >
+                <Phone size={16} /> Phone / SMS
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactChannel("call")}
+                style={{ flex: 1, padding: "8px", border: "none", borderRadius: "8px", background: contactChannel === "call" ? "#FFFFFF" : "transparent", color: contactChannel === "call" ? "#047857" : "#66564A", fontWeight: 700, fontSize: "0.84rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", boxShadow: contactChannel === "call" ? "0 2px 4px rgba(0,0,0,0.05)" : "none" }}
+              >
+                <PhoneCall size={16} /> Voice Call Simulation
+              </button>
+            </div>
+
+            {/* CHANNEL CONTENT */}
+            {contactChannel === "email" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    Recipient Email Address:
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={contactModalStudent.email || "student@dcc.edu.bd"}
+                    style={{ width: "100%", padding: "10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    Subject Line:
+                  </label>
+                  <input
+                    type="text"
+                    value={contactEmailSubject}
+                    onChange={(e) => setContactEmailSubject(e.target.value)}
+                    style={{ width: "100%", padding: "10px", background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14", fontWeight: 600 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    Email Body Draft:
+                  </label>
+                  <textarea
+                    rows={6}
+                    value={contactEmailBody}
+                    onChange={(e) => setContactEmailBody(e.target.value)}
+                    style={{ width: "100%", padding: "10px", background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14", resize: "vertical" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setContactModalStudent(null)}
+                    style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 16px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 700 }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendDemoEmail}
+                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 20px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <Send size={16} /> Dispatch Demo Email
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {contactChannel === "sms" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    Student Mobile Number:
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={contactModalStudent.phone || "+880 1712-345678"}
+                    style={{ width: "100%", padding: "10px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    SMS Notification Text:
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={contactSmsBody}
+                    onChange={(e) => setContactSmsBody(e.target.value)}
+                    style={{ width: "100%", padding: "10px", background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setContactModalStudent(null)}
+                    style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 16px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 700 }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSendDemoSms}
+                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 20px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <Send size={16} /> Dispatch Demo SMS
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {contactChannel === "call" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                
+                {/* VOICE CALL SIMULATION DISPLAY */}
+                <div style={{ background: "#FDF9F3", border: "2px solid #047857", borderRadius: "14px", padding: "20px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: "54px", height: "54px", borderRadius: "50%", background: callState === "connected" ? "#047857" : "#D35400", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <PhoneCall size={26} />
+                  </div>
+
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
+                      {contactModalStudent.phone || "+880 1712-345678"}
+                    </h4>
+                    <span style={{ fontSize: "0.8rem", color: callState === "connected" ? "#047857" : "#66564A", fontWeight: 700 }}>
+                      {callState === "idle" && "Ready to initiate call"}
+                      {callState === "dialing" && "Dialing student line..."}
+                      {callState === "connected" && `● Connected (Call Duration: 00:14)`}
+                    </span>
+                  </div>
+
+                  {callState === "idle" ? (
+                    <button
+                      type="button"
+                      onClick={handleStartDemoCall}
+                      style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "8px 20px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                    >
+                      <PhoneCall size={16} /> Start Demo Voice Call
+                    </button>
+                  ) : (
+                    <span style={{ fontSize: "0.78rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "4px 12px", borderRadius: "999px", fontWeight: 700 }}>
+                      Audio Stream Connected & Recording Active
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    Admin Call Interaction Notes:
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="Enter call outcome summary (e.g. Student requested 5-day extension due to family emergency)..."
+                    value={callNotes}
+                    onChange={(e) => setCallNotes(e.target.value)}
+                    style={{ width: "100%", padding: "10px", background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "4px" }}>
+                  <button
+                    type="button"
+                    onClick={() => setContactModalStudent(null)}
+                    style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 16px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 700 }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLogCallOutcome}
+                    style={{ background: "#047857", color: "#FFFFFF", border: "none", padding: "10px 20px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                  >
+                    <CheckCircle2 size={16} /> Log Call Outcome
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+
+
       {showBulkConfirmModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
           <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "560px", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
