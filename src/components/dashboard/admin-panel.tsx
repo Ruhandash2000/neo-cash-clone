@@ -17,7 +17,7 @@ import { StatusBadge } from "@/components/design-system/status-badge";
 import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
-  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X
+  CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles
 } from "lucide-react";
 
 export function AdminPanel({
@@ -77,6 +77,14 @@ export function AdminPanel({
     actions.adminForwardPartial(appId);
     setReviewApp(null);
     alert(`Application ${appId} forwarded to Head / Director for executive sign-off!`);
+  };
+
+  const handleRequestChangesByAdmin = (appId: string) => {
+    if (!rejectionReason.trim()) return alert("Enter change request feedback notes.");
+    actions.requestChangesPartial(appId, rejectionReason, "Admin");
+    setReviewApp(null);
+    setRejectionReason("");
+    alert(`Change request sent to student for application ${appId}.`);
   };
 
   const handleRejectByAdmin = (appId: string) => {
@@ -609,9 +617,9 @@ export function AdminPanel({
       {/* REVIEW APPLICATION MODAL */}
       {reviewApp && (
         <div className="ms-modal-overlay">
-          <div className="ms-modal" style={{ maxWidth: "600px" }}>
+          <div className="ms-modal" style={{ maxWidth: "620px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Review Partial Payment Request</h3>
+              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Admin Dossier Review — Partial Payment</h3>
               <button type="button" onClick={() => setReviewApp(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
                 <X size={18} />
               </button>
@@ -622,40 +630,73 @@ export function AdminPanel({
             </p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FDF9F3", padding: "16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", fontSize: "0.88rem", marginBottom: "16px" }}>
-              <div>
-                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Student Info</span>
-                <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.studentName} ({reviewApp.studentId})</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Student Profile</span>
+                  <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.studentName} ({reviewApp.studentId})</p>
+                </div>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Guardian Info</span>
+                  <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.guardianName} ({reviewApp.guardianPhone})</p>
+                </div>
               </div>
-              <div>
-                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Requested Amount</span>
-                <p style={{ margin: "2px 0 0", fontWeight: 800, color: "#047857", fontSize: "1.1rem" }}>
-                  {formatTaka(reviewApp.requestedAmount, false)} <span style={{ fontSize: "0.8rem", color: "#8C7A6A", textDecoration: "line-through" }}>{formatTaka(reviewApp.originalAmount, false)}</span>
-                </p>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Target Fee Item</span>
+                  <p style={{ margin: "2px 0 0", fontWeight: 700, color: "#241A14" }}>{reviewApp.feeTitle}</p>
+                </div>
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Financial Breakdown</span>
+                  <p style={{ margin: "2px 0 0", fontWeight: 800, color: "#047857", fontSize: "1.05rem" }}>
+                    Requested: {formatTaka(reviewApp.requestedAmount, false)} <span style={{ fontSize: "0.78rem", color: "#8C7A6A", textDecoration: "line-through" }}>Original {formatTaka(reviewApp.originalAmount, false)}</span>
+                  </p>
+                </div>
               </div>
+
               <div>
-                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Stated Reason</span>
+                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Stated Hardship Reason</span>
                 <p style={{ margin: "2px 0 0", color: "#241A14" }}>"{reviewApp.reason}"</p>
               </div>
-              <div>
-                <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>AI Signature Verification Score</span>
-                <p style={{ margin: "2px 0 0", color: "#047857", fontWeight: 700 }}>{reviewApp.aiMatchScore}% Match (High Similarity)</p>
+
+              {reviewApp.statement && (
+                <div>
+                  <span style={{ color: "#8C7A6A", fontSize: "0.78rem" }}>Student Statement</span>
+                  <p style={{ margin: "2px 0 0", color: "#66564A", fontStyle: "italic" }}>"{reviewApp.statement}"</p>
+                </div>
+              )}
+
+              {/* Uploaded Documents & AI Verification Signal */}
+              <div style={{ background: "#FFFFFF", padding: "12px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem" }}>
+                  <span>Attached Guardian Document: <strong style={{ color: "#241A14" }}>📄 {reviewApp.guardianIdDocUrl}</strong></span>
+                  <span>Signature Doc: <strong style={{ color: "#241A14" }}>✍️ {reviewApp.signatureDocUrl}</strong></span>
+                </div>
+                <div style={{ background: "rgba(16, 185, 129, 0.12)", padding: "8px 12px", borderRadius: "6px", color: "#047857", fontSize: "0.82rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span><Sparkles size={14} style={{ display: "inline", verticalAlign: "middle", marginRight: "4px" }} /> AI Signature Match Signal:</span>
+                  <strong>{reviewApp.aiMatchScore}% Score ({reviewApp.aiMatchStatus})</strong>
+                </div>
               </div>
             </div>
 
+            {/* Action Buttons */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button type="button" className="ms-btn-primary" onClick={() => handleForwardToHead(reviewApp.id)} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontWeight: 700 }}>
-                <CheckCircle2 size={16} /> Approve & Forward to Head / Director
+              <button type="button" className="ms-btn-primary" onClick={() => handleForwardToHead(reviewApp.id)} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <CheckCircle2 size={16} /> Verify & Forward to Head / Director for Approval
               </button>
 
               <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
                 <input
                   type="text"
-                  placeholder="Reason for declining..."
+                  placeholder="Feedback notes (for change request or decline)..."
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   style={{ flex: 1, padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.82rem" }}
                 />
-                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600 }} onClick={() => handleRejectByAdmin(reviewApp.id)}>
+                <button type="button" onClick={() => handleRequestChangesByAdmin(reviewApp.id)} style={{ color: "#D35400", background: "#FDF9F3", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "8px 12px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }}>
+                  Request Changes
+                </button>
+                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => handleRejectByAdmin(reviewApp.id)}>
                   Reject
                 </button>
               </div>

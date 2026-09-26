@@ -34,16 +34,34 @@ export interface PartialApplication {
   feeTitle: string;
   originalAmount: number;
   requestedAmount: number;
+  approvedAmount?: number;
+  remainingAmount?: number;
+  newDeadline?: string;
   reason: string;
+  statement?: string;
   guardianName: string;
   guardianPhone: string;
   guardianIdDocUrl: string;
+  guardianSignatureDocUrl?: string;
+  studentSignatureDocUrl?: string;
   signatureDocUrl: string;
   aiMatchScore: number; // e.g. 96 (%)
-  aiMatchStatus: "High Similarity" | "Needs Review" | "Mismatch";
-  status: "pending_admin" | "forwarded_head" | "approved_head" | "rejected_admin" | "rejected_head";
+  aiMatchStatus: "Signature Match" | "Needs Review" | "Mismatch";
+  status:
+    | "draft"
+    | "submitted"
+    | "pending_admin"
+    | "forwarded_head"
+    | "approved_head"
+    | "rejected_admin"
+    | "rejected_head"
+    | "changes_requested"
+    | "paid";
   submittedAt: string;
+  adminNotes?: string;
+  headNotes?: string;
   rejectionReason?: string;
+  changeRequestNotes?: string;
 }
 
 export interface Transaction {
@@ -257,17 +275,68 @@ const INITIAL_STATE: NeoState = {
       studentId: "DCC-2024-8842",
       feeId: "fee-1",
       feeTitle: "Semester Tuition Fee (Fall 2026)",
-      originalAmount: 6000,
-      requestedAmount: 2500,
+      originalAmount: 20000,
+      requestedAmount: 10000,
       reason: "Family medical emergency causing temporary financial hardship.",
+      statement: "I solemnly declare that the attached guardian NID and income declaration are true and authentic.",
       guardianName: "Robert Paul",
       guardianPhone: "+880 1711-998877",
       guardianIdDocUrl: "NID-7849302198.pdf",
+      guardianSignatureDocUrl: "Guardian-Signature.png",
+      studentSignatureDocUrl: "Student-Signature.png",
       signatureDocUrl: "Guardian-Signature.png",
       aiMatchScore: 96,
-      aiMatchStatus: "High Similarity",
+      aiMatchStatus: "Signature Match",
       status: "forwarded_head",
       submittedAt: "2026-09-24 10:30 AM",
+      adminNotes: "Verified student profile and guardian NID against institute registry. Forwarded to Head for executive sign-off.",
+    },
+    {
+      id: "APP-8812",
+      studentName: "Ruhan Dash Dibya",
+      studentId: "DCC-CSE-24-1024",
+      feeId: "fee-5",
+      feeTitle: "Advanced Computing Lab & Tech Charge",
+      originalAmount: 10000,
+      requestedAmount: 5000,
+      approvedAmount: 5000,
+      remainingAmount: 5000,
+      newDeadline: "2026-11-15",
+      reason: "Requesting split installment due to current semester project expenditures.",
+      statement: "I promise to clear the remaining balance before final term examinations.",
+      guardianName: "Manash Dash",
+      guardianPhone: "+880 1819-223344",
+      guardianIdDocUrl: "NID-884920194.pdf",
+      guardianSignatureDocUrl: "Guardian-Sig-M.png",
+      studentSignatureDocUrl: "Student-Sig-R.png",
+      signatureDocUrl: "Guardian-Sig-M.png",
+      aiMatchScore: 98,
+      aiMatchStatus: "Signature Match",
+      status: "approved_head",
+      submittedAt: "2026-09-18 02:15 PM",
+      adminNotes: "Academic standing excellent (CGPA 3.92). Forwarded with recommendation.",
+      headNotes: "Approved 50% initial installment plan. Balance due Nov 15, 2026.",
+    },
+    {
+      id: "APP-7741",
+      studentName: "Nusrat Jahan",
+      studentId: "DCC-2024-8844",
+      feeId: "fee-6",
+      feeTitle: "Hostel & Hall Utility Charge",
+      originalAmount: 4500,
+      requestedAmount: 2000,
+      reason: "Delay in stipend disbursement from national scholarship fund.",
+      statement: "Scholarship proof attached.",
+      guardianName: "Jahanara Begum",
+      guardianPhone: "+880 1912-887766",
+      guardianIdDocUrl: "NID-192840192.pdf",
+      guardianSignatureDocUrl: "Guardian-Sig-J.png",
+      studentSignatureDocUrl: "Student-Sig-N.png",
+      signatureDocUrl: "Guardian-Sig-J.png",
+      aiMatchScore: 78,
+      aiMatchStatus: "Needs Review",
+      status: "pending_admin",
+      submittedAt: "2026-09-25 11:00 AM",
     },
   ],
   donations: {
@@ -714,7 +783,7 @@ export const storeActions = {
       guardianIdDocUrl: data.guardianIdDocUrl || "NID-Uploaded.pdf",
       signatureDocUrl: data.signatureDocUrl || "Signature-Doc.png",
       aiMatchScore: 96,
-      aiMatchStatus: "High Similarity",
+      aiMatchStatus: "Signature Match",
       status: "pending_admin",
       submittedAt: new Date().toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }),
     };
@@ -773,23 +842,35 @@ export const storeActions = {
   },
 
   /** Head approves partial payment application */
-  headApprovePartial(appId: string) {
+  headApprovePartial(
+    appId: string,
+    customApprovedAmount?: number,
+    customNewDeadline?: string,
+    headNotes?: string
+  ) {
     const app = currentState.partialApplications.find((a) => a.id === appId);
     if (!app) return;
 
+    const approvedAmount = customApprovedAmount || app.requestedAmount;
+    const newDeadline = customNewDeadline || "2026-11-15";
+
     app.status = "approved_head";
+    app.approvedAmount = approvedAmount;
+    app.remainingAmount = app.originalAmount - approvedAmount;
+    app.newDeadline = newDeadline;
+    if (headNotes) app.headNotes = headNotes;
 
     const targetFee = currentState.fees.find((f) => f.id === app.feeId);
     if (targetFee) {
       targetFee.status = "partial_approved";
-      targetFee.approvedPartialAmount = app.requestedAmount;
-      targetFee.amount = app.requestedAmount;
+      targetFee.approvedPartialAmount = approvedAmount;
+      targetFee.amount = approvedAmount;
     }
 
     currentState.notifications.unshift({
       id: "notif-" + Date.now(),
       title: "Partial Payment Approved!",
-      message: `Head approved your application ${appId}! You can now pay ৳${app.requestedAmount.toLocaleString()} instead of ৳${app.originalAmount.toLocaleString()}.`,
+      message: `Head approved your application ${appId}! You can now pay Installment 1 of ৳${approvedAmount.toLocaleString()} (Remaining ৳${(app.originalAmount - approvedAmount).toLocaleString()} due on ${newDeadline}).`,
       date: "Just now",
       type: "success",
       read: false,
@@ -800,7 +881,41 @@ export const storeActions = {
       actor: "Head / Director (Prof. Dr. M. A. Karim)",
       role: "Head",
       action: "Approved Partial Payment Application",
-      details: `App ${appId} approved for ${app.studentName}. Unlocked payment of ৳${app.requestedAmount}`,
+      details: `App ${appId} approved for ${app.studentName}. Approved: ৳${approvedAmount}, Remaining: ৳${app.originalAmount - approvedAmount}, Deadline: ${newDeadline}`,
+      timestamp: new Date().toLocaleString(),
+    });
+
+    saveState();
+  },
+
+  /** Admin or Head requests changes from student */
+  requestChangesPartial(appId: string, notes: string, requestedBy: "Admin" | "Head") {
+    const app = currentState.partialApplications.find((a) => a.id === appId);
+    if (!app) return;
+
+    app.status = "changes_requested";
+    app.changeRequestNotes = notes;
+
+    const targetFee = currentState.fees.find((f) => f.id === app.feeId);
+    if (targetFee) {
+      targetFee.status = "pending_partial";
+    }
+
+    currentState.notifications.unshift({
+      id: "notif-" + Date.now(),
+      title: "Action Required: Application Feedback",
+      message: `${requestedBy} requested changes on application ${appId}: "${notes}". Please update and resubmit.`,
+      date: "Just now",
+      type: "warning",
+      read: false,
+    });
+
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: requestedBy === "Admin" ? "Admin (Refat Rahman)" : "Head / Director (Prof. Dr. M. A. Karim)",
+      role: requestedBy,
+      action: "Requested Application Changes",
+      details: `App ${appId} for ${app.studentName}. Feedback: "${notes}"`,
       timestamp: new Date().toLocaleString(),
     });
 

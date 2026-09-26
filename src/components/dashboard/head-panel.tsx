@@ -31,14 +31,27 @@ export function HeadPanel({
 
   // Selected application for Executive Sign-Off Modal
   const [execApp, setExecApp] = useState<PartialApplication | null>(null);
+  const [approvedAmountInput, setApprovedAmountInput] = useState<number>(10000);
+  const [newDeadlineInput, setNewDeadlineInput] = useState<string>("2026-11-15");
+  const [headNotesInput, setHeadNotesInput] = useState<string>("");
   const [declineReason, setDeclineReason] = useState("");
 
   const pendingHeadApps = store.partialApplications.filter((a) => a.status === "forwarded_head");
 
   const handleExecutiveApprove = (appId: string) => {
-    actions.headApprovePartial(appId);
+    if (!execApp) return;
+    const finalAmount = approvedAmountInput || execApp.requestedAmount;
+    actions.headApprovePartial(appId, finalAmount, newDeadlineInput, headNotesInput);
     setExecApp(null);
-    alert(`Executive Approval granted for Application ${appId}! Partial payment of ${formatTaka(execApp?.requestedAmount || 0)} is now unlocked for the student.`);
+    alert(`Executive Approval granted for Application ${appId}! Approved Installment 1: ${formatTaka(finalAmount)}. New deadline for Installment 2: ${newDeadlineInput}.`);
+  };
+
+  const handleExecutiveRequestChanges = (appId: string) => {
+    if (!declineReason.trim()) return alert("Enter feedback notes for change request.");
+    actions.requestChangesPartial(appId, declineReason, "Head");
+    setExecApp(null);
+    setDeclineReason("");
+    alert(`Change request sent to student for Application ${appId}.`);
   };
 
   const handleExecutiveDecline = (appId: string) => {
@@ -352,13 +365,13 @@ export function HeadPanel({
       {/* EXECUTIVE DECISION MODAL */}
       {execApp && (
         <div className="ms-modal-overlay">
-          <div className="ms-modal" style={{ maxWidth: "600px" }}>
+          <div className="ms-modal" style={{ maxWidth: "620px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <ShieldCheck size={28} style={{ color: "#D35400" }} />
                 <div>
                   <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Executive Sign-Off & Approval</h3>
-                  <span style={{ fontSize: "0.78rem", color: "#66564A" }}>Application {execApp.id}</span>
+                  <span style={{ fontSize: "0.78rem", color: "#66564A" }}>Application ID: {execApp.id}</span>
                 </div>
               </div>
               <button type="button" onClick={() => setExecApp(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
@@ -367,38 +380,83 @@ export function HeadPanel({
             </div>
 
             <div style={{ background: "#FDF9F3", padding: "16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", flexDirection: "column", gap: "10px", fontSize: "0.88rem", marginBottom: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <p style={{ margin: 0, color: "#66564A" }}>
+                  Student: <strong style={{ color: "#241A14" }}>{execApp.studentName} ({execApp.studentId})</strong>
+                </p>
+                <p style={{ margin: 0, color: "#66564A" }}>
+                  Fee Item: <strong style={{ color: "#241A14" }}>{execApp.feeTitle}</strong>
+                </p>
+              </div>
+
               <p style={{ margin: 0, color: "#66564A" }}>
-                Student: <strong style={{ color: "#241A14" }}>{execApp.studentName} ({execApp.studentId})</strong>
+                Requested Partial Payment: <strong style={{ color: "#047857", fontSize: "1.1rem" }}>{formatTaka(execApp.requestedAmount, false)}</strong> (Original Assigned Fee: {formatTaka(execApp.originalAmount, false)})
               </p>
-              <p style={{ margin: 0, color: "#66564A" }}>
-                Fee Item: <strong style={{ color: "#241A14" }}>{execApp.feeTitle}</strong>
-              </p>
-              <p style={{ margin: 0, color: "#66564A" }}>
-                Requested Partial Payment: <strong style={{ color: "#047857", fontSize: "1.1rem" }}>{formatTaka(execApp.requestedAmount, false)}</strong> (Original: {formatTaka(execApp.originalAmount, false)})
-              </p>
+
               <p style={{ margin: 0, color: "#66564A" }}>
                 Stated Hardship Reason: <span style={{ color: "#241A14" }}>"{execApp.reason}"</span>
               </p>
+
+              {execApp.adminNotes && (
+                <div style={{ background: "#FFFFFF", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.25)", fontSize: "0.8rem", color: "#66564A" }}>
+                  Admin Recommendation: <strong style={{ color: "#241A14" }}>"{execApp.adminNotes}"</strong>
+                </div>
+              )}
+
               <div style={{ background: "rgba(16, 185, 129, 0.12)", padding: "8px 12px", borderRadius: "8px", color: "#047857", fontSize: "0.8rem", display: "flex", justifyContent: "space-between" }}>
-                <span>AI Signature Match Score: <strong>96% Similarity</strong></span>
+                <span>AI Signature Match Score: <strong>{execApp.aiMatchScore}% Similarity</strong></span>
                 <span>Guardian NID & Signature Verified</span>
               </div>
             </div>
 
+            {/* EXECUTIVE ADJUSTMENT CONTROLS */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "16px", borderRadius: "12px", marginBottom: "16px" }}>
+              <h4 style={{ margin: 0, fontSize: "0.9rem", fontWeight: 700, color: "#241A14" }}>Executive Plan Assignment</h4>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    Approved Installment 1 Amount (৳)
+                  </label>
+                  <input
+                    type="number"
+                    value={approvedAmountInput || execApp.requestedAmount}
+                    onChange={(e) => setApprovedAmountInput(Number(e.target.value))}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 800 }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", display: "block", marginBottom: "4px" }}>
+                    New Deadline for Installment 2
+                  </label>
+                  <input
+                    type="date"
+                    value={newDeadlineInput}
+                    onChange={(e) => setNewDeadlineInput(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#241A14", fontWeight: 600 }}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <button type="button" className="ms-btn-primary" style={{ background: "#047857", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontWeight: 700, fontSize: "0.92rem" }} onClick={() => handleExecutiveApprove(execApp.id)}>
+              <button type="button" className="ms-btn-primary" style={{ background: "#047857", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontWeight: 700, fontSize: "0.92rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }} onClick={() => handleExecutiveApprove(execApp.id)}>
                 <CheckCircle2 size={18} /> Executive Approve & Unlock Partial Payment
               </button>
 
               <div style={{ display: "flex", gap: "8px", marginTop: "4px" }}>
                 <input
                   type="text"
-                  placeholder="Reason if declining..."
+                  placeholder="Feedback notes (for change request or decline)..."
                   value={declineReason}
                   onChange={(e) => setDeclineReason(e.target.value)}
                   style={{ flex: 1, padding: "8px 12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.82rem" }}
                 />
-                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600 }} onClick={() => handleExecutiveDecline(execApp.id)}>
+                <button type="button" onClick={() => handleExecutiveRequestChanges(execApp.id)} style={{ color: "#D35400", background: "#FDF9F3", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "8px 12px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }}>
+                  Request Changes
+                </button>
+                <button type="button" className="ms-btn-secondary" style={{ color: "#BE123C", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontWeight: 600, fontSize: "0.8rem", cursor: "pointer" }} onClick={() => handleExecutiveDecline(execApp.id)}>
                   Decline
                 </button>
               </div>
