@@ -2182,7 +2182,7 @@ export function StudentPanel({
             </div>
 
             {/* MAIN TWO-COLUMN DASHBOARD GRID (CONTEXT SIDEBAR + CHAT SURFACE) */}
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 320px) 1fr", gap: "20px", alignItems: "start" }}>
+            <div className="ms-assistant-grid">
               
               {/* LEFT COLUMN: CONTEXTUAL FEE INFORMATION SIDEBAR */}
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -2296,6 +2296,8 @@ export function StudentPanel({
 
               {/* RIGHT COLUMN: SOPHISTICATED DARK FEATURED CHAT SURFACE (#241A14) */}
               <div
+                id="neo-ai-chat-box"
+                className="ms-assistant-chat-box"
                 style={{
                   background: "#241A14",
                   border: "1px solid rgba(196, 154, 108, 0.4)",
@@ -2472,10 +2474,41 @@ export function StudentPanel({
                     <Send size={16} /> Send
                   </button>
                 </form>
-
               </div>
-
             </div>
+
+            {/* FLOATING MOBILE AI CHAT LAUNCHER BUTTON */}
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("neo-ai-chat-box");
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                  const inputEl = el.querySelector("input");
+                  if (inputEl) (inputEl as HTMLInputElement).focus();
+                }
+              }}
+              style={{
+                position: "fixed",
+                bottom: "24px",
+                left: "20px",
+                zIndex: 99,
+                background: "#D35400",
+                color: "#FFFFFF",
+                border: "none",
+                borderRadius: "999px",
+                padding: "12px 18px",
+                fontWeight: 800,
+                fontSize: "0.85rem",
+                boxShadow: "0 6px 20px rgba(211, 84, 0, 0.45)",
+                alignItems: "center",
+                gap: "8px",
+                cursor: "pointer",
+              }}
+              className="ms-mobile-chat-fab"
+            >
+              <Sparkles size={18} /> Open AI Chat 💬
+            </button>
 
           </div>
         );

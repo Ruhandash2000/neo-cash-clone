@@ -1099,3 +1099,26 @@ button { font: inherit; }
   100% { transform: rotate(360deg); }
 }
 
+
+.ms-assistant-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 320px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .ms-assistant-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .ms-assistant-chat-box {
+    height: 540px !important;
+    padding: 16px 14px !important;
+  }
+}
+
+.ms-mobile-chat-fab { display: none !important; }
+@media (max-width: 900px) {
+  .ms-mobile-chat-fab { display: flex !important; }
+}
