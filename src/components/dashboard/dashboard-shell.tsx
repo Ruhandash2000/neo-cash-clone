@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from "react";
 import { useNeoStore, Role, Transaction, DEMO_STUDENTS_LIST, DEMO_ADMINS_LIST, DEMO_HEAD_PROFILE } from "@/lib/neo-cash-store";
+import { DEMO_ACCOUNTS } from "@/lib/demo-auth";
 import { OnboardingFlow } from "./onboarding-flow";
 import { StudentPanel } from "./student-panel";
 import { AdminPanel } from "./admin-panel";
@@ -25,9 +26,13 @@ import {
 
 export function DashboardShell({
   onSignOut,
+  onStudentOnboardingComplete,
+  onDemoAccountSwitch,
   showDemoController = false,
 }: {
   onSignOut: () => void;
+  onStudentOnboardingComplete: () => void | Promise<void>;
+  onDemoAccountSwitch: (accountId: string) => Promise<void>;
   showDemoController?: boolean;
 }) {
   const [store, actions] = useNeoStore();
@@ -55,10 +60,9 @@ export function DashboardShell({
     window.localStorage.setItem("neo_cash_theme", nextThemeIsDark ? "dark" : "light");
   };
 
-  const handleRoleChange = (newRole: Role) => {
-    actions.setRole(newRole);
-    setActiveTab("overview");
-  };
+  // Legacy controller markup remains below for reference only; it is never
+  // rendered because it mutates browser state instead of changing Auth users.
+  const handleRoleChange = (_newRole: Role) => {};
 
   const handleRestartOnboarding = () => {
     actions.setIsOnboarded(false);
@@ -68,7 +72,7 @@ export function DashboardShell({
   return (
     <div className="dash-midnight">
       {/* Demo controls are limited to an explicitly started demo session. */}
-      {showDemoController && <div className="demo-role-bar">
+      {showDemoController && false && <div className="demo-role-bar">
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "4px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
             DEMO CONTROLLER
@@ -166,9 +170,29 @@ export function DashboardShell({
         </div>
       </div>}
 
+      {showDemoController && (
+        <div className="demo-role-bar">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "4px", fontWeight: 800, textTransform: "uppercase" }}>DEMO MODE</span>
+            <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>Authenticated: {store.currentSessionUser?.fullName ?? "Demo Controller"}. Selecting an account starts its isolated session.</span>
+          </div>
+          <div className="demo-role-pills" style={{ alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            {(["student", "admin", "head"] as const).map((role) => (
+              <div key={role} style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                <span style={{ color: "#FBBF24", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase" }}>{role === "head" ? "Head" : `${role}s`}</span>
+                {DEMO_ACCOUNTS.filter((account) => account.role === role).map((account) => (
+                  <button key={account.id} type="button" className="demo-role-btn" onClick={() => void onDemoAccountSwitch(account.id)}>{account.fullName}</button>
+                ))}
+              </div>
+            ))}
+            <button type="button" className="demo-role-btn" style={{ background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24" }} onClick={handleRestartOnboarding}><RotateCcw size={12} /> Test Onboarding</button>
+          </div>
+        </div>
+      )}
+
       {/* 2. ONBOARDING OVERLAY IF NOT ONBOARDED */}
-      {!store.isOnboarded && (
-        <OnboardingFlow onComplete={() => actions.setIsOnboarded(true)} />
+      {store.currentSessionUser?.role === "student" && !store.isOnboarded && (
+        <OnboardingFlow onComplete={onStudentOnboardingComplete} />
       )}
 
       {/* 3. MAIN DASHBOARD SHELL */}

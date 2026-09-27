@@ -17,19 +17,37 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          full_name: string | null
           id: string
+          institution_id: string | null
+          is_demo_user: boolean
+          onboarding_completed: boolean
+          onboarding_completed_at: string | null
+          role: string
           updated_at: string
           username: string
         }
         Insert: {
           created_at?: string
+          full_name?: string | null
           id: string
+          institution_id?: string | null
+          is_demo_user?: boolean
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
+          role?: string
           updated_at?: string
           username: string
         }
         Update: {
           created_at?: string
+          full_name?: string | null
           id?: string
+          institution_id?: string | null
+          is_demo_user?: boolean
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
+          role?: string
           updated_at?: string
           username?: string
         }
@@ -115,7 +133,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      complete_student_onboarding: {
+        Args: { selected_institution_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

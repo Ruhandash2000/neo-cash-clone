@@ -87,12 +87,6 @@ export function LoginModal({
 
   /** Complete login process and navigate to dashboard */
   const finishLogin = async () => {
-    if (typeof window !== "undefined") {
-      // A normal sign-in is always a personal session. Do not inherit a demo
-      // session from a previous presentation, otherwise role-switching controls
-      // could be shown to a real user.
-      localStorage.removeItem("neo_demo_session");
-    }
     onClose();
     await navigate({ to: "/dashboard", search: {}, replace: true });
   };
@@ -177,19 +171,34 @@ export function LoginModal({
       return;
     }
     setBusy(true);
-    // Attempt Supabase sign-in
-    await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
 
-    // Auto-detect role for seamless demo testing
-    const lowerEmail = email.toLowerCase();
-    if (lowerEmail.includes("admin")) {
-      actions.setRole("admin");
-    } else if (lowerEmail.includes("head") || lowerEmail.includes("principal")) {
-      actions.setRole("head");
-    } else {
-      actions.setRole("student");
+    if (error || !data.user) {
+      setStatus({ tone: "error", message: "Invalid email/User ID or password." });
+      return;
     }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, role, institution_id, is_demo_user")
+      .eq("id", data.user.id)
+      .single();
+    if (!profile || !["student", "admin", "head", "demo_controller"].includes(profile.role)) {
+      setStatus({ tone: "error", message: "Your account has not been provisioned with an authorized role." });
+      await supabase.auth.signOut();
+      return;
+    }
+    actions.activateSessionUser({
+      id: profile.id,
+      userId: profile.username,
+      email: data.user.email ?? "",
+      fullName: profile.full_name || profile.username,
+      role: profile.role as "student" | "admin" | "head" | "demo_controller",
+      institutionId: profile.institution_id || "",
+      institutionName: profile.institution_id || "Dhaka City College",
+      isDemoUser: profile.is_demo_user,
+    });
 
     if (!remember) sessionStorage.setItem("neo-session-only", "1");
     await finishLogin();

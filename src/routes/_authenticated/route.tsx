@@ -15,7 +15,11 @@ export const Route = createFileRoute("/_authenticated")({
       user = null;
     }
 
-    return { user: user || { id: "demo-user", email: "demo@neocash.ai" } };
+    if (!user) {
+      throw redirect({ to: "/", search: { login: true } });
+    }
+
+    return { user };
   },
   component: () => <Outlet />,
 });

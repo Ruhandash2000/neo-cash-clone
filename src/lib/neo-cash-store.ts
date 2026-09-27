@@ -51,6 +51,17 @@ import { useState, useEffect } from "react";
 
 export type Role = "student" | "admin" | "head";
 
+export interface CurrentSessionUser {
+  id: string;
+  userId: string;
+  email: string;
+  fullName: string;
+  role: Role | "demo_controller";
+  institutionId: string;
+  institutionName: string;
+  isDemoUser: boolean;
+}
+
 export interface Fee {
   id: string;
   title: string;
@@ -220,6 +231,8 @@ export interface DemoEmailLog {
 }
 
 export interface NeoState {
+  /** Derived from the authenticated session; never restored from localStorage. */
+  currentSessionUser: CurrentSessionUser | null;
   role: Role;
   isOnboarded: boolean;
   onboardingStep: number; // 1: Search, 2: SSO Verify, 3: Profile, 4: Wallet, 5: Done
@@ -283,6 +296,7 @@ export interface NeoState {
 }
 
 const INITIAL_STATE: NeoState = {
+  currentSessionUser: null,
   role: "student",
   isOnboarded: true,
   onboardingStep: 1,
@@ -1001,7 +1015,9 @@ if (typeof window !== "undefined") {
 function saveState() {
   if (typeof window !== "undefined") {
     try {
-      localStorage.setItem("neo_cash_state_v1", JSON.stringify(currentState));
+      // Authentication and identity are intentionally excluded from the UI cache.
+      const { currentSessionUser: _sessionUser, role: _role, ...uiState } = currentState;
+      localStorage.setItem("neo_cash_state_v1", JSON.stringify(uiState));
     } catch (e) {
       console.warn("Failed to save Neo state:", e);
     }
@@ -1524,6 +1540,33 @@ export const storeActions = {
     });
     saveState();
     return { ok: true, count };
+  },
+
+  activateSessionUser(user: CurrentSessionUser) {
+    currentState.currentSessionUser = user;
+    if (user.role === "demo_controller") return;
+
+    currentState.role = user.role;
+    currentState.selectedInstitution.name = user.institutionName;
+    if (user.role === "student") {
+      const matchedDemoProfile = DEMO_STUDENTS_LIST.find(
+        (profile) => profile.email.toLowerCase() === user.email.toLowerCase(),
+      );
+      const profile = matchedDemoProfile ?? DEMO_STUDENTS_LIST[0];
+      if (profile) {
+        this.switchDemoStudent(profile.studentId);
+        // Keep the authenticated identity authoritative even when a legacy
+        // fixture is used for dashboard content.
+        currentState.studentProfile.name = user.fullName;
+        currentState.studentProfile.email = user.email;
+      }
+    }
+    saveState();
+  },
+
+  clearSessionUser() {
+    currentState.currentSessionUser = null;
+    saveState();
   },
 
   setRole(role: Role) {

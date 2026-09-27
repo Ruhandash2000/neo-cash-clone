@@ -52,15 +52,15 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [selectedInst, setSelectedInst] = useState<DemoInstitution>(INSTITUTION_DATABASE[0]!);
 
   // Step 2 SSO Verification states
-  const [studentIdInput, setStudentIdInput] = useState("DCC-CSE-24-1024");
-  const [instEmailInput, setInstEmailInput] = useState("student@neocash.ai");
+  const [studentIdInput, setStudentIdInput] = useState(store.studentProfile.studentId);
+  const [instEmailInput, setInstEmailInput] = useState(store.studentProfile.email);
   const [verifying, setVerifying] = useState(false);
   const [verifyMessage, setVerifyMessage] = useState("");
   const [verifiedDone, setVerifiedDone] = useState(false);
 
   // Step 4 Profile Setup states
-  const [avatarSeed, setAvatarSeed] = useState("Ruhan");
-  const [phoneInput, setPhoneInput] = useState("+880 1712-345678");
+  const [avatarSeed, setAvatarSeed] = useState(store.studentProfile.name.split(" ")[0] || "Student");
+  const [phoneInput, setPhoneInput] = useState(store.studentProfile.phone);
   const [emergencyInput, setEmergencyInput] = useState("Robert Dash (+880 1711-998877)");
   const [bloodGroup, setBloodGroup] = useState("B+ (Positive)");
 
@@ -121,7 +121,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
     });
 
     actions.updateStudentProfile({
-      name: "Ruhan Dash Dibya",
+      name: store.currentSessionUser?.fullName || store.studentProfile.name,
       studentId: studentIdInput,
       institution: selectedInst.name,
       department: "Computer Science & Engineering",
@@ -155,7 +155,6 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 
   /** Finish onboarding and navigate to Student Dashboard */
   const handleFinishOnboarding = () => {
-    actions.setIsOnboarded(true);
     onComplete();
   };
 
