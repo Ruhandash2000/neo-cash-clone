@@ -14,6 +14,11 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  // Cloudflare Workers cannot resolve Node-style external packages at runtime.
+  // Bundle metadata support with the SSR entry instead.
+  ssr: {
+    noExternal: ["reflect-metadata"],
+  },
   server: {
     allowedHosts: true,
   },
