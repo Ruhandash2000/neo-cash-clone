@@ -88,7 +88,10 @@ export function LoginModal({
   /** Complete login process and navigate to dashboard */
   const finishLogin = async () => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("neo_demo_session", "true");
+      // A normal sign-in is always a personal session. Do not inherit a demo
+      // session from a previous presentation, otherwise role-switching controls
+      // could be shown to a real user.
+      localStorage.removeItem("neo_demo_session");
     }
     onClose();
     await navigate({ to: "/dashboard", search: {}, replace: true });

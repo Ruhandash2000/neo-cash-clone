@@ -23,7 +23,13 @@ import {
   LogOut, Layers, AlertCircle, X, Wallet, MessageSquare, Activity, Menu, Moon, Sun
 } from "lucide-react";
 
-export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
+export function DashboardShell({
+  onSignOut,
+  showDemoController = false,
+}: {
+  onSignOut: () => void;
+  showDemoController?: boolean;
+}) {
   const [store, actions] = useNeoStore();
   const [activeTab, setActiveTab] = useState("overview");
   const [receiptTxn, setReceiptTxn] = useState<Transaction | null>(null);
@@ -61,8 +67,8 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
 
   return (
     <div className="dash-midnight">
-      {/* 1. DEMO ROLE CONTROLLER TOP BANNER (PHASE 22) */}
-      <div className="demo-role-bar">
+      {/* Demo controls are limited to an explicitly started demo session. */}
+      {showDemoController && <div className="demo-role-bar">
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "4px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
             DEMO CONTROLLER
@@ -158,7 +164,7 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
             <RotateCcw size={12} /> Test Onboarding Flow
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* 2. ONBOARDING OVERLAY IF NOT ONBOARDED */}
       {!store.isOnboarded && (
