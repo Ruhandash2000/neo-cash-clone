@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && node scripts/patch-reflect-polyfill.js",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
-    "deploy:cf": "npm run build && wrangler deploy --config .output/server/wrangler.json",
+    "deploy:cf": "npm run build && npx --yes wrangler deploy --config wrangler.json",
     "deploy:gcp": "npm run build && gcloud app deploy app.yaml",
     "deploy:gh": "npm run build && node scripts/prepare-gh-pages.js && gh-pages -d .output/public",
     "sync:figma": "node scripts/sync-figma.js",

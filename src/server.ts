@@ -1,3 +1,4 @@
+import "./lib/reflect-polyfill";
 import "reflect-metadata";
 import "./lib/error-capture";
 

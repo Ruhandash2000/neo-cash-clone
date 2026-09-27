@@ -1,3 +1,8 @@
+// @simplewebauthn/server's X.509 dependency initialises tsyringe when this
+// server-function module is loaded. Keep the metadata polyfill in the same
+// module and before its deferred imports so Cloudflare SSR can load safely.
+import "./reflect-polyfill";
+import "reflect-metadata";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -71,6 +76,7 @@ export const getRegistrationOptions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     try {
+      await import("reflect-metadata");
       const { generateRegistrationOptions } = await import("@simplewebauthn/server");
       const { rpID } = getRelyingParty();
       const db = await admin();
@@ -116,6 +122,7 @@ export const verifyRegistration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((data: { response: unknown; challenge: string }) => data)
   .handler(async ({ data, context }) => {
+    await import("reflect-metadata");
     const { verifyRegistrationResponse } = await import("@simplewebauthn/server");
     const { rpID, origin } = getRelyingParty();
 
@@ -161,6 +168,7 @@ export const verifyRegistration = createServerFn({ method: "POST" })
 
 export const getAuthenticationOptions = createServerFn({ method: "POST" }).handler(async () => {
   try {
+    await import("reflect-metadata");
     const { generateAuthenticationOptions } = await import("@simplewebauthn/server");
     const { rpID } = getRelyingParty();
 
@@ -180,6 +188,7 @@ export const getAuthenticationOptions = createServerFn({ method: "POST" }).handl
 export const verifyAuthentication = createServerFn({ method: "POST" })
   .validator((data: { response: unknown; challenge: string }) => data)
   .handler(async ({ data }) => {
+    await import("reflect-metadata");
     const { verifyAuthenticationResponse } = await import("@simplewebauthn/server");
     const { rpID, origin } = getRelyingParty();
 
