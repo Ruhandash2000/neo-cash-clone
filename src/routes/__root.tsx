@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
