@@ -114,7 +114,7 @@ export const getRegistrationOptions = createServerFn({ method: "POST" })
 
 export const verifyRegistration = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { response: unknown; challenge: string }) => data)
+  .validator((data: { response: unknown; challenge: string }) => data)
   .handler(async ({ data, context }) => {
     const { verifyRegistrationResponse } = await import("@simplewebauthn/server");
     const { rpID, origin } = getRelyingParty();
@@ -178,7 +178,7 @@ export const getAuthenticationOptions = createServerFn({ method: "POST" }).handl
 });
 
 export const verifyAuthentication = createServerFn({ method: "POST" })
-  .inputValidator((data: { response: unknown; challenge: string }) => data)
+  .validator((data: { response: unknown; challenge: string }) => data)
   .handler(async ({ data }) => {
     const { verifyAuthenticationResponse } = await import("@simplewebauthn/server");
     const { rpID, origin } = getRelyingParty();

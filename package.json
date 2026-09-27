@@ -12,7 +12,7 @@
     "deploy:gcp": "npm run build && gcloud app deploy app.yaml",
     "deploy:gh": "npm run build && node scripts/prepare-gh-pages.js && gh-pages -d .output/public",
     "sync:figma": "node scripts/sync-figma.js",
-    "lint": "eslint .",
+    "lint": "eslint src scripts vite.config.ts eslint.config.js --cache",
     "format": "prettier --write ."
   },
   "overrides": {

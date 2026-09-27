@@ -20,7 +20,7 @@ import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
   ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X, Palette, Wallet, MessageSquare, Activity
+  LogOut, Layers, AlertCircle, X, Palette, Wallet, MessageSquare, Activity, Menu
 } from "lucide-react";
 
 export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
@@ -28,6 +28,7 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
   const [activeTab, setActiveTab] = useState("overview");
   const [receiptTxn, setReceiptTxn] = useState<Transaction | null>(null);
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const [notifTab, setNotifTab] = useState<"unread" | "all" | "payment" | "fee" | "application" | "institution" | "emails">("all");
   const [testEventType, setTestEventType] = useState<any>("login");
 
@@ -152,7 +153,21 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
       {/* 3. MAIN DASHBOARD SHELL */}
       <div className="ms-shell">
         {/* SIDEBAR NAVIGATION */}
-        <aside className="ms-sidebar">
+        <button
+          type="button"
+          className="ms-mobile-nav-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setShowMobileNav(false)}
+        />
+        <aside
+          className={`ms-sidebar ${showMobileNav ? "is-open" : ""}`}
+          aria-label="Dashboard navigation"
+          onClick={(event) => {
+            if ((event.target as HTMLElement).closest(".ms-nav-item button")) {
+              setShowMobileNav(false);
+            }
+          }}
+        >
           <div className="ms-brand">
             <img src={purpleLogo} alt="Neo Cash" className="ms-brand-logo" />
             <span className="ms-role-badge">{store.role} View</span>
@@ -358,6 +373,15 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              <button
+                type="button"
+                className="ms-mobile-menu-button"
+                aria-label="Open navigation"
+                aria-expanded={showMobileNav}
+                onClick={() => setShowMobileNav(true)}
+              >
+                <Menu size={20} />
+              </button>
               {/* Notification Bell */}
               <button
                 type="button"
