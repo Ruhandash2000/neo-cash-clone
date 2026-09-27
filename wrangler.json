@@ -1,23 +1,9 @@
 {
   "compatibility_date": "2026-09-25",
-  "main": "dist/server/server.js",
-  "assets": {
-    "binding": "ASSETS",
-    "directory": "dist/client",
-    "run_worker_first": true
-  },
+  "main": "@tanstack/react-start/server-entry",
   "name": "neo-cash-clone",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "no_bundle": true,
-  "rules": [
-    {
-      "type": "ESModule",
-      "globs": [
-        "**/*.mjs",
-        "**/*.js"
-      ]
-    }
-  ]
+  "no_bundle": false
 }
