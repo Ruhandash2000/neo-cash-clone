@@ -1119,7 +1119,7 @@ export function AdminPanel({
             </div>
 
             {/* 3. PAYMENT TREND & FEE PERFORMANCE ANALYTICS */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+            <div className="mobile-financial-trends" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
               
               {/* PAYMENT COLLECTION TREND */}
               <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", display: "flex", flexDirection: "column", gap: "18px" }}>
@@ -3975,7 +3975,7 @@ export function AdminPanel({
           </div>
 
           {/* APPLICATIONS LIST TABLE */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className="mobile-partial-applications" style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ overflowX: "auto", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.86rem" }}>
                 <thead>

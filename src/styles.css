@@ -1242,7 +1242,7 @@ button { font: inherit; }
 
 /* Dashboard theme surfaces use an independent token set. Make dark mode
    charcoal and restrained instead of inheriting high-saturation magenta. */
-.dark .dash-midnight { background-color: #171715; background-image: radial-gradient(circle at 50% 0%, rgba(216, 160, 181, .06), #171715 68%); color: #F5F5F5; }
+.dark .dash-midnight { background-color: #171715; background-image: radial-gradient(circle at 50% 0%, rgba(216, 160, 181, .045), #171715 68%); color: #F5F5F5; }
 .dark .dash-midnight, .dark .dash-midnight * { --ms-bg: #171715; --ms-surface: #22211F; --ms-surface-blue: #292722; --ms-border: #3A3732; --ms-primary: #D8A0B5; --ms-primary-hover: #E2B1C3; --ms-accent: #D8A0B5; --ms-light: #F5F5F5; --ms-text-main: #F5F5F5; --ms-text-muted: #D6D1CA; --ms-text-dim: #B0AAA2; --ms-text-disabled: #858078; }
 .dark .ms-sidebar, .dark .ms-header { background: #22211F; border-color: #3A3732; }
 .dark .ms-card, .dark .ms-modal { background: #22211f; }
@@ -1265,6 +1265,68 @@ button { font: inherit; }
 .dark .dash-midnight input:disabled,
 .dark .dash-midnight textarea:disabled,
 .dark .dash-midnight select:disabled { color: #858078 !important; }
+
+/* Component-level phone layouts. These preserve the established desktop
+   composition and only reshape dense, data-heavy dashboard sections. */
+@media (max-width: 768px) {
+  .mobile-impact-header { align-items: stretch !important; gap: 12px !important; }
+  .mobile-impact-header > div:first-child > div:first-child { align-items: flex-start !important; flex-wrap: wrap; }
+  .mobile-impact-points { width: 100%; display: flex; align-items: baseline; justify-content: space-between; padding: 14px 16px !important; text-align: left !important; }
+  .mobile-impact-points > div { font-size: 2rem !important; line-height: 1; }
+  .mobile-contribution-flow,
+  .mobile-financial-trends,
+  .mobile-executive-stream { grid-template-columns: minmax(0, 1fr) !important; gap: 14px !important; }
+
+  .mobile-paid-fees { padding: 14px !important; }
+  .mobile-paid-fees > div { overflow: visible !important; }
+  .mobile-paid-fees table,
+  .mobile-paid-fees tbody,
+  .mobile-paid-fees tr,
+  .mobile-paid-fees td { display: block !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
+  .mobile-paid-fees thead { display: none !important; }
+  .mobile-paid-fees tr { position: relative; margin-top: 10px; padding: 12px 12px 11px !important; border: 1px solid rgba(196, 154, 108, .28) !important; border-radius: 12px; background: var(--ms-surface-blue); }
+  .mobile-paid-fees td { padding: 2px 0 !important; }
+  .mobile-paid-fees td:first-child { padding-right: 88px !important; font-size: .9rem; }
+  .mobile-paid-fees td:nth-child(2), .mobile-paid-fees td:nth-child(3) { color: var(--ms-text-muted) !important; font-size: .76rem !important; }
+  .mobile-paid-fees td:nth-child(4) { position: absolute; right: 12px; top: 12px; width: auto !important; color: var(--ms-success) !important; font-size: .83rem; }
+  .mobile-paid-fees td:last-child { padding-top: 9px !important; }
+  .mobile-paid-fees td:last-child button { min-height: 36px; padding: 6px 0 !important; }
+
+  .mobile-wallet-activity > div:nth-child(2) { overflow: visible !important; }
+  .mobile-wallet-activity table,
+  .mobile-wallet-activity tbody,
+  .mobile-wallet-activity tr,
+  .mobile-wallet-activity td { display: block !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
+  .mobile-wallet-activity thead { display: none !important; }
+  .mobile-wallet-activity tr { position: relative; padding: 12px 14px !important; border-bottom: 1px solid var(--ms-border) !important; }
+  .mobile-wallet-activity td { padding: 2px 0 !important; text-align: left !important; white-space: normal !important; }
+  .mobile-wallet-activity td:first-child { color: var(--ms-primary) !important; font-family: ui-monospace, monospace; font-size: .72rem !important; }
+  .mobile-wallet-activity td:nth-child(2) { padding: 5px 90px 4px 0 !important; font-weight: 700; }
+  .mobile-wallet-activity td:nth-child(3), .mobile-wallet-activity td:nth-child(4) { color: var(--ms-text-muted) !important; font-size: .75rem !important; }
+  .mobile-wallet-activity td:nth-child(5) { position: absolute; right: 14px; top: 28px; width: auto !important; font-weight: 800; }
+  .mobile-wallet-activity td:last-child { padding-top: 7px !important; }
+
+  .mobile-partial-applications > div { overflow: visible !important; }
+  .mobile-partial-applications table,
+  .mobile-partial-applications tbody,
+  .mobile-partial-applications tr,
+  .mobile-partial-applications td { display: block !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
+  .mobile-partial-applications thead { display: none !important; }
+  .mobile-partial-applications tr { margin-bottom: 12px; padding: 13px !important; border: 1px solid var(--ms-border) !important; border-radius: 12px; background: var(--ms-surface-blue); }
+  .mobile-partial-applications td { display: flex !important; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 0 !important; text-align: right !important; font-size: .82rem; }
+  .mobile-partial-applications td:first-child { display: block !important; padding-bottom: 10px !important; text-align: left !important; }
+  .mobile-partial-applications td:nth-child(2)::before { content: "Fee"; }
+  .mobile-partial-applications td:nth-child(3)::before { content: "Total"; }
+  .mobile-partial-applications td:nth-child(4)::before { content: "Requested"; }
+  .mobile-partial-applications td:nth-child(5)::before { content: "Submitted"; }
+  .mobile-partial-applications td:nth-child(6)::before { content: "AI match"; }
+  .mobile-partial-applications td:nth-child(7)::before { content: "Status"; }
+  .mobile-partial-applications td:nth-child(n+2)::before { color: var(--ms-text-dim); font-size: .7rem; font-weight: 800; letter-spacing: .03em; text-align: left; text-transform: uppercase; }
+  .mobile-partial-applications td:last-child { display: block !important; padding-top: 10px !important; text-align: left !important; }
+}
+
+.dark .mobile-paid-fees tr,
+.dark .mobile-partial-applications tr { background: var(--ms-surface-blue); }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }

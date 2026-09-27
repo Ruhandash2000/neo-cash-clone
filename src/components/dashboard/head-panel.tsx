@@ -214,7 +214,7 @@ export function HeadPanel({
           </div>
 
           {/* TWO COLUMN GRID: APPROVAL QUEUE & RECENT AUDIT HISTORY */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div className="mobile-executive-stream" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
             
             {/* PENDING APPROVAL QUEUE CARD */}
             <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "16px" }}>

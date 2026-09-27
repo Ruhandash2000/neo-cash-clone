@@ -1274,7 +1274,7 @@ export function StudentPanel({
 
             {/* SUBMITTED PARTIAL PAYMENT APPLICATIONS TRACK RECORD */}
             {store.partialApplications.length > 0 && (
-              <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
+              <div className="mobile-paid-fees" style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
                 <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
                   Submitted Partial Payment Applications Log
                 </h3>
@@ -1613,7 +1613,7 @@ export function StudentPanel({
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* HEADER */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+          <div className="mobile-impact-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
                 <h1 style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800, color: "#241A14" }}>
@@ -1628,7 +1628,7 @@ export function StudentPanel({
               </p>
             </div>
 
-            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "14px", textAlign: "right" }}>
+            <div className="mobile-impact-points" style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "14px", textAlign: "right" }}>
               <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase" }}>My Impact Points</span>
               <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#D35400", margin: "2px 0 0" }}>
                 {store.donations.points} Pts
@@ -1675,7 +1675,7 @@ export function StudentPanel({
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+          <div className="mobile-contribution-flow" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
             
             {/* DONATION FORM & PRESET AMOUNTS */}
             <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
