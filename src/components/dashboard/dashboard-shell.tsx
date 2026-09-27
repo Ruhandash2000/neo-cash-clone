@@ -20,7 +20,7 @@ import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
   ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X, Palette, Wallet, MessageSquare, Activity, Menu
+  LogOut, Layers, AlertCircle, X, Wallet, MessageSquare, Activity, Menu
 } from "lucide-react";
 
 export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
@@ -311,13 +311,6 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 </li>
               </>
             )}
-
-            {/* DESIGN SYSTEM SHOWCASE LINK */}
-            <li className="ms-nav-item" style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px dashed rgba(196, 154, 108, 0.3)" }}>
-              <button className={activeTab === "design" ? "is-active" : ""} onClick={() => setActiveTab("design")}>
-                <Palette size={18} style={{ color: "#D35400" }} /> Design Showcase
-              </button>
-            </li>
 
             {/* COMMON LOGOUT ITEM IN SIDEBAR NAV */}
             <li className="ms-nav-item" style={{ marginTop: "8px" }}>
