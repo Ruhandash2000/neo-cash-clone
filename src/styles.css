@@ -1113,8 +1113,7 @@ button { font: inherit; }
     gap: 16px !important;
   }
   .ms-assistant-chat-box {
-    height: 540px !important;
-    padding: 16px 14px !important;
+    display: none !important;
   }
 }
 
@@ -1122,3 +1121,4 @@ button { font: inherit; }
 @media (max-width: 900px) {
   .ms-mobile-chat-fab { display: flex !important; }
 }
+

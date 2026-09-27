@@ -95,6 +95,7 @@ export function StudentPanel({
   const [showEscalateModal, setShowEscalateModal] = useState(false);
   const [escalateSubject, setEscalateSubject] = useState("Tuition Hardship & Installment Request");
   const [escalateMessage, setEscalateMessage] = useState("");
+  const [showMobileChatModal, setShowMobileChatModal] = useState(false);
 
   // AI Chat Assistant State (Phase 8 Financial Process Copilot)
   const [chatMessages, setChatMessages] = useState<Array<{
@@ -2480,14 +2481,7 @@ export function StudentPanel({
             {/* FLOATING MOBILE AI CHAT LAUNCHER BUTTON */}
             <button
               type="button"
-              onClick={() => {
-                const el = document.getElementById("neo-ai-chat-box");
-                if (el) {
-                  el.scrollIntoView({ behavior: "smooth", block: "center" });
-                  const inputEl = el.querySelector("input");
-                  if (inputEl) (inputEl as HTMLInputElement).focus();
-                }
-              }}
+              onClick={() => setShowMobileChatModal(true)}
               style={{
                 position: "fixed",
                 bottom: "24px",
@@ -2509,6 +2503,138 @@ export function StudentPanel({
             >
               <Sparkles size={18} /> Open AI Chat 💬
             </button>
+
+            {/* MOBILE POP-UP AI CHAT MODAL OVERLAY */}
+            {showMobileChatModal && (
+              <div className="ms-modal-overlay" style={{ zIndex: 9999 }}>
+                <div
+                  className="ms-modal"
+                  style={{
+                    maxWidth: "600px",
+                    width: "100%",
+                    background: "#241A14",
+                    border: "1px solid rgba(196, 154, 108, 0.4)",
+                    borderRadius: "20px 20px 0 0",
+                    padding: "18px 16px",
+                    color: "#FFF7E6",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "88vh",
+                    maxHeight: "720px",
+                  }}
+                >
+                  {/* POPUP MODAL HEADER */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "12px", marginBottom: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div style={{ width: "34px", height: "34px", borderRadius: "10px", background: "rgba(211, 84, 0, 0.2)", border: "1px solid #D35400", display: "grid", placeItems: "center", color: "#FF8C42" }}>
+                        <Sparkles size={18} />
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, color: "#FFF7E6", fontSize: "0.98rem", fontWeight: 800 }}>
+                          Neo Financial Process Assistant
+                        </h3>
+                        <span style={{ fontSize: "0.72rem", color: "#8C7A6A" }}>Dhaka City College Student Copilot</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setShowMobileChatModal(false)}
+                      style={{ background: "rgba(255, 255, 255, 0.1)", border: "none", color: "#FFF7E6", borderRadius: "50%", width: "32px", height: "32px", display: "grid", placeItems: "center", cursor: "pointer" }}
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  {/* MESSAGES SCROLL AREA */}
+                  <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px", paddingRight: "4px" }}>
+                    {chatMessages.map((msg) => {
+                      const isUser = msg.sender === "user";
+                      const isAdmin = msg.sender === "admin";
+                      const isNotice = msg.isEscalationNotice;
+
+                      return (
+                        <div key={msg.id} style={{ alignSelf: isUser ? "flex-end" : "flex-start", maxWidth: "88%" }}>
+                          {!isUser && (
+                            <span style={{ fontSize: "0.7rem", color: isAdmin ? "#10B981" : "#FF8C42", fontWeight: 700, marginBottom: "2px", display: "block" }}>
+                              {msg.senderName || (isAdmin ? "Admin (Refat Rahman)" : "Neo AI Assistant")}
+                            </span>
+                          )}
+                          <div
+                            style={{
+                              padding: "12px 15px",
+                              borderRadius: isUser ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
+                              background: isUser ? "#D35400" : isNotice ? "rgba(211, 84, 0, 0.15)" : isAdmin ? "#064E3B" : "#3D2B1F",
+                              color: isUser ? "#FFFFFF" : "#FFF7E6",
+                              fontSize: "0.88rem",
+                              lineHeight: "1.5",
+                              border: isNotice ? "1.5px solid #D35400" : isAdmin ? "1.5px solid #10B981" : "1px solid rgba(196, 154, 108, 0.3)",
+                            }}
+                          >
+                            <div style={{ whiteSpace: "pre-wrap" }}>{msg.text}</div>
+                            {msg.actions && msg.actions.length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px", paddingTop: "8px", borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                                {msg.actions.map((act, i) => (
+                                  <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => {
+                                      setShowMobileChatModal(false);
+                                      handleChatActionClick(act);
+                                    }}
+                                    style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "5px 10px", borderRadius: "6px", fontSize: "0.76rem", fontWeight: 700, cursor: "pointer" }}
+                                  >
+                                    {act.label}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <span style={{ fontSize: "0.68rem", color: "#8C7A6A", marginTop: "3px", display: "block", textAlign: isUser ? "right" : "left" }}>
+                            {msg.time}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* SUGGESTED PROMPT CHIPS */}
+                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                    <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px" }}>
+                      {[
+                        "I can't pay my full tuition.",
+                        "When is my tuition due?",
+                        "Where can I find my receipt?",
+                        "Talk to Admin",
+                      ].map((promptChip, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSendChatMessage(undefined, promptChip)}
+                          style={{ background: "#3D2B1F", color: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)", padding: "4px 10px", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 600, whiteSpace: "nowrap", cursor: "pointer" }}
+                        >
+                          {promptChip}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* FORM INPUT */}
+                  <form onSubmit={handleSendChatMessage} style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <input
+                      type="text"
+                      placeholder="Ask Neo AI about fees, deadlines..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      style={{ flex: 1, padding: "10px 14px", background: "#3D2B1F", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", color: "#FFF7E6", outline: "none", fontSize: "0.88rem" }}
+                    />
+                    <button type="submit" style={{ background: "#D35400", color: "#FFFFFF", border: "none", borderRadius: "8px", padding: "0 16px", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}>
+                      <Send size={15} />
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
 
           </div>
         );
