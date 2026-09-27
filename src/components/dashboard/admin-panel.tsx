@@ -12,7 +12,7 @@
  */
 
 import { useState } from "react";
-import { useNeoStore, StudentRecord, PartialApplication, EscalationTicket, NotificationItem } from "@/lib/neo-cash-store";
+import { useNeoStore, StudentRecord, PartialApplication, EscalationTicket, NotificationItem, AuditLog } from "@/lib/neo-cash-store";
 import { StatusBadge } from "@/components/design-system/status-badge";
 import { formatTaka } from "@/components/design-system/tokens";
 import {
@@ -269,7 +269,8 @@ export function AdminPanel({
 
   const handleSendDemoEmail = () => {
     if (!contactModalStudent) return;
-    actions.addNotification({
+    actions.dispatchNotificationEvent({
+      eventType: "admin_reviewed",
       title: `Admin Contact (Email Sent)`,
       message: `Official notice emailed to ${contactModalStudent.name} (${contactModalStudent.email}): "${contactEmailSubject}"`,
       type: "info",
@@ -281,7 +282,8 @@ export function AdminPanel({
 
   const handleSendDemoSms = () => {
     if (!contactModalStudent) return;
-    actions.addNotification({
+    actions.dispatchNotificationEvent({
+      eventType: "admin_reviewed",
       title: `Admin Contact (SMS Sent)`,
       message: `SMS dispatched to ${contactModalStudent.name} (${contactModalStudent.phone}): "${contactSmsBody.slice(0, 60)}..."`,
       type: "info",
@@ -301,7 +303,8 @@ export function AdminPanel({
   const handleLogCallOutcome = () => {
     if (!contactModalStudent) return;
     const outcomeText = callNotes.trim() || "Discussed payment options and informed student regarding partial payment application.";
-    actions.addNotification({
+    actions.dispatchNotificationEvent({
+      eventType: "admin_reviewed",
       title: `Admin Phone Call Logged`,
       message: `Voice call completed with ${contactModalStudent.name} (+880 ${contactModalStudent.phone}). Outcome: ${outcomeText}`,
       type: "success",

@@ -50,7 +50,7 @@ export function HeadPanel({
   const [selectedAuditLogHead, setSelectedAuditLogHead] = useState<AuditLog | null>(null);
 
   const pendingHeadApps = store.partialApplications.filter((a) => a.status === "forwarded_head");
-  const approvedHeadApps = store.partialApplications.filter((a) => a.status === "approved_head" || a.status === "approved");
+  const approvedHeadApps = store.partialApplications.filter((a) => a.status === "approved_head");
   const rejectedHeadApps = store.partialApplications.filter((a) => a.status.includes("rejected"));
 
   const handleExecutiveApprove = (appId: string) => {
@@ -370,7 +370,7 @@ export function HeadPanel({
             {store.partialApplications
               .filter((app) => {
                 if (approvalSubTab === "pending") return app.status === "forwarded_head";
-                if (approvalSubTab === "approved") return app.status === "approved_head" || app.status === "approved";
+                if (approvalSubTab === "approved") return app.status === "approved_head";
                 if (approvalSubTab === "rejected") return app.status.includes("rejected");
                 if (approvalSubTab === "changes") return app.status === "changes_requested";
                 return true;
@@ -386,7 +386,7 @@ export function HeadPanel({
                         {app.studentId}
                       </span>
                       <StatusBadge
-                        status={app.status === "approved_head" || app.status === "approved" ? "approved" : app.status.includes("rejected") ? "rejected" : "pending"}
+                        status={app.status === "approved_head" ? "approved" : app.status.includes("rejected") ? "rejected" : "pending"}
                         customLabel={app.status === "forwarded_head" ? "Awaiting Head Approval" : app.status.replace("_", " ").toUpperCase()}
                       />
                     </div>
@@ -533,7 +533,7 @@ export function HeadPanel({
                           {student.classYear} ({student.section})
                         </td>
                         <td style={{ padding: "14px 16px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
-                          {formatTaka(student.amountDue, false)}
+                          {formatTaka(student.totalDues, false)}
                         </td>
                         <td style={{ padding: "14px 16px" }}>
                           <StatusBadge status={student.feeStatus === "Paid" ? "approved" : student.feeStatus === "Overdue" ? "due" : "pending"} customLabel={student.feeStatus} />
@@ -1522,7 +1522,7 @@ export function HeadPanel({
               <div><strong>Email:</strong> {selectedStudentHead.email}</div>
               <div><strong>Phone:</strong> {selectedStudentHead.phone || "+880 1712-345678"}</div>
               <div><strong>Enrolment Status:</strong> <strong style={{ color: "#047857" }}>{selectedStudentHead.verified ? "Active Verified" : "Active"}</strong></div>
-              <div><strong>Fee Balance:</strong> <strong style={{ color: "#241A14" }}>{formatTaka(selectedStudentHead.amountDue, false)}</strong></div>
+              <div><strong>Fee Balance:</strong> <strong style={{ color: "#241A14" }}>{formatTaka(selectedStudentHead.totalDues, false)}</strong></div>
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end" }}>

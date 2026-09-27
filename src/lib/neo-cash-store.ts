@@ -120,7 +120,7 @@ export interface Transaction {
   title: string;
   date: string;
   amount: number;
-  type: "fee" | "donation" | "wallet" | "refund";
+  type: "fee" | "fee_payment" | "donation" | "wallet" | "refund";
   status: "Success" | "Pending" | "Failed" | "Refunded";
   method: string;
   referenceId: string;
@@ -189,6 +189,7 @@ export interface StudentRecord {
   id: string;
   name: string;
   studentId: string;
+  roll?: string;
   department: string;
   classYear: string;
   section: string;
@@ -1345,8 +1346,9 @@ export const storeActions = {
     payload.students.forEach((item, index) => {
       const newStudent: StudentRecord = {
         id: "st-imp-" + Date.now() + "-" + index,
-        name: item.name,
-        studentId: item.studentId,
+      name: item.name,
+      studentId: item.studentId,
+      ...(item.roll ? { roll: item.roll } : {}),
         department: item.department || "CSE",
         classYear: item.classYear || "1st Year",
         section: item.section || "Sec A",
@@ -2324,7 +2326,7 @@ export const storeActions = {
       type: payload.type || "info",
       read: false,
       category: payload.category || "institution",
-      emailAlert: payload.emailAlert,
+      ...(payload.emailAlert === undefined ? {} : { emailAlert: payload.emailAlert }),
     };
     currentState.notifications.unshift(newNotif);
 
