@@ -1555,7 +1555,7 @@ export function StudentPanel({
           </div>
 
           {/* WALLET RECENT ACTIVITY TABLE */}
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", overflow: "hidden" }}>
+            <div className="mobile-wallet-activity" style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", overflow: "hidden" }}>
             <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
               <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
                 Recent Wallet Activity
@@ -1999,7 +1999,7 @@ export function StudentPanel({
             </div>
 
             {/* TRANSACTIONS TABLE LISTING */}
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
+            <div className="mobile-transactions-table" style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", overflow: "hidden" }}>
               {filteredTxns.length === 0 ? (
                 <div style={{ padding: "48px 20px", textAlign: "center", color: "#66564A" }}>
                   <FileText size={42} style={{ color: "#8C7A6A", marginBottom: "12px" }} />

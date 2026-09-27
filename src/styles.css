@@ -1070,6 +1070,18 @@ button { font: inherit; }
     color: var(--ms-primary);
     cursor: pointer;
   }
+  .ms-theme-toggle {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--ms-border);
+    border-radius: 10px;
+    background: #FDF9F3;
+    color: var(--ms-primary);
+    cursor: pointer;
+  }
   .ms-header > div:last-child > button:last-child { font-size: 0; }
   .ms-header > div:last-child > button:last-child svg { width: 18px; height: 18px; }
   .ms-header img { width: 32px !important; height: 32px !important; }
@@ -1093,6 +1105,154 @@ button { font: inherit; }
   .ms-mobile-menu-button,
   .ms-mobile-nav-backdrop { display: none; }
 }
+
+/* --------------------------------------------------------------------------
+   Authenticated dashboard: deliberate phone layouts. These rules are kept
+   below the desktop styles so desktop composition is never affected.
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .ms-content {
+    --mobile-gap: 14px;
+  }
+
+  /* Inline desktop grids are used throughout the panels. On a phone their
+     information reads more naturally as one intentional vertical stream. */
+  .ms-content [style*="grid-template-columns"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--mobile-gap) !important;
+  }
+
+  .ms-content [style*="min-width: 260px"],
+  .ms-content [style*="min-width: 240px"],
+  .ms-content [style*="min-width: 280px"] {
+    min-width: 0 !important;
+    width: 100%;
+  }
+
+  .ms-content h1 { font-size: clamp(1.25rem, 6vw, 1.5rem) !important; line-height: 1.15 !important; }
+  .ms-content h2 { font-size: 1.18rem !important; line-height: 1.2 !important; }
+  .ms-content h3 { line-height: 1.25 !important; }
+  .ms-content p { line-height: 1.5; }
+
+  .institution-branding { display: inline-flex !important; align-items: center; gap: 7px; min-width: 0; }
+  .institution-branding img { display: block; width: 26px; height: 26px; object-fit: contain; flex: 0 0 auto; }
+  .institution-branding > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Large header/action pairs become comfortable full-width tap targets. */
+  .ms-content > div > div[style*="justify-content: space-between"] > div:last-child:not(:only-child) {
+    max-width: 100%;
+  }
+  .ms-content button { max-width: 100%; }
+  .ms-content [style*="display: inline-flex"][style*="gap"] { flex-wrap: wrap; }
+
+  /* Keep filters discoverable without letting a long row dominate the page. */
+  .ms-content [style*="border-radius: 999px"] { max-width: 100%; }
+
+  /* Compact historical lists: tables that remain tables are intentional,
+     but use a predictable touch scroll affordance instead of clipped cells. */
+  .ms-content [style*="overflow-x: auto"] {
+    scrollbar-color: rgba(211, 84, 0, .5) transparent;
+    scrollbar-width: thin;
+  }
+
+  .mobile-wallet-activity > div:first-child { padding: 14px 16px !important; }
+  .mobile-wallet-activity table { min-width: 560px !important; font-size: .78rem !important; }
+  .mobile-wallet-activity th, .mobile-wallet-activity td { padding: 10px 12px !important; }
+
+  /* Transaction cards retain all details and receipts while eliminating the
+     horizontal hunt required by the former desktop table. */
+  .mobile-transactions-table > div { overflow: visible !important; }
+  .mobile-transactions-table table,
+  .mobile-transactions-table tbody,
+  .mobile-transactions-table tr,
+  .mobile-transactions-table td { display: block !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
+  .mobile-transactions-table thead { display: none !important; }
+  .mobile-transactions-table tr { padding: 13px 14px !important; border-bottom: 1px solid rgba(196, 154, 108, .25) !important; }
+  .mobile-transactions-table td { padding: 3px 0 !important; text-align: left !important; white-space: normal !important; }
+  .mobile-transactions-table td:nth-child(1) { color: #D35400 !important; font-size: .76rem !important; }
+  .mobile-transactions-table td:nth-child(2) { color: #66564A !important; font-size: .76rem !important; }
+  .mobile-transactions-table td:nth-child(3) { font-size: .92rem !important; padding: 7px 0 !important; }
+  .mobile-transactions-table td:nth-child(4) span { display: inline-flex; max-width: 100%; white-space: nowrap; }
+  .mobile-transactions-table td:nth-child(5)::before { content: "Method · "; color: #8C7A6A; font-size: .74rem; }
+  .mobile-transactions-table td:nth-child(6) { font-size: 1rem !important; padding-top: 8px !important; }
+  .mobile-transactions-table td:nth-child(7) { padding-top: 7px !important; }
+  .mobile-transactions-table td:nth-child(8) > div { justify-content: flex-start !important; flex-wrap: wrap; }
+
+  /* Student directories become readable dossier cards rather than a
+     horizontally squeezed data grid. */
+  .mobile-directory-table { overflow: visible !important; padding: 0 !important; background: transparent !important; border: 0 !important; }
+  .mobile-directory-table table,
+  .mobile-directory-table tbody,
+  .mobile-directory-table tr,
+  .mobile-directory-table td { display: block !important; width: 100% !important; min-width: 0 !important; box-sizing: border-box; }
+  .mobile-directory-table thead { display: none !important; }
+  .mobile-directory-table tr { margin-bottom: 12px; padding: 14px; border: 1px solid rgba(196, 154, 108, .3) !important; border-radius: 14px; background: #fff; box-shadow: 0 2px 8px rgba(36, 26, 20, .025); }
+  .mobile-directory-table td { padding: 4px 0 !important; text-align: left !important; }
+  .mobile-directory-table td:first-child { padding-bottom: 9px !important; }
+  .mobile-directory-table td:nth-child(n+2):not(:last-child) { display: flex !important; align-items: center; justify-content: space-between; gap: 12px; font-size: .82rem !important; }
+  .mobile-directory-table td:nth-child(2)::before { content: "Student ID"; }
+  .mobile-directory-table td:nth-child(3)::before { content: "Department"; }
+  .mobile-directory-table td:nth-child(4)::before { content: "Class / year"; }
+  .mobile-directory-table td:nth-child(5)::before { content: "Section"; }
+  .mobile-directory-table td:nth-child(6)::before { content: "Fee status"; }
+  .mobile-directory-table td:nth-child(7)::before { content: "Wallet"; }
+  .mobile-directory-table td:nth-child(8)::before { content: "Last activity"; }
+  .mobile-directory-table td:nth-child(n+2)::before { color: #8C7A6A; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .035em; flex: 0 0 auto; }
+  .mobile-directory-table td:last-child { padding-top: 12px !important; }
+  .mobile-directory-table td:last-child > div { display: flex !important; justify-content: flex-start !important; flex-wrap: wrap; }
+  .mobile-head-directory { padding: 0 !important; }
+  .mobile-head-directory td:nth-child(2)::before { content: "Department"; }
+  .mobile-head-directory td:nth-child(3)::before { content: "Class & section"; }
+  .mobile-head-directory td:nth-child(4)::before { content: "Fee obligation"; }
+  .mobile-head-directory td:nth-child(5)::before { content: "Status"; }
+
+  /* The large modal dossiers turn into a usable bottom sheet instead of
+     inheriting desktop-sized two column document panels. */
+  .ms-modal [style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+  .ms-modal [style*="display: flex"][style*="justify-content: space-between"] { align-items: flex-start !important; gap: 10px !important; }
+}
+
+@media (min-width: 769px) {
+  .institution-branding img { display: none; }
+
+  /* Desktop keeps the original directory layout, with only a clearer table
+     rhythm and hover state for long administrative scans. */
+  .mobile-directory-table { overflow-x: auto; }
+  .mobile-directory-table table { min-width: 880px; }
+  .mobile-directory-table tbody tr { transition: background 160ms ease; }
+  .mobile-directory-table tbody tr:hover { background: #FDF9F3; }
+  .mobile-directory-table td { vertical-align: middle; }
+
+  /* The same persistent theme control is available in the desktop header. */
+  .ms-theme-toggle {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid var(--ms-border);
+    border-radius: 10px;
+    background: #FDF9F3;
+    color: var(--ms-primary);
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+  }
+  .ms-theme-toggle:hover { border-color: var(--ms-primary); transform: translateY(-1px); }
+}
+
+/* Dashboard theme surfaces use an independent token set. Make dark mode
+   charcoal and restrained instead of inheriting high-saturation magenta. */
+.dark .dash-midnight { background-color: #171715; background-image: radial-gradient(circle at 50% 0%, rgba(197, 139, 75, .09), #171715 68%); color: #F4EFE8; }
+.dark .dash-midnight, .dark .dash-midnight * { --ms-bg: #171715; --ms-surface: #22211f; --ms-surface-blue: #292722; --ms-border: rgba(235, 220, 197, .14); --ms-primary: #d78235; --ms-primary-hover: #e49851; --ms-accent: #e2ad75; --ms-light: #f4efe8; --ms-text-main: #f4efe8; --ms-text-muted: #c6bbae; --ms-text-dim: #988f84; }
+.dark .ms-sidebar, .dark .ms-header { background: #22211f; border-color: rgba(235, 220, 197, .14); }
+.dark .ms-card, .dark .ms-modal { background: #22211f; }
+.dark .ms-theme-toggle { background: #2d2a25; color: #f2c18d; }
+.dark .dash-midnight [style*="background: rgb(255, 255, 255)"] { background: #22211f !important; }
+.dark .dash-midnight [style*="background: rgb(253, 249, 243)"],
+.dark .dash-midnight [style*="background: rgb(255, 247, 230)"] { background: #292722 !important; }
+.dark .dash-midnight [style*="color: rgb(36, 26, 20)"] { color: #f4efe8 !important; }
+.dark .dash-midnight [style*="color: rgb(102, 86, 74)"],
+.dark .dash-midnight [style*="color: rgb(140, 122, 106)"] { color: #c6bbae !important; }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -1121,4 +1281,3 @@ button { font: inherit; }
 @media (max-width: 900px) {
   .ms-mobile-chat-fab { display: flex !important; }
 }
-

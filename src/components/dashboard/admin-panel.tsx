@@ -1833,7 +1833,10 @@ export function AdminPanel({
                 <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
                   ● Operational Command Center
                 </span>
-                <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College (Dhanmondi, Dhaka)</span>
+                <span className="institution-branding" style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>
+                  <img src="https://images.seeklogo.com/logo-png/48/1/dhaka-city-college-logo-png_seeklogo-487912.png" alt="Dhaka City College" />
+                  <span>Dhaka City College (Dhanmondi, Dhaka)</span>
+                </span>
               </div>
               <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.02em" }}>
                 Institutional Financial Operations & Analytics
@@ -2409,7 +2412,7 @@ export function AdminPanel({
           </div>
 
           {/* DIRECTORY TABLE (PHASE 12 COLUMNS) */}
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflowX: "auto" }}>
+          <div className="mobile-directory-table" style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
               <thead>
                 <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>

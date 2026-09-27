@@ -8,7 +8,7 @@
  * 4. Header Bar with User Profile, Notifications count, and Role indicator
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNeoStore, Role, Transaction, DEMO_STUDENTS_LIST, DEMO_ADMINS_LIST, DEMO_HEAD_PROFILE } from "@/lib/neo-cash-store";
 import { OnboardingFlow } from "./onboarding-flow";
 import { StudentPanel } from "./student-panel";
@@ -20,7 +20,7 @@ import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
   ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X, Wallet, MessageSquare, Activity, Menu
+  LogOut, Layers, AlertCircle, X, Wallet, MessageSquare, Activity, Menu, Moon, Sun
 } from "lucide-react";
 
 export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
@@ -29,10 +29,25 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
   const [receiptTxn, setReceiptTxn] = useState<Transaction | null>(null);
   const [showNotifDrawer, setShowNotifDrawer] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [notifTab, setNotifTab] = useState<"unread" | "all" | "payment" | "fee" | "application" | "institution" | "emails">("all");
   const [testEventType, setTestEventType] = useState<any>("login");
 
   const unreadCount = store.notifications.filter((n) => !n.read).length;
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("neo_cash_theme");
+    const shouldUseDark = savedTheme === "dark";
+    setIsDarkMode(shouldUseDark);
+    document.documentElement.classList.toggle("dark", shouldUseDark);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextThemeIsDark = !isDarkMode;
+    setIsDarkMode(nextThemeIsDark);
+    document.documentElement.classList.toggle("dark", nextThemeIsDark);
+    window.localStorage.setItem("neo_cash_theme", nextThemeIsDark ? "dark" : "light");
+  };
 
   const handleRoleChange = (newRole: Role) => {
     actions.setRole(newRole);
@@ -374,6 +389,16 @@ export function DashboardShell({ onSignOut }: { onSignOut: () => void }) {
                 onClick={() => setShowMobileNav(true)}
               >
                 <Menu size={20} />
+              </button>
+              <button
+                type="button"
+                className="ms-theme-toggle"
+                aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
+                aria-pressed={isDarkMode}
+                onClick={toggleTheme}
+                title={isDarkMode ? "Use light mode" : "Use dark mode"}
+              >
+                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               {/* Notification Bell */}
               <button
