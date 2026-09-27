@@ -1,9 +1,10 @@
 {
   "compatibility_date": "2026-09-25",
-  "main": "scripts/cloudflare-worker.mjs",
+  "main": "dist/server/server.js",
   "assets": {
     "binding": "ASSETS",
-    "directory": "dist/client"
+    "directory": "dist/client",
+    "run_worker_first": true
   },
   "name": "neo-cash-clone",
   "compatibility_flags": [
