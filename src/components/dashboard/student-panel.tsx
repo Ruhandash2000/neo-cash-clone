@@ -1555,7 +1555,7 @@ export function StudentPanel({
 
           {/* WALLET RECENT ACTIVITY TABLE */}
           <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", overflow: "hidden" }}>
-            <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
               <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
                 Recent Wallet Activity
               </h3>
@@ -1568,38 +1568,40 @@ export function StudentPanel({
               </button>
             </div>
 
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
-              <thead>
-                <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Transaction ID</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Description</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Date & Time</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Payment Source</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Amount</th>
-                  <th style={{ padding: "14px 18px", fontWeight: 700 }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {store.transactions.map((txn) => (
-                  <tr key={txn.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
-                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#D35400" }}>{txn.id}</td>
-                    <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14" }}>{txn.title}</td>
-                    <td style={{ padding: "14px 18px", color: "#66564A" }}>{txn.date}</td>
-                    <td style={{ padding: "14px 18px", color: "#66564A" }}>{txn.method}</td>
-                    <td style={{ padding: "14px 18px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>{formatTaka(txn.amount, false)}</td>
-                    <td style={{ padding: "14px 18px" }}>
-                      <button
-                        type="button"
-                        onClick={() => onOpenReceipt(txn)}
-                        style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "5px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                      >
-                        <FileText size={14} /> Receipt
-                      </button>
-                    </td>
+            <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+              <table style={{ width: "100%", minWidth: "650px", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                <thead>
+                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                    <th style={{ padding: "14px 18px", fontWeight: 700, whiteSpace: "nowrap" }}>Transaction ID</th>
+                    <th style={{ padding: "14px 18px", fontWeight: 700, whiteSpace: "nowrap" }}>Description</th>
+                    <th style={{ padding: "14px 18px", fontWeight: 700, whiteSpace: "nowrap" }}>Date & Time</th>
+                    <th style={{ padding: "14px 18px", fontWeight: 700, whiteSpace: "nowrap" }}>Payment Source</th>
+                    <th style={{ padding: "14px 18px", fontWeight: 700, whiteSpace: "nowrap" }}>Amount</th>
+                    <th style={{ padding: "14px 18px", fontWeight: 700, whiteSpace: "nowrap" }}>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {store.transactions.map((txn) => (
+                    <tr key={txn.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                      <td style={{ padding: "14px 18px", fontWeight: 700, color: "#D35400", whiteSpace: "nowrap" }}>{txn.id}</td>
+                      <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14", whiteSpace: "nowrap" }}>{txn.title}</td>
+                      <td style={{ padding: "14px 18px", color: "#66564A", whiteSpace: "nowrap" }}>{txn.date}</td>
+                      <td style={{ padding: "14px 18px", color: "#66564A", whiteSpace: "nowrap" }}>{txn.method}</td>
+                      <td style={{ padding: "14px 18px", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'", whiteSpace: "nowrap" }}>{formatTaka(txn.amount, false)}</td>
+                      <td style={{ padding: "14px 18px", whiteSpace: "nowrap" }}>
+                        <button
+                          type="button"
+                          onClick={() => onOpenReceipt(txn)}
+                          style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "5px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                        >
+                          <FileText size={14} /> Receipt
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>
@@ -2004,8 +2006,8 @@ export function StudentPanel({
                   <p style={{ margin: 0, fontSize: "0.86rem" }}>Try clearing search criteria or selecting a different filter tab.</p>
                 </div>
               ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
+                <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+                  <table style={{ width: "100%", minWidth: "750px", borderCollapse: "collapse", fontSize: "0.88rem" }}>
                     <thead>
                       <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
                         <th style={{ padding: "14px 18px", fontWeight: 700 }}>Transaction ID</th>

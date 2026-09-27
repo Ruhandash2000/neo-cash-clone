@@ -17,6 +17,8 @@ dist-ssr
 scratch/
 .eslintcache
 *.local
+.env
+.env.*
 
 # Wrangler / Cloudflare
 .wrangler/
