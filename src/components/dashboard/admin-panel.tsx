@@ -2264,7 +2264,7 @@ export function AdminPanel({
           </div>
 
           {/* 6-DIMENSION FILTERS & SEARCH BAR (PHASE 12) */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div className="student-directory-controls" style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
             {/* SEARCH ROW */}
             <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
               <div style={{ flex: 1, minWidth: "260px", position: "relative" }}>
@@ -2412,7 +2412,7 @@ export function AdminPanel({
           </div>
 
           {/* DIRECTORY TABLE (PHASE 12 COLUMNS) */}
-          <div className="mobile-directory-table" style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflowX: "auto" }}>
+          <div className="mobile-directory-table student-directory-results" style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
               <thead>
                 <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>

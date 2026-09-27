@@ -475,7 +475,7 @@ export function HeadPanel({
           </div>
 
           {/* SEARCH & DEPT FILTER BAR */}
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "16px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+          <div className="student-directory-controls" style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "16px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: "240px", position: "relative" }}>
               <Search size={16} color="#8C7A6A" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} />
               <input
@@ -500,7 +500,7 @@ export function HeadPanel({
           </div>
 
           {/* READ ONLY STUDENTS TABLE */}
-          <div className="mobile-directory-table mobile-head-directory" style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
+          <div className="mobile-directory-table mobile-head-directory student-directory-results" style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
                 <thead>
