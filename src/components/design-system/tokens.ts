@@ -46,15 +46,20 @@ export const NEO_TOKENS = {
   },
   radius: {
     sm: "6px",
-    md: "10px",
-    lg: "14px",
+    button: "12px",
+    input: "12px",
+    card: "18px",
+    modal: "20px",
+    badge: "9999px",
   },
   typography: {
     fontFamily: "Inter, system-ui, -apple-system, sans-serif",
     pageTitle: "font-weight: 700; font-size: 1.875rem; letter-spacing: -0.02em; color: #1C140E;",
     sectionTitle: "font-weight: 600; font-size: 1.1875rem; color: #1C140E;",
+    cardTitle: "font-weight: 600; font-size: 0.9375rem; color: #1C140E;",
     body: "font-weight: 400; font-size: 0.9375rem; color: #4A3B30;",
     metadata: "font-weight: 500; font-size: 0.8125rem; color: #7A685A;",
+    caption: "font-weight: 500; font-size: 0.75rem; color: #8C7A6A;",
     financialNumber: "font-weight: 800; font-size: 1.875rem; letter-spacing: -0.02em; color: #1C140E; font-feature-settings: 'tnum';",
   },
 };

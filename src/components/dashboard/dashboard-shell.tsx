@@ -173,19 +173,30 @@ export function DashboardShell({
       {showDemoController && (
         <div className="demo-role-bar">
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "4px", fontWeight: 800, textTransform: "uppercase" }}>DEMO MODE</span>
-            <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>Authenticated: {store.currentSessionUser?.fullName ?? "Demo Controller"}. Selecting an account starts its isolated session.</span>
+            <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "999px", fontWeight: 800, textTransform: "uppercase" }}>DEMO MODE</span>
+            <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>
+              Current User: <strong style={{ color: "#EAD9C6" }}>{store.currentSessionUser?.fullName ?? "Demo Controller"}</strong> · <span style={{ textTransform: "capitalize" }}>{store.role}</span>
+            </span>
           </div>
           <div className="demo-role-pills" style={{ alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+            <span style={{ color: "#8C7A6A", fontSize: "0.74rem", fontWeight: 700 }}>Switch User:</span>
             {(["student", "admin", "head"] as const).map((role) => (
               <div key={role} style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                <span style={{ color: "#FBBF24", fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase" }}>{role === "head" ? "Head" : `${role}s`}</span>
                 {DEMO_ACCOUNTS.filter((account) => account.role === role).map((account) => (
-                  <button key={account.id} type="button" className="demo-role-btn" onClick={() => void onDemoAccountSwitch(account.id)}>{account.fullName}</button>
+                  <button
+                    key={account.id}
+                    type="button"
+                    className={`demo-role-btn ${store.currentSessionUser?.id === account.id ? "is-active" : ""}`}
+                    onClick={() => void onDemoAccountSwitch(account.id)}
+                  >
+                    {account.fullName} ({role})
+                  </button>
                 ))}
               </div>
             ))}
-            <button type="button" className="demo-role-btn" style={{ background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24" }} onClick={handleRestartOnboarding}><RotateCcw size={12} /> Test Onboarding</button>
+            <button type="button" className="demo-role-btn" style={{ background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24" }} onClick={handleRestartOnboarding}>
+              <RotateCcw size={12} /> Test Onboarding
+            </button>
           </div>
         </div>
       )}
@@ -384,7 +395,7 @@ export function DashboardShell({
                 padding: "6px 10px",
                 background: "rgba(225, 29, 72, 0.08)",
                 border: "1px solid rgba(225, 29, 72, 0.25)",
-                borderRadius: "8px",
+                borderRadius: "12px",
                 color: "#BE123C",
                 fontSize: "0.78rem",
                 fontWeight: "600",
@@ -433,8 +444,10 @@ export function DashboardShell({
               {/* Notification Bell */}
               <button
                 type="button"
+                aria-label="Open notifications"
+                aria-expanded={showNotifDrawer}
                 onClick={() => setShowNotifDrawer(true)}
-                style={{ position: "relative", background: "#FDF9F3", border: "1px solid var(--ms-border)", padding: "8px", borderRadius: "10px", color: "#D35400", cursor: "pointer" }}
+                style={{ position: "relative", background: "#FDF9F3", border: "1px solid var(--ms-border)", padding: "8px", borderRadius: "12px", color: "#D35400", cursor: "pointer" }}
               >
                 <Bell size={18} />
                 {unreadCount > 0 && (
@@ -600,7 +613,7 @@ export function DashboardShell({
                       <select
                         value={testEventType}
                         onChange={(e) => setTestEventType(e.target.value)}
-                        style={{ flex: 1, padding: "6px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, color: "#241A14", outline: "none" }}
+                        style={{ flex: 1, padding: "6px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "12px", fontSize: "0.8rem", fontWeight: 700, color: "#241A14", outline: "none" }}
                       >
                         <option value="login">🔐 login (Security Login Alert)</option>
                         <option value="fee_assigned">📋 fee assigned (New Fee Obligation)</option>
@@ -641,7 +654,7 @@ export function DashboardShell({
                             emailAlert: true,
                           });
                         }}
-                        style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 14px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}
+                        style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 14px", borderRadius: "12px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}
                       >
                         Dispatch Event
                       </button>
@@ -658,7 +671,7 @@ export function DashboardShell({
                       store.demoEmailLogs.map((log) => (
                         <div key={log.id} style={{ padding: "10px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", fontSize: "0.8rem" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                            <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", background: "rgba(211, 84, 0, 0.1)", padding: "2px 6px", borderRadius: "4px" }}>
+                            <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", background: "rgba(211, 84, 0, 0.1)", padding: "2px 6px", borderRadius: "999px" }}>
                               {log.eventType}
                             </span>
                             <span style={{ fontSize: "0.72rem", color: "#8C7A6A" }}>{log.timestamp}</span>
@@ -688,7 +701,7 @@ export function DashboardShell({
                         style={{
                           padding: "12px 14px",
                           background: !n.read ? "#FFF7E6" : "#FDF9F3",
-                          borderRadius: "12px",
+                          borderRadius: "16px",
                           border: !n.read ? "1.5px solid rgba(211, 84, 0, 0.35)" : "1px solid rgba(196, 154, 108, 0.25)",
                         }}
                       >
@@ -699,7 +712,7 @@ export function DashboardShell({
                                 background: n.type === "success" ? "rgba(16, 185, 129, 0.12)" : n.type === "warning" ? "rgba(211, 84, 0, 0.12)" : n.type === "error" ? "rgba(190, 18, 60, 0.12)" : "rgba(37, 99, 235, 0.12)",
                                 color: n.type === "success" ? "#047857" : n.type === "warning" ? "#D35400" : n.type === "error" ? "#BE123C" : "#1D4ED8",
                                 padding: "2px 8px",
-                                borderRadius: "6px",
+                                borderRadius: "999px",
                                 fontSize: "0.72rem",
                                 fontWeight: 800,
                                 textTransform: "uppercase",
@@ -731,10 +744,10 @@ export function DashboardShell({
                   Showing {filteredNotifs.length} items
                 </span>
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <button type="button" className="ms-btn-secondary" style={{ padding: "6px 14px", fontSize: "0.8rem", background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", fontWeight: 600 }} onClick={() => actions.markAllNotificationsRead()}>
+                  <button type="button" className="ms-btn-secondary" style={{ padding: "6px 14px", fontSize: "0.8rem", background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", fontWeight: 600 }} onClick={() => actions.markAllNotificationsRead()}>
                     Mark All as Read
                   </button>
-                  <button type="button" className="ms-btn-primary" style={{ padding: "6px 14px", fontSize: "0.8rem", background: "#D35400", color: "#FFFFFF", borderRadius: "8px", fontWeight: 700 }} onClick={() => setShowNotifDrawer(false)}>
+                  <button type="button" className="ms-btn-primary" style={{ padding: "6px 14px", fontSize: "0.8rem", background: "#D35400", color: "#FFFFFF", borderRadius: "12px", fontWeight: 700 }} onClick={() => setShowNotifDrawer(false)}>
                     Close
                   </button>
                 </div>

@@ -30,7 +30,7 @@ export function FinancialTable<T extends { id: string | number }>({
         overflowX: "auto",
         background: "#FFFFFF",
         border: "1px solid rgba(196, 154, 108, 0.3)",
-        borderRadius: "10px",
+        borderRadius: "18px",
         boxShadow: "0 2px 8px rgba(196, 154, 108, 0.06)",
       }}
     >

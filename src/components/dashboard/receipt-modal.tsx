@@ -91,7 +91,7 @@ export function ReceiptModal({
             <span style={{ fontWeight: "900", fontSize: "1.65rem", color: "#D35400", fontFeatureSettings: "'tnum'" }}>৳{transaction.amount.toLocaleString()}</span>
           </div>
 
-          <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "8px", textAlign: "center", fontSize: "0.76rem", color: "#66564A", marginTop: "10px" }}>
+          <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "12px", textAlign: "center", fontSize: "0.76rem", color: "#66564A", marginTop: "10px" }}>
             🔒 Authenticated and cryptographically timestamped by Neo Cash AI Financial System.
           </div>
         </div>
@@ -106,7 +106,7 @@ export function ReceiptModal({
               color: "#FFFFFF",
               border: "none",
               padding: "10px 18px",
-              borderRadius: "10px",
+              borderRadius: "12px",
               fontWeight: "700",
               cursor: "pointer",
               display: "inline-flex",

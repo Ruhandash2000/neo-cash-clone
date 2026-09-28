@@ -173,7 +173,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
       <div className="onboarding-card" style={{
         background: "#FFFFFF",
         border: "1px solid rgba(196, 154, 108, 0.4)",
-        borderRadius: "24px",
+        borderRadius: "20px",
         maxWidth: "720px",
         width: "100%",
         padding: "32px 36px",

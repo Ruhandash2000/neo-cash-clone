@@ -64,7 +64,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       style={{
         background: vStyle.background,
         border: vStyle.border,
-        borderRadius: "10px",
+        borderRadius: "18px",
         padding: "20px 22px",
         display: "flex",
         flexDirection: "column",
@@ -83,7 +83,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             style={{
               width: "36px",
               height: "36px",
-              borderRadius: "8px",
+              borderRadius: "12px",
               background: vStyle.iconBg,
               color: vStyle.iconColor,
               display: "grid",
@@ -96,7 +96,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
       </div>
 
       <div>
-        <h3 style={{ margin: 0, fontSize: "1.875rem", fontWeight: 800, color: vStyle.valueColor, letterSpacing: "-0.02em", fontFamily: "Inter, sans-serif" }}>
+        <h3 style={{ margin: 0, fontSize: "1.875rem", fontWeight: 800, color: vStyle.valueColor, letterSpacing: "-0.02em", fontFamily: "Inter, sans-serif", fontFeatureSettings: "'tnum'" }}>
           {formatTaka(value)}
         </h3>
       </div>

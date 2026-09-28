@@ -2,7 +2,7 @@ import React from "react";
 
 /** NeoButton — Primary, Secondary, Outline, Danger buttons */
 interface NeoButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "danger" | "ghost";
+  variant?: "primary" | "secondary" | "outline" | "danger" | "success" | "ghost";
   size?: "sm" | "md" | "lg";
   icon?: React.ReactNode;
 }
@@ -24,7 +24,7 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
       justifyContent: "center",
       gap: "8px",
       fontWeight: 600,
-      borderRadius: "8px",
+      borderRadius: "12px",
       cursor: disabled ? "not-allowed" : "pointer",
       opacity: disabled ? 0.6 : 1,
       transition: "all 0.18s ease",
@@ -43,7 +43,7 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
       case "primary":
         return {
           ...base,
-          background: "#D35400",
+          background: "linear-gradient(135deg, #D35400 0%, #B84700 100%)",
           color: "#FFFFFF",
           boxShadow: "0 2px 10px rgba(211, 84, 0, 0.25)",
         };
@@ -51,7 +51,7 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
         return {
           ...base,
           background: "#FDF9F3",
-          color: "#4A3B30",
+          color: "#241A14",
           border: "1px solid rgba(196, 154, 108, 0.4)",
         };
       case "outline":
@@ -68,11 +68,18 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
           color: "#BE123C",
           border: "1px solid rgba(225, 29, 72, 0.3)",
         };
+      case "success":
+        return {
+          ...base,
+          background: "rgba(4, 120, 87, 0.12)",
+          color: "#047857",
+          border: "1px solid rgba(4, 120, 87, 0.3)",
+        };
       case "ghost":
         return {
           ...base,
           background: "transparent",
-          color: "#7A685A",
+          color: "#66564A",
         };
       default:
         return base;
@@ -114,7 +121,7 @@ export const NeoInput: React.FC<NeoInputProps> = ({ label, icon, error, style, .
             padding: icon ? "10px 14px 10px 40px" : "10px 14px",
             background: "#FFFFFF",
             border: error ? "1px solid #BE123C" : "1px solid rgba(196, 154, 108, 0.35)",
-            borderRadius: "8px",
+            borderRadius: "12px",
             color: "#1C140E",
             outline: "none",
             fontSize: "0.9rem",
@@ -170,7 +177,7 @@ export const NeoModal: React.FC<NeoModalProps> = ({
         style={{
           background: "#FFF7E6",
           border: "1px solid rgba(196, 154, 108, 0.4)",
-          borderRadius: "14px",
+          borderRadius: "20px",
           maxWidth,
           width: "100%",
           padding: "28px",
