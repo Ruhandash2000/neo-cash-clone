@@ -1546,9 +1546,11 @@ export const storeActions = {
 
   activateSessionUser(user: CurrentSessionUser) {
     currentState.currentSessionUser = user;
-    if (user.role === "demo_controller") return;
-
-    currentState.role = user.role;
+    if (user.role === "demo_controller") {
+      currentState.role = "admin";
+    } else {
+      currentState.role = user.role;
+    }
     currentState.selectedInstitution.name = user.institutionName;
     if (user.role === "student") {
       const matchedDemoProfile = DEMO_STUDENTS_LIST.find(

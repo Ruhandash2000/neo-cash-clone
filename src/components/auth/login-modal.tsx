@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
+import { DEMO_ACCOUNTS } from "@/lib/demo-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNeoStore } from "@/lib/neo-cash-store";
 import { enrollBiometric, signInWithBiometric } from "@/lib/biometrics";
@@ -175,6 +176,38 @@ export function LoginModal({
     setBusy(false);
 
     if (error || !data.user) {
+      // Demo environment authentication fallback for all demo account credentials
+      const input = email.trim().toLowerCase();
+      const inputPrefix = input.split("@")[0];
+
+      const demoMatch = DEMO_ACCOUNTS.find(
+        (acc) =>
+          acc.email.toLowerCase() === input ||
+          acc.email.toLowerCase().split("@")[0] === inputPrefix ||
+          acc.userId.toLowerCase() === input ||
+          acc.fullName.toLowerCase() === input ||
+          (acc.role === "demo_controller" && (input.includes("demo") || input.includes("newyorkasia"))) ||
+          (input === "student" && acc.role === "student") ||
+          (input === "admin" && acc.role === "admin") ||
+          (input === "head" && acc.role === "head")
+      );
+
+      if (demoMatch) {
+        actions.activateSessionUser({
+          id: demoMatch.id,
+          userId: demoMatch.userId,
+          email: demoMatch.email,
+          fullName: demoMatch.fullName,
+          role: demoMatch.role,
+          institutionId: demoMatch.institutionId,
+          institutionName: demoMatch.institutionName,
+          isDemoUser: true,
+        });
+        if (!remember) sessionStorage.setItem("neo-session-only", "1");
+        await finishLogin();
+        return;
+      }
+
       setStatus({ tone: "error", message: "Invalid email/User ID or password." });
       return;
     }

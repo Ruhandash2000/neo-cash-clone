@@ -29,28 +29,35 @@ function Dashboard() {
   useEffect(() => {
     const loadAuthenticatedProfile = async () => {
       const { data: authData } = await supabase.auth.getUser();
-      if (!authData.user) return;
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id, username, full_name, role, institution_id, is_demo_user, onboarding_completed")
-        .eq("id", authData.user.id)
-        .single();
-      if (!profile || !["student", "admin", "head", "demo_controller"].includes(profile.role)) return;
-      actions.activateSessionUser({
-        id: profile.id,
-        userId: profile.username,
-        email: authData.user.email ?? "",
-        fullName: profile.full_name || profile.username,
-        role: profile.role as "student" | "admin" | "head" | "demo_controller",
-        institutionId: profile.institution_id || "",
-        institutionName: profile.institution_id || "Dhaka City College",
-        isDemoUser: profile.is_demo_user,
-      });
-      actions.setIsOnboarded(profile.role !== "student" || profile.onboarding_completed);
-      setShowDemoController(profile.role === "demo_controller");
+      if (authData.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id, username, full_name, role, institution_id, is_demo_user, onboarding_completed")
+          .eq("id", authData.user.id)
+          .single();
+        if (profile && ["student", "admin", "head", "demo_controller"].includes(profile.role)) {
+          actions.activateSessionUser({
+            id: profile.id,
+            userId: profile.username,
+            email: authData.user.email ?? "",
+            fullName: profile.full_name || profile.username,
+            role: profile.role as "student" | "admin" | "head" | "demo_controller",
+            institutionId: profile.institution_id || "",
+            institutionName: profile.institution_id || "Dhaka City College",
+            isDemoUser: profile.is_demo_user,
+          });
+          actions.setIsOnboarded(profile.role !== "student" || profile.onboarding_completed);
+          setShowDemoController(profile.role === "demo_controller");
+          return;
+        }
+      }
+
+      if (store.currentSessionUser) {
+        setShowDemoController(store.currentSessionUser.role === "demo_controller");
+      }
     };
     void loadAuthenticatedProfile();
-  }, [actions]);
+  }, [actions, store.currentSessionUser]);
 
   const handleStudentOnboardingComplete = async () => {
     const user = store.currentSessionUser;

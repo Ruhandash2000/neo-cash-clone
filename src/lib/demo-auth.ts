@@ -17,7 +17,7 @@ const institutionId = "d4b486a6-b9bb-4a2d-bdd1-e3a5a1908001";
 
 /** Demo identity seed metadata. Credentials are stored only in Supabase Auth. */
 export const DEMO_ACCOUNTS: readonly DemoAccount[] = [
-  { id: "b1e102c9-97b3-4a85-b2fe-d3fa7d43a001", userId: "DEMO-CTRL-001", email: "demo@neocash.ai", fullName: "NewCash AI Demo Controller", role: "demo_controller", institutionId, institutionName: "Dhaka City College", isDemoUser: true },
+  { id: "b1e102c9-97b3-4a85-b2fe-d3fa7d43a001", userId: "DEMO-CTRL-001", email: "demo@newyorkasia.ai", fullName: "NewCash AI Demo Controller", role: "demo_controller", institutionId, institutionName: "Dhaka City College", isDemoUser: true },
   { id: "b1e102c9-97b3-4a85-b2fe-d3fa7d43a101", userId: "STD-FARIYA-001", email: "fariya@neocash.ai", fullName: "Fariya", role: "student", institutionId, institutionName: "Dhaka City College", isDemoUser: true },
   { id: "b1e102c9-97b3-4a85-b2fe-d3fa7d43a102", userId: "STD-ROHAN-001", email: "rohan@neocash.ai", fullName: "Rohan", role: "student", institutionId, institutionName: "Dhaka City College", isDemoUser: true },
   { id: "b1e102c9-97b3-4a85-b2fe-d3fa7d43a103", userId: "STD-FARHAN-001", email: "farhan@neocash.ai", fullName: "Farhan", role: "student", institutionId, institutionName: "Dhaka City College", isDemoUser: true },
