@@ -236,6 +236,13 @@ export interface NeoState {
   currentSessionUser: CurrentSessionUser | null;
   role: Role;
   isOnboarded: boolean;
+  /**
+   * Per-login session verification flag. Unlike `isOnboarded` (permanent),
+   * this resets to `false` whenever the user logs out, the page is
+   * hard-reloaded, or a new authenticated session begins.  It is never
+   * persisted to localStorage.
+   */
+  isSessionVerified: boolean;
   onboardingStep: number; // 1: Search, 2: SSO Verify, 3: Profile, 4: Wallet, 5: Done
   selectedInstitution: {
     name: string;
@@ -300,6 +307,7 @@ const INITIAL_STATE: NeoState = {
   currentSessionUser: null,
   role: "student",
   isOnboarded: true,
+  isSessionVerified: false,
   onboardingStep: 1,
   selectedInstitution: {
     name: "Dhaka City College",
@@ -1016,8 +1024,8 @@ if (typeof window !== "undefined") {
 function saveState() {
   if (typeof window !== "undefined") {
     try {
-      // Authentication and identity are intentionally excluded from the UI cache.
-      const { currentSessionUser: _sessionUser, role: _role, ...uiState } = currentState;
+      // Authentication, identity, and session-scoped verification are intentionally excluded from the UI cache.
+      const { currentSessionUser: _sessionUser, role: _role, isSessionVerified: _sv, ...uiState } = currentState;
       localStorage.setItem("neo_cash_state_v1", JSON.stringify(uiState));
     } catch (e) {
       console.warn("Failed to save Neo state:", e);
@@ -1570,6 +1578,7 @@ export const storeActions = {
 
   clearSessionUser() {
     currentState.currentSessionUser = null;
+    currentState.isSessionVerified = false;
     saveState();
   },
 
@@ -1627,6 +1636,14 @@ export const storeActions = {
   setIsOnboarded(isOnboarded: boolean) {
     currentState.isOnboarded = isOnboarded;
     saveState();
+  },
+
+  setSessionVerified(verified: boolean) {
+    currentState.isSessionVerified = verified;
+    // Deliberately do NOT call saveState() for persistence — session
+    // verification is ephemeral.  We still notify React listeners so the
+    // UI re-renders.
+    listeners.forEach((listener) => listener());
   },
 
   setOnboardingStep(step: number) {

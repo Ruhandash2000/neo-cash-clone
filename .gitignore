@@ -34,3 +34,7 @@ scratch/
 *.njsproj
 *.sln
 *.sw?
+
+# Service account credentials (never commit)
+neo-cash-service-account.json
+test-gemini.mjs

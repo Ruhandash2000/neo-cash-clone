@@ -1,29 +1,90 @@
 /**
- * Dashboard Shell Component — Midnight Sky Architecture
- * 
- * Houses:
- * 1. Demo Role Switcher Bar (Student | Admin | Head | Restart Onboarding)
- * 2. Role-Specific Navigation Sidebar & Mobile Drawer
- * 3. Notifications Drawer
- * 4. Header Bar with User Profile, Notifications count, and Role indicator
+ * Dashboard Shell — Responsive Layout
+ *
+ * MOBILE  (< 768px) : Top header + bottom tab bar [Facebook mobile style]
+ * DESKTOP (≥ 768px) : Left sidebar + top mini-bar [Discord/Linear style]
+ *
+ * Common:
+ *  • Floating AI orb (always on)
+ *  • Profile slide-up sheet
+ *  • Demo bar strip
  */
 
 import { useEffect, useState } from "react";
-import { useNeoStore, Role, Transaction, DEMO_STUDENTS_LIST, DEMO_ADMINS_LIST, DEMO_HEAD_PROFILE } from "@/lib/neo-cash-store";
-import { DEMO_ACCOUNTS } from "@/lib/demo-auth";
-import { OnboardingFlow } from "./onboarding-flow";
-import { StudentPanel } from "./student-panel";
-import { AdminPanel } from "./admin-panel";
-import { HeadPanel } from "./head-panel";
-import { ReceiptModal } from "./receipt-modal";
-import { DesignShowcase } from "@/components/design-system/design-showcase";
-import purpleLogo from "@/assets/neo-purple-logo.png";
 import {
-  LayoutDashboard, CreditCard, FileText, HeartHandshake, Sparkles, User, Bell,
-  ShieldCheck, Users, FileSpreadsheet, Upload, Trophy, CheckCircle2, RotateCcw,
-  LogOut, Layers, AlertCircle, X, Wallet, MessageSquare, Activity, Menu, Moon, Sun
+  useNeoStore, Transaction,
+  DEMO_STUDENTS_LIST, DEMO_ADMINS_LIST, DEMO_HEAD_PROFILE,
+} from "@/lib/neo-cash-store";
+import { DEMO_ACCOUNTS }    from "@/lib/demo-auth";
+import { OnboardingFlow }   from "./onboarding-flow";
+import { StudentPanel }     from "./student-panel";
+import { AdminPanel }       from "./admin-panel";
+import { HeadPanel }        from "./head-panel";
+import { ReceiptModal }     from "./receipt-modal";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import { FloatingAI }       from "@/components/ai/floating-ai";
+import { AvatarUpload }     from "@/components/ui/avatar-upload";
+import purpleLogo           from "@/assets/neo-purple-logo.png";
+import {
+  LayoutDashboard, CreditCard, FileText, HeartHandshake,
+  Wallet, ShieldCheck, Users, Trophy, RotateCcw, LogOut,
+  MessageSquare, Activity, Moon, Sun, ChevronRight,
+  Settings, UserCircle, Bell,
 } from "lucide-react";
 
+/* ─────────── nav ───────────────────────────────────────────────── */
+type NavItem = { id: string; label: string; icon: React.ReactNode; badge?: number };
+
+function studentNav(): NavItem[] {
+  return [
+    { id: "overview",     label: "Home",         icon: <LayoutDashboard size={20} /> },
+    { id: "fees",         label: "Fees & Dues",  icon: <CreditCard size={20} /> },
+    { id: "wallet",       label: "Wallet",       icon: <Wallet size={20} /> },
+    { id: "transactions", label: "History",      icon: <FileText size={20} /> },
+    { id: "donation",     label: "Donate",       icon: <HeartHandshake size={20} /> },
+  ];
+}
+
+function adminNav(store: any): NavItem[] {
+  const openEsc = store.escalations?.filter((e: any) => e.status === "open").length ?? 0;
+  const openApps = store.partialApplications?.filter((a: any) => a.status === "pending_review").length ?? 0;
+  return [
+    { id: "overview",     label: "Operations",   icon: <LayoutDashboard size={20} /> },
+    { id: "students",     label: "Students",     icon: <Users size={20} /> },
+    { id: "applications", label: "Pay Queue",    icon: <ShieldCheck size={20} />, badge: openApps },
+    { id: "analytics",    label: "Analytics",    icon: <Activity size={20} /> },
+    { id: "escalations",  label: "Support",      icon: <MessageSquare size={20} />, badge: openEsc },
+    { id: "bulk",         label: "Bulk Fees",    icon: <CreditCard size={20} /> },
+    { id: "audit",        label: "Audit Trail",  icon: <FileText size={20} /> },
+    { id: "reminders",    label: "Reminders",    icon: <Bell size={20} /> },
+  ];
+}
+
+function headNav(store: any): NavItem[] {
+  const pending = store.partialApplications?.filter((a: any) => a.status === "forwarded_head").length ?? 0;
+  return [
+    { id: "overview",  label: "Command",    icon: <LayoutDashboard size={20} /> },
+    { id: "approvals", label: "Approvals",  icon: <ShieldCheck size={20} />, badge: pending },
+    { id: "students",  label: "Directory",  icon: <Users size={20} /> },
+    { id: "financial", label: "Financials", icon: <Activity size={20} /> },
+    { id: "audit",     label: "Audit",      icon: <FileText size={20} /> },
+    { id: "trophy",    label: "Impact",     icon: <Trophy size={20} /> },
+  ];
+}
+
+/* ─────────── role badge colors ─────────────────────────────────── */
+const ROLE_COLORS: { [key: string]: string } = {
+  student: "rgba(124,58,237,0.15)",
+  admin:   "rgba(211,84,0,0.15)",
+  head:    "rgba(234,179,8,0.15)",
+};
+const ROLE_TEXT: { [key: string]: string } = {
+  student: "#7C3AED",
+  admin:   "#D35400",
+  head:    "#B45309",
+};
+
+/* ─────────── component ──────────────────────────────────────────── */
 export function DashboardShell({
   onSignOut,
   onStudentOnboardingComplete,
@@ -36,732 +97,591 @@ export function DashboardShell({
   showDemoController?: boolean;
 }) {
   const [store, actions] = useNeoStore();
-  const [activeTab, setActiveTab] = useState("overview");
-  const [receiptTxn, setReceiptTxn] = useState<Transaction | null>(null);
-  const [showNotifDrawer, setShowNotifDrawer] = useState(false);
-  const [showMobileNav, setShowMobileNav] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [notifTab, setNotifTab] = useState<"unread" | "all" | "payment" | "fee" | "application" | "institution" | "emails">("all");
-  const [testEventType, setTestEventType] = useState<any>("login");
-
-  const unreadCount = store.notifications.filter((n) => !n.read).length;
+  const [activeTab, setActiveTab]     = useState("overview");
+  const [receiptTxn, setReceiptTxn]   = useState<Transaction | null>(null);
+  const [isDarkMode, setIsDarkMode]   = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [avatarSrc, setAvatarSrc]     = useState<string>("");
+  const [sidebarExpanded, setSidebarExpanded] = useState(true);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("neo_cash_theme");
-    const shouldUseDark = savedTheme === "dark";
-    setIsDarkMode(shouldUseDark);
-    document.documentElement.classList.toggle("dark", shouldUseDark);
+    const saved = window.localStorage.getItem("neo_cash_theme");
+    setIsDarkMode(saved === "dark");
+    document.documentElement.classList.toggle("dark", saved === "dark");
+    try {
+      const av = localStorage.getItem("neo_cash_avatar");
+      if (av) setAvatarSrc(av);
+    } catch {}
   }, []);
 
-  const toggleTheme = () => {
-    const nextThemeIsDark = !isDarkMode;
-    setIsDarkMode(nextThemeIsDark);
-    document.documentElement.classList.toggle("dark", nextThemeIsDark);
-    window.localStorage.setItem("neo_cash_theme", nextThemeIsDark ? "dark" : "light");
-  };
+  useEffect(() => { setActiveTab("overview"); }, [store.role]);
 
-  // Legacy controller markup remains below for reference only; it is never
-  // rendered because it mutates browser state instead of changing Auth users.
-  const handleRoleChange = (_newRole: Role) => {};
+  const toggleTheme = () => {
+    const next = !isDarkMode;
+    setIsDarkMode(next);
+    document.documentElement.classList.toggle("dark", next);
+    window.localStorage.setItem("neo_cash_theme", next ? "dark" : "light");
+  };
 
   const handleRestartOnboarding = () => {
     actions.setIsOnboarded(false);
     actions.setOnboardingStep(1);
   };
 
+  const navItems = store.role === "student" ? studentNav()
+    : store.role === "admin" ? adminNav(store) : headNav(store);
+
+  const unreadCount = store.notifications?.filter((n) => !n.read).length ?? 0;
+  const displayName = store.role === "student" ? store.studentProfile.name
+    : store.role === "admin" ? "Refat Rahman" : "Prof. Dr. M. A. Karim";
+  const roleLabel = store.role === "student" ? "Student"
+    : store.role === "admin" ? "Financial Admin" : "Director & Executive";
+  const currentNavLabel = navItems.find((n) => n.id === activeTab)?.label ?? "Dashboard";
+
+  /* ── SIDEBAR NAV ITEM (desktop) ────────────────────────────────── */
+  const SideNavItem = ({ item }: { item: NavItem }) => {
+    const isActive = activeTab === item.id;
+    return (
+      <button
+        type="button"
+        onClick={() => setActiveTab(item.id)}
+        title={!sidebarExpanded ? item.label : undefined}
+        aria-current={isActive ? "page" : undefined}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: sidebarExpanded ? "10px" : "0",
+          justifyContent: sidebarExpanded ? "flex-start" : "center",
+          padding: sidebarExpanded ? "10px 14px" : "10px",
+          borderRadius: "10px",
+          border: "none",
+          cursor: "pointer",
+          position: "relative",
+          background: isActive
+            ? `${ROLE_COLORS[store.role]}`
+            : "transparent",
+          color: isActive ? ROLE_TEXT[store.role] : "#6B7280",
+          fontWeight: isActive ? 700 : 500,
+          fontSize: "0.88rem",
+          transition: "all 0.15s",
+          textAlign: "left",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+        }}
+        onMouseEnter={(e) => {
+          if (!isActive) e.currentTarget.style.background = "rgba(0,0,0,0.04)";
+        }}
+        onMouseLeave={(e) => {
+          if (!isActive) e.currentTarget.style.background = "transparent";
+        }}
+      >
+        {/* Left accent bar */}
+        {isActive && (
+          <div style={{
+            position: "absolute", left: 0, top: "20%", bottom: "20%",
+            width: "3px",
+            background: `linear-gradient(180deg, ${ROLE_TEXT[store.role]}, ${ROLE_TEXT[store.role]}88)`,
+            borderRadius: "0 3px 3px 0",
+          }} />
+        )}
+
+        <div style={{ flexShrink: 0, position: "relative" }}>
+          {item.icon}
+          {/* Badge on icon when collapsed */}
+          {!sidebarExpanded && (item.badge ?? 0) > 0 && (
+            <div style={{
+              position: "absolute", top: "-4px", right: "-4px",
+              background: "#D35400", color: "#FFF",
+              fontSize: "0.55rem", fontWeight: 800,
+              width: "14px", height: "14px",
+              borderRadius: "50%",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              border: "1.5px solid #FFF",
+            }}>
+              {item.badge! > 9 ? "9+" : item.badge}
+            </div>
+          )}
+        </div>
+
+        {sidebarExpanded && (
+          <>
+            <span style={{ flex: 1 }}>{item.label}</span>
+            {(item.badge ?? 0) > 0 && (
+              <span style={{
+                background: "#D35400", color: "#FFF",
+                fontSize: "0.65rem", fontWeight: 800,
+                padding: "1px 6px", borderRadius: "999px",
+              }}>
+                {item.badge! > 9 ? "9+" : item.badge}
+              </span>
+            )}
+          </>
+        )}
+      </button>
+    );
+  };
+
   return (
-    <div className="dash-midnight">
-      {/* Demo controls are limited to an explicitly started demo session. */}
-      {showDemoController && false && <div className="demo-role-bar">
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "4px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            DEMO CONTROLLER
-          </span>
-          <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>
-            Select active presentation account:
-          </span>
-        </div>
+    <div className="dash-midnight" style={{ display: "flex", flexDirection: "column", height: "100dvh", overflow: "hidden" }}>
 
-        <div className="demo-role-pills" style={{ alignItems: "center", gap: "8px" }}>
-          <button
-            type="button"
-            className={`demo-role-btn ${store.role === "student" ? "is-active" : ""}`}
-            onClick={() => handleRoleChange("student")}
-          >
-            🎓 Student ({DEMO_STUDENTS_LIST.length})
-          </button>
-          
-          <button
-            type="button"
-            className={`demo-role-btn ${store.role === "admin" ? "is-active" : ""}`}
-            onClick={() => handleRoleChange("admin")}
-          >
-            ⚙️ Admin ({DEMO_ADMINS_LIST.length})
-          </button>
-          
-          <button
-            type="button"
-            className={`demo-role-btn ${store.role === "head" ? "is-active" : ""}`}
-            onClick={() => handleRoleChange("head")}
-          >
-            🏆 Head (1)
-          </button>
-
-          {store.role === "student" && (
-            <select
-              value={store.studentProfile.studentId}
-              onChange={(e) => actions.switchDemoStudent(e.target.value)}
-              style={{
-                background: "#2E2017",
-                color: "#FF8C42",
-                border: "1px solid rgba(196, 154, 108, 0.4)",
-                borderRadius: "6px",
-                padding: "3px 8px",
-                fontSize: "0.78rem",
-                fontWeight: 700,
-                outline: "none",
-                cursor: "pointer",
-              }}
-            >
-              {DEMO_STUDENTS_LIST.map((std) => (
-                <option key={std.id} value={std.studentId}>
-                  👤 {std.name} ({std.studentId}) • {std.department}
-                </option>
-              ))}
-            </select>
-          )}
-
-          {store.role === "admin" && (
-            <select
-              style={{
-                background: "#2E2017",
-                color: "#FF8C42",
-                border: "1px solid rgba(196, 154, 108, 0.4)",
-                borderRadius: "6px",
-                padding: "3px 8px",
-                fontSize: "0.78rem",
-                fontWeight: 700,
-                outline: "none",
-                cursor: "pointer",
-              }}
-            >
-              {DEMO_ADMINS_LIST.map((adm) => (
-                <option key={adm.id} value={adm.id}>
-                  👨‍💼 {adm.name} ({adm.roleTitle})
-                </option>
-              ))}
-            </select>
-          )}
-
-          {store.role === "head" && (
-            <span style={{ fontSize: "0.76rem", color: "#FBBF24", fontWeight: 700, background: "rgba(211, 84, 0, 0.15)", padding: "3px 8px", borderRadius: "6px", border: "1px solid rgba(211, 84, 0, 0.3)" }}>
-              👑 {DEMO_HEAD_PROFILE.name} (Director)
-            </span>
-          )}
-
-          <button
-            type="button"
-            className="demo-role-btn"
-            style={{ background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", marginLeft: "4px" }}
-            onClick={handleRestartOnboarding}
-          >
-            <RotateCcw size={12} /> Test Onboarding Flow
-          </button>
-        </div>
-      </div>}
-
+      {/* ── DEMO BAR ───────────────────────────────────────────────── */}
       {showDemoController && (
-        <div className="demo-role-bar">
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "0.72rem", background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24", border: "1px solid rgba(245, 158, 11, 0.3)", padding: "2px 8px", borderRadius: "999px", fontWeight: 800, textTransform: "uppercase" }}>DEMO MODE</span>
-            <span style={{ color: "var(--ms-text-muted)", fontSize: "0.78rem" }}>
-              Current User: <strong style={{ color: "#EAD9C6" }}>{store.currentSessionUser?.fullName ?? "Demo Controller"}</strong> · <span style={{ textTransform: "capitalize" }}>{store.role}</span>
-            </span>
-          </div>
-          <div className="demo-role-pills" style={{ alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-            <span style={{ color: "#8C7A6A", fontSize: "0.74rem", fontWeight: 700 }}>Switch User:</span>
-            {(["student", "admin", "head"] as const).map((role) => (
-              <div key={role} style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-                {DEMO_ACCOUNTS.filter((account) => account.role === role).map((account) => (
-                  <button
-                    key={account.id}
-                    type="button"
-                    className={`demo-role-btn ${store.currentSessionUser?.id === account.id ? "is-active" : ""}`}
-                    onClick={() => void onDemoAccountSwitch(account.id)}
-                  >
-                    {account.fullName} ({role})
-                  </button>
-                ))}
-              </div>
+        <div style={{
+          background: "linear-gradient(90deg, #1a0a00, #2E1503)",
+          borderBottom: "1px solid rgba(196,154,108,0.2)",
+          padding: "5px 12px",
+          display: "flex", alignItems: "center", gap: "8px",
+          flexWrap: "wrap", flexShrink: 0, fontSize: "0.72rem",
+        }}>
+          <span style={{ background: "rgba(245,158,11,0.15)", color: "#FBBF24", border: "1px solid rgba(245,158,11,0.3)", padding: "1px 7px", borderRadius: "999px", fontWeight: 800, textTransform: "uppercase" }}>
+            DEMO
+          </span>
+          <span style={{ color: "#8C7A6A" }}>
+            Active: <strong style={{ color: "#EAD9C6" }}>{store.currentSessionUser?.fullName ?? "—"}</strong>
+          </span>
+          <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "auto" }}>
+            {DEMO_ACCOUNTS.map((acc) => (
+              <button key={acc.id} type="button"
+                onClick={() => void onDemoAccountSwitch(acc.id)}
+                style={{
+                  padding: "1px 8px", borderRadius: "999px", fontSize: "0.7rem",
+                  fontWeight: 700, cursor: "pointer",
+                  background: store.currentSessionUser?.id === acc.id ? "rgba(211,84,0,0.2)" : "rgba(255,255,255,0.06)",
+                  color: store.currentSessionUser?.id === acc.id ? "#FF8C42" : "#8C7A6A",
+                  border: store.currentSessionUser?.id === acc.id ? "1px solid rgba(211,84,0,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                {acc.fullName.split(" ")[0]}
+              </button>
             ))}
-            <button type="button" className="demo-role-btn" style={{ background: "rgba(245, 158, 11, 0.15)", color: "#FBBF24" }} onClick={handleRestartOnboarding}>
-              <RotateCcw size={12} /> Test Onboarding
+            <button type="button" onClick={handleRestartOnboarding}
+              style={{ padding: "1px 8px", borderRadius: "999px", fontSize: "0.7rem", fontWeight: 700, cursor: "pointer", background: "rgba(245,158,11,0.1)", color: "#FBBF24", border: "1px solid rgba(245,158,11,0.2)" }}>
+              <RotateCcw size={9} style={{ display: "inline", marginRight: 2 }} />Onboarding
             </button>
           </div>
         </div>
       )}
 
-      {/* 2. ONBOARDING OVERLAY IF NOT ONBOARDED */}
+      {/* ── ONBOARDING ──────────────────────────────────────────────── */}
       {store.currentSessionUser?.role === "student" && !store.isOnboarded && (
         <OnboardingFlow onComplete={onStudentOnboardingComplete} />
       )}
 
-      {/* 3. MAIN DASHBOARD SHELL */}
-      <div className="ms-shell">
-        {/* SIDEBAR NAVIGATION */}
-        <button
-          type="button"
-          className="ms-mobile-nav-backdrop"
-          aria-label="Close navigation"
-          onClick={() => setShowMobileNav(false)}
-        />
-        <aside
-          className={`ms-sidebar ${showMobileNav ? "is-open" : ""}`}
-          aria-label="Dashboard navigation"
-          onClick={(event) => {
-            if ((event.target as HTMLElement).closest(".ms-nav-item button")) {
-              setShowMobileNav(false);
-            }
-          }}
-        >
-          <div className="ms-brand">
-            <img src={purpleLogo} alt="Neo Cash" className="ms-brand-logo" />
-            <span className="ms-role-badge">{store.role} View</span>
+      {/* ── BODY (sidebar + main) ───────────────────────────────────── */}
+      <div style={{ flex: 1, display: "flex", overflow: "hidden", minHeight: 0 }}>
+
+        {/* ════════════════════════════════════════════════════════════
+            DESKTOP SIDEBAR (hidden on mobile via CSS)
+            ════════════════════════════════════════════════════════════ */}
+        <aside className="desktop-sidebar" style={{
+          width: sidebarExpanded ? "224px" : "62px",
+          flexShrink: 0,
+          background: "#FFFFFF",
+          borderRight: "1px solid rgba(0,0,0,0.07)",
+          display: "flex",
+          flexDirection: "column",
+          transition: "width 0.22s ease",
+          overflow: "hidden",
+          boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
+        }}>
+
+          {/* Brand / Logo */}
+          <div style={{
+            padding: sidebarExpanded ? "18px 16px 12px" : "18px 0 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            justifyContent: sidebarExpanded ? "flex-start" : "center",
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
+            flexShrink: 0,
+          }}>
+            <img src={purpleLogo} alt="Neo Cash" style={{ width: "32px", height: "32px", objectFit: "contain", flexShrink: 0 }} />
+            {sidebarExpanded && (
+              <div>
+                <div style={{ fontWeight: 800, fontSize: "1rem", color: "#1C140E", lineHeight: 1.1 }}>Neo Cash</div>
+                <div style={{
+                  display: "inline-block", fontSize: "0.65rem", fontWeight: 700,
+                  textTransform: "uppercase", letterSpacing: "0.05em",
+                  color: ROLE_TEXT[store.role],
+                  background: ROLE_COLORS[store.role],
+                  padding: "1px 6px", borderRadius: "4px", marginTop: "2px",
+                }}>
+                  {store.role} panel
+                </div>
+              </div>
+            )}
           </div>
 
-          <ul className="ms-nav-list">
-            {/* STUDENT NAV */}
-            {store.role === "student" && (
-              <>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "overview" ? "is-active" : ""} onClick={() => setActiveTab("overview")}>
-                    <LayoutDashboard size={18} /> Overview
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "fees" ? "is-active" : ""} onClick={() => setActiveTab("fees")}>
-                    <CreditCard size={18} /> Fees & Dues
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "wallet" ? "is-active" : ""} onClick={() => setActiveTab("wallet")}>
-                    <Wallet size={18} /> My Wallet & Payment Methods
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "donation" ? "is-active" : ""} onClick={() => setActiveTab("donation")}>
-                    <HeartHandshake size={18} /> Social Impact & Points
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "transactions" ? "is-active" : ""} onClick={() => setActiveTab("transactions")}>
-                    <FileText size={18} /> Transactions & Receipts
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "ai" ? "is-active" : ""} onClick={() => setActiveTab("ai")}>
-                    <Sparkles size={18} style={{ color: "var(--ms-accent)" }} /> AI Assistant
-                  </button>
-                </li>
-              </>
-            )}
+          {/* Nav items */}
+          <nav style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "8px 6px" }}>
+            {navItems.map((item) => <SideNavItem key={item.id} item={item} />)}
+          </nav>
 
-            {/* ADMIN NAV */}
-            {store.role === "admin" && (
-              <>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "overview" ? "is-active" : ""} onClick={() => setActiveTab("overview")}>
-                    <LayoutDashboard size={18} /> Operations Center
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "students" ? "is-active" : ""} onClick={() => setActiveTab("students")}>
-                    <Users size={18} /> Student Directory
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "bulk" ? "is-active" : ""} onClick={() => setActiveTab("bulk")}>
-                    <FileSpreadsheet size={18} /> Bulk Fee Assignment
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "import" ? "is-active" : ""} onClick={() => setActiveTab("import")}>
-                    <Upload size={18} /> Excel Import
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "applications" ? "is-active" : ""} onClick={() => setActiveTab("applications")}>
-                    <ShieldCheck size={18} /> Partial Payment Queue
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "audit" ? "is-active" : ""} onClick={() => setActiveTab("audit")}>
-                    <FileText size={18} /> Audit Trail
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "escalations" ? "is-active" : ""} onClick={() => setActiveTab("escalations")}>
-                    <MessageSquare size={18} /> Support Queue
-                    {(store.escalations?.filter((e) => e.status === "open").length || 0) > 0 && (
-                      <span style={{ background: "#D35400", color: "#FFFFFF", padding: "2px 6px", borderRadius: "999px", fontSize: "0.72rem", marginLeft: "6px", fontWeight: 700 }}>
-                        {store.escalations?.filter((e) => e.status === "open").length}
-                      </span>
-                    )}
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "reminders" ? "is-active" : ""} onClick={() => setActiveTab("reminders")}>
-                    <Bell size={18} /> Reminder Engine
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "academic" ? "is-active" : ""} onClick={() => setActiveTab("academic")}>
-                    <Layers size={18} /> Academic Structure
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "analytics" ? "is-active" : ""} onClick={() => setActiveTab("analytics")}>
-                    <Activity size={18} /> Financial Intelligence
-                  </button>
-                </li>
-              </>
-            )}
-
-            {/* HEAD / AUTHORITY NAV */}
-            {store.role === "head" && (
-              <>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "overview" ? "is-active" : ""} onClick={() => setActiveTab("overview")}>
-                    <LayoutDashboard size={18} /> Executive Command
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "approvals" ? "is-active" : ""} onClick={() => setActiveTab("approvals")}>
-                    <ShieldCheck size={18} /> Approval Center
-                    {(store.partialApplications?.filter((a) => a.status === "forwarded_head").length || 0) > 0 && (
-                      <span style={{ background: "#D35400", color: "#FFFFFF", padding: "2px 6px", borderRadius: "999px", fontSize: "0.72rem", marginLeft: "6px", fontWeight: 700 }}>
-                        {store.partialApplications?.filter((a) => a.status === "forwarded_head").length}
-                      </span>
-                    )}
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "students" ? "is-active" : ""} onClick={() => setActiveTab("students")}>
-                    <Users size={18} /> Student Directory
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "financial" ? "is-active" : ""} onClick={() => setActiveTab("financial")}>
-                    <Activity size={18} /> Financial Solvency
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "audit" ? "is-active" : ""} onClick={() => setActiveTab("audit")}>
-                    <FileText size={18} /> Admin Activity & Audit
-                  </button>
-                </li>
-                <li className="ms-nav-item">
-                  <button className={activeTab === "trophy" ? "is-active" : ""} onClick={() => setActiveTab("trophy")}>
-                    <Trophy size={18} style={{ color: "#FBBF24" }} /> Impact Center 🏆
-                  </button>
-                </li>
-              </>
-            )}
-
-            {/* COMMON LOGOUT ITEM IN SIDEBAR NAV */}
-            <li className="ms-nav-item" style={{ marginTop: "8px" }}>
-              <button type="button" onClick={onSignOut} style={{ color: "#BE123C" }}>
-                <LogOut size={18} /> Logout
-              </button>
-            </li>
-          </ul>
-
-          <div className="ms-user-area">
-            <div>
-              <p style={{ margin: 0, fontWeight: "700", fontSize: "0.88rem", color: "#1C140E" }}>
-                {store.role === "student" ? store.studentProfile.name : store.role === "admin" ? "Refat Rahman" : "Prof. Dr. M. A. Karim"}
-              </p>
-              <span style={{ fontSize: "0.75rem", color: "var(--ms-text-muted)" }}>
-                {store.role === "student" ? "Student" : store.role === "admin" ? "Financial Admin" : "Director & Executive"}
-              </span>
-            </div>
+          {/* User section */}
+          <div style={{
+            borderTop: "1px solid rgba(0,0,0,0.06)",
+            padding: sidebarExpanded ? "10px 10px" : "10px 6px",
+            flexShrink: 0,
+          }}>
+            {/* Profile row */}
             <button
               type="button"
-              onClick={onSignOut}
+              onClick={() => setShowProfile(true)}
               style={{
+                width: "100%",
                 display: "flex",
                 alignItems: "center",
-                gap: "5px",
-                padding: "6px 10px",
-                background: "rgba(225, 29, 72, 0.08)",
-                border: "1px solid rgba(225, 29, 72, 0.25)",
-                borderRadius: "12px",
-                color: "#BE123C",
-                fontSize: "0.78rem",
-                fontWeight: "600",
+                gap: sidebarExpanded ? "10px" : "0",
+                justifyContent: sidebarExpanded ? "flex-start" : "center",
+                background: "rgba(0,0,0,0.03)",
+                border: "none",
+                borderRadius: "10px",
+                padding: "8px",
                 cursor: "pointer",
+                marginBottom: "4px",
+                transition: "background 0.15s",
               }}
-              title="Sign Out"
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.07)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.03)")}
             >
-              <LogOut size={14} /> Exit
+              <AvatarUpload
+                src={avatarSrc || store.studentProfile.avatar}
+                name={displayName}
+                size={32}
+                editable={false}
+              />
+              {sidebarExpanded && (
+                <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "#1C140E", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {displayName.split(" ")[0]}
+                  </div>
+                  <div style={{ fontSize: "0.69rem", color: "#9CA3AF" }}>{roleLabel}</div>
+                </div>
+              )}
             </button>
+
+            {/* Action buttons row */}
+            <div style={{ display: "flex", gap: "4px", justifyContent: sidebarExpanded ? "flex-start" : "center" }}>
+              {/* Collapse toggle */}
+              <button
+                type="button"
+                onClick={() => setSidebarExpanded(!sidebarExpanded)}
+                title={sidebarExpanded ? "Collapse sidebar" : "Expand sidebar"}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  padding: "6px", borderRadius: "8px", color: "#9CA3AF",
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.06)"; e.currentTarget.style.color = "#374151"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#9CA3AF"; }}
+              >
+                {/* Arrow icon that flips */}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ transform: sidebarExpanded ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.22s" }}>
+                  <polyline points="15 18 9 12 15 6" />
+                </svg>
+              </button>
+
+              {sidebarExpanded && (
+                <>
+                  <button type="button" onClick={toggleTheme} title={isDarkMode ? "Light mode" : "Dark mode"}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: "6px", borderRadius: "8px", color: "#9CA3AF", transition: "all 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(0,0,0,0.06)"; e.currentTarget.style.color = "#374151"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#9CA3AF"; }}>
+                    {isDarkMode ? <Sun size={15} /> : <Moon size={15} />}
+                  </button>
+                  <button type="button" onClick={onSignOut} title="Sign out"
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: "6px", borderRadius: "8px", color: "#9CA3AF", transition: "all 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; e.currentTarget.style.color = "#EF4444"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "none"; e.currentTarget.style.color = "#9CA3AF"; }}>
+                    <LogOut size={15} />
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </aside>
 
-        {/* MAIN CONTENT AREA */}
-        <main className="ms-main">
-          {/* HEADER BAR */}
-          <header className="ms-header">
-            <div>
-              <h1 style={{ fontSize: "1.2rem", margin: 0, color: "#1C140E", fontWeight: "700" }}>
-                {store.selectedInstitution.name}
-              </h1>
-              <span style={{ fontSize: "0.78rem", color: "var(--ms-text-muted)" }}>
-                Intelligent Financial Ecosystem • {store.role.toUpperCase()} PANEL
+        {/* ════════════════════════════════════════════════════════════
+            MAIN CONTENT AREA
+            ════════════════════════════════════════════════════════════ */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+
+          {/* TOP MINI-BAR */}
+          <header style={{
+            background: "#FFFFFF",
+            borderBottom: "1px solid rgba(0,0,0,0.07)",
+            padding: "0 16px",
+            height: "52px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            flexShrink: 0,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+          }}>
+            {/* Mobile logo (hidden on desktop) */}
+            <img src={purpleLogo} alt="Neo Cash" className="mobile-only-logo" style={{ height: "28px", width: "28px", objectFit: "contain", flexShrink: 0 }} />
+
+            {/* Page title */}
+            <div style={{ flex: 1 }}>
+              <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1C140E" }}>{currentNavLabel}</span>
+              <span style={{ marginLeft: "8px", fontSize: "0.72rem", color: "#9CA3AF" }}>
+                {store.selectedInstitution?.name ?? "Neo Cash"}
               </span>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <button
-                type="button"
-                className="ms-mobile-menu-button"
-                aria-label="Open navigation"
-                aria-expanded={showMobileNav}
-                onClick={() => setShowMobileNav(true)}
-              >
-                <Menu size={20} />
-              </button>
-              <button
-                type="button"
-                className="ms-theme-toggle"
-                aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
-                aria-pressed={isDarkMode}
-                onClick={toggleTheme}
-                title={isDarkMode ? "Use light mode" : "Use dark mode"}
-              >
-                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-              </button>
-              {/* Notification Bell */}
-              <button
-                type="button"
-                aria-label="Open notifications"
-                aria-expanded={showNotifDrawer}
-                onClick={() => setShowNotifDrawer(true)}
-                style={{ position: "relative", background: "#FDF9F3", border: "1px solid var(--ms-border)", padding: "8px", borderRadius: "12px", color: "#D35400", cursor: "pointer" }}
-              >
-                <Bell size={18} />
-                {unreadCount > 0 && (
-                  <span style={{ position: "absolute", top: "-4px", right: "-4px", width: "16px", height: "16px", borderRadius: "50%", background: "#BE123C", color: "#FFF", fontSize: "0.68rem", fontWeight: "800", display: "grid", placeItems: "center" }}>
-                    {unreadCount}
-                  </span>
-                )}
+            {/* Right: actions */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              {/* Theme (mobile only — desktop has it in sidebar) */}
+              <button type="button" onClick={toggleTheme} className="mobile-only-btn"
+                style={{ background: "rgba(0,0,0,0.04)", border: "none", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                {isDarkMode ? <Sun size={16} color="#D35400" /> : <Moon size={16} color="#6B7280" />}
               </button>
 
-              {/* User Avatar */}
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <img src={store.studentProfile.avatar} alt="Profile" style={{ width: "36px", height: "36px", borderRadius: "50%", background: "var(--ms-surface-blue)" }} />
-              </div>
+              <NotificationBell userId={store.currentSessionUser?.id ?? ""} />
+
+              {/* Avatar */}
+              <button type="button" onClick={() => setShowProfile(true)}
+                style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+                <AvatarUpload
+                  src={avatarSrc || store.studentProfile.avatar}
+                  name={displayName}
+                  size={34}
+                  editable={false}
+                />
+              </button>
             </div>
           </header>
 
-          {/* DYNAMIC PANEL CONTENT */}
-          <div className="ms-content">
-            {activeTab === "design" ? (
-              <DesignShowcase />
-            ) : (
-              <>
-                {store.role === "student" && (
-                  <StudentPanel
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    onOpenReceipt={(txn) => setReceiptTxn(txn)}
-                  />
-                )}
-                {store.role === "admin" && (
-                  <AdminPanel
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                  />
-                )}
-                {store.role === "head" && (
-                  <HeadPanel
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                  />
-                )}
-              </>
-            )}
-          </div>
-        </main>
+          {/* PANEL CONTENT */}
+          <main style={{ flex: 1, overflow: "hidden", position: "relative" }}>
+            <div style={{ height: "100%", overflowY: "auto", paddingBottom: "calc(64px * var(--show-bottom-nav, 0))" }} id="main-scroll">
+              {store.role === "student" && (
+                <StudentPanel activeTab={activeTab} setActiveTab={setActiveTab} onOpenReceipt={(txn) => setReceiptTxn(txn)} />
+              )}
+              {store.role === "admin" && (
+                <AdminPanel activeTab={activeTab} setActiveTab={setActiveTab} />
+              )}
+              {store.role === "head" && (
+                <HeadPanel activeTab={activeTab} setActiveTab={setActiveTab} />
+              )}
+            </div>
+          </main>
+        </div>
       </div>
 
-      {/* NOTIFICATIONS DRAWER MODAL (PHASE 10) */}
-      {showNotifDrawer && (() => {
-        const notifList = store.notifications || [];
-        const unreadList = notifList.filter((n) => !n.read);
-        const paymentsList = notifList.filter((n) => n.category === "payment");
-        const feesList = notifList.filter((n) => n.category === "fee");
-        const appsList = notifList.filter((n) => n.category === "application");
-        const instList = notifList.filter((n) => n.category === "institution" || n.category === "system");
-
-        const filteredNotifs = notifList.filter((n) => {
-          if (notifTab === "unread") return !n.read;
-          if (notifTab === "payment") return n.category === "payment";
-          if (notifTab === "fee") return n.category === "fee";
-          if (notifTab === "application") return n.category === "application";
-          if (notifTab === "institution") return n.category === "institution" || n.category === "system" || n.category === "email";
-          return true; // all
-        });
-
-        return (
-          <div className="ms-modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowNotifDrawer(false)}>
-            <div className="ms-modal" style={{ maxWidth: "560px", background: "#FFFFFF", color: "#241A14" }}>
-              
-              {/* MODAL HEADER */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "12px" }}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.25rem", fontWeight: 800 }}>
-                      Institutional Notification Center
-                    </h3>
-                    <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
-                      {unreadList.length} Unread
-                    </span>
-                  </div>
-                  <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#66564A" }}>
-                    Real-time alert engine for fee payments, deadlines, applications, and security login events.
-                  </p>
+      {/* ════════════════════════════════════════════════════════════
+          MOBILE BOTTOM TAB BAR (hidden on desktop via CSS)
+          ════════════════════════════════════════════════════════════ */}
+      <nav className="mobile-bottom-nav" style={{
+        position: "fixed",
+        bottom: 0, left: 0, right: 0,
+        height: "calc(56px + env(safe-area-inset-bottom, 0px))",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        background: "#FFFFFF",
+        borderTop: "1px solid rgba(0,0,0,0.08)",
+        display: "flex",
+        zIndex: 200,
+        boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+      }}>
+        {navItems.slice(0, 5).map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveTab(item.id)}
+              aria-label={item.label}
+              aria-current={isActive ? "page" : undefined}
+              style={{
+                flex: 1,
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                gap: "3px",
+                border: "none",
+                background: "none",
+                cursor: "pointer",
+                position: "relative",
+                color: isActive ? "#7C3AED" : "#9CA3AF",
+                transition: "color 0.15s",
+                paddingBottom: "2px",
+              }}
+            >
+              {isActive && (
+                <div style={{
+                  position: "absolute", top: 0, left: "20%", right: "20%",
+                  height: "3px",
+                  background: "linear-gradient(90deg, #7C3AED, #D35400)",
+                  borderRadius: "0 0 3px 3px",
+                }} />
+              )}
+              {(item.badge ?? 0) > 0 && (
+                <div style={{
+                  position: "absolute", top: "6px", right: "calc(50% - 18px)",
+                  background: "#D35400", color: "#FFF",
+                  fontSize: "0.6rem", fontWeight: 800,
+                  minWidth: "16px", height: "16px",
+                  borderRadius: "999px", padding: "0 3px",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  border: "2px solid #FFF",
+                }}>
+                  {item.badge! > 9 ? "9+" : item.badge}
                 </div>
-
-                <button type="button" onClick={() => setShowNotifDrawer(false)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}>
-                  <X size={20} />
-                </button>
+              )}
+              <div style={{ transform: isActive ? "scale(1.12)" : "scale(1)", transition: "transform 0.15s" }}>
+                {item.icon}
               </div>
+              <span style={{ fontSize: "0.63rem", fontWeight: isActive ? 700 : 500 }}>
+                {item.label.split(" ")[0]}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
 
-              {/* SIMULATED SECURITY EMAIL ALERT BANNER */}
-              <div style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.35)", padding: "10px 14px", borderRadius: "10px", marginBottom: "14px", fontSize: "0.8rem", color: "#241A14", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "1.1rem" }}>📧</span>
-                <div>
-                  <strong>Simulated Email Alert:</strong> New Neo Cash AI login detected from Chrome (Windows) at 04:12 PM. <span style={{ color: "#66564A", fontSize: "0.75rem" }}>(Represented in-system for demo MVP)</span>
-                </div>
-              </div>
+      {/* ── PROFILE SHEET ───────────────────────────────────────────── */}
+      {showProfile && (
+        <div
+          style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "flex-end" }}
+          onClick={(e) => e.target === e.currentTarget && setShowProfile(false)}
+        >
+          <div style={{
+            width: "100%", maxWidth: "480px", margin: "0 auto",
+            background: "#FFFFFF",
+            borderRadius: "24px 24px 0 0",
+            padding: "0 0 calc(24px + env(safe-area-inset-bottom, 0px))",
+            animation: "slideUp 0.25s ease",
+          }}>
+            <div style={{ display: "flex", justifyContent: "center", padding: "12px" }}>
+              <div style={{ width: "36px", height: "4px", background: "#E5E7EB", borderRadius: "2px" }} />
+            </div>
 
-              {/* FILTER TAB PILLS */}
-              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "14px" }}>
-                {[
-                  { id: "all", label: "All", count: notifList.length },
-                  { id: "unread", label: "Unread", count: unreadList.length },
-                  { id: "payment", label: "Payments", count: paymentsList.length },
-                  { id: "fee", label: "Fees", count: feesList.length },
-                  { id: "application", label: "Applications", count: appsList.length },
-                  { id: "institution", label: "Institution", count: instList.length },
-                  { id: "emails", label: "📧 Email Logs (" + (store.demoEmailLogs?.length || 0) + ")", count: store.demoEmailLogs?.length || 0 },
-                ].map((tab) => {
-                  const isActive = notifTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setNotifTab(tab.id as any)}
-                      style={{
-                        background: isActive ? "#D35400" : "#FDF9F3",
-                        color: isActive ? "#FFFFFF" : "#241A14",
-                        border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
-                        padding: "5px 12px",
-                        borderRadius: "999px",
-                        fontSize: "0.78rem",
-                        fontWeight: 700,
-                        cursor: "pointer",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "4px",
-                      }}
-                    >
-                      {tab.label}
-                      <span style={{ background: isActive ? "rgba(255,255,255,0.25)" : "rgba(36,26,20,0.08)", padding: "1px 6px", borderRadius: "999px", fontSize: "0.72rem" }}>
-                        {tab.count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* EMAIL SERVICE ABSTRACTION & EVENT SIMULATOR (PHASE 23) */}
-              {notifTab === "emails" ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "380px", overflowY: "auto", paddingRight: "4px" }}>
-                  
-                  {/* SERVICE ABSTRACTION BANNER */}
-                  <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "10px", padding: "10px 14px", fontSize: "0.8rem", color: "#241A14" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-                      <strong>Email Service Abstraction Status:</strong>
-                      <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
-                        Demo Mode (Provider Not Connected)
-                      </span>
-                    </div>
-                    <p style={{ margin: 0, fontSize: "0.76rem", color: "#66564A" }}>
-                      When Supabase/SMTP is unconfigured, all 12 institutional notification events are logged locally without false delivery claims.
-                    </p>
+            {/* Profile header */}
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", padding: "0 20px 16px", borderBottom: "1px solid #F3F4F6" }}>
+              <AvatarUpload
+                src={avatarSrc || store.studentProfile.avatar}
+                name={displayName}
+                size={68}
+                editable
+                onChanged={(url) => setAvatarSrc(url)}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: "1.05rem", color: "#1C140E" }}>{displayName}</div>
+                <div style={{ fontSize: "0.78rem", color: "#8C7A6A", marginTop: "1px" }}>{roleLabel}</div>
+                {store.role === "student" && (
+                  <div style={{ fontSize: "0.72rem", color: ROLE_TEXT["student"], marginTop: "3px", fontWeight: 600 }}>
+                    {store.studentProfile.studentId} · {store.studentProfile.department}
                   </div>
-
-                  {/* EVENT DISPATCH SIMULATOR */}
-                  <div style={{ background: "#FFF7E6", border: "1.5px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "12px 14px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                      ⚡ Test Notification Event Simulator (12 Events)
-                    </div>
-
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <select
-                        value={testEventType}
-                        onChange={(e) => setTestEventType(e.target.value)}
-                        style={{ flex: 1, padding: "6px 10px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "12px", fontSize: "0.8rem", fontWeight: 700, color: "#241A14", outline: "none" }}
-                      >
-                        <option value="login">🔐 login (Security Login Alert)</option>
-                        <option value="fee_assigned">📋 fee assigned (New Fee Obligation)</option>
-                        <option value="fee_reminder">⏰ fee reminder (Weekly Scheduled Notice)</option>
-                        <option value="payment_success">✅ payment success (Receipt & Clearance)</option>
-                        <option value="payment_failure">❌ payment failure (Transaction Declined)</option>
-                        <option value="deadline_approaching">⚠️ deadline approaching (Near-Due Warning)</option>
-                        <option value="deadline_missed">🚨 deadline missed (Overdue Notice)</option>
-                        <option value="partial_payment_submitted">📝 partial payment submitted (Student App)</option>
-                        <option value="admin_reviewed">👨‍💼 admin reviewed (Forwarded to Head)</option>
-                        <option value="head_approved">🏆 head approved (Installment Unlocked)</option>
-                        <option value="head_rejected">🚫 head rejected (Decline Notice)</option>
-                        <option value="donation_completed">❤️ donation completed (Welfare Contribution)</option>
-                      </select>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const eventTitles: Record<string, string> = {
-                            login: "Security Alert: Login Detected",
-                            fee_assigned: "New Fee Assigned: Semester Tuition",
-                            fee_reminder: "Weekly Reminder: Upcoming Dues",
-                            payment_success: "Payment Success Confirmation",
-                            payment_failure: "Payment Attempt Failed",
-                            deadline_approaching: "Deadline Approaching Alert",
-                            deadline_missed: "Missed Payment Deadline Notice",
-                            partial_payment_submitted: "Partial Payment Application Received",
-                            admin_reviewed: "Admin Review Completed",
-                            head_approved: "Head Approval Granted",
-                            head_rejected: "Partial Payment Application Rejected",
-                            donation_completed: "Welfare Donation Contribution Completed",
-                          };
-                          const title = eventTitles[testEventType] || "Notification Event";
-                          actions.dispatchNotificationEvent({
-                            eventType: testEventType,
-                            title,
-                            message: `Test execution of [${testEventType}] event. Logged to local email audit logs.`,
-                            emailAlert: true,
-                          });
-                        }}
-                        style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 14px", borderRadius: "12px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", whiteSpace: "nowrap" }}
-                      >
-                        Dispatch Event
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* DEMO EMAIL LOG LIST */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {(!store.demoEmailLogs || store.demoEmailLogs.length === 0) ? (
-                      <div style={{ padding: "20px", textAlign: "center", color: "#8C7A6A", fontSize: "0.82rem" }}>
-                        No email logs generated yet.
-                      </div>
-                    ) : (
-                      store.demoEmailLogs.map((log) => (
-                        <div key={log.id} style={{ padding: "10px 12px", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", fontSize: "0.8rem" }}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
-                            <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", background: "rgba(211, 84, 0, 0.1)", padding: "2px 6px", borderRadius: "999px" }}>
-                              {log.eventType}
-                            </span>
-                            <span style={{ fontSize: "0.72rem", color: "#8C7A6A" }}>{log.timestamp}</span>
-                          </div>
-                          <div style={{ fontWeight: 700, color: "#241A14" }}>To: {log.recipientName} ({log.to})</div>
-                          <div style={{ fontSize: "0.78rem", color: "#66564A", margin: "2px 0" }}>Subject: {log.subject}</div>
-                          <div style={{ fontSize: "0.72rem", color: "#8C7A6A", fontStyle: "italic" }}>Status: {log.providerStatus}</div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                </div>
-              ) : (
-                /* NOTIFICATION ITEM LIST */
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "360px", overflowY: "auto", paddingRight: "4px" }}>
-                  {filteredNotifs.length === 0 ? (
-                    <div style={{ padding: "32px 16px", textAlign: "center", color: "#66564A", fontSize: "0.86rem" }}>
-                      No notifications in this category.
-                    </div>
-                  ) : (
-                  filteredNotifs.map((n) => {
-                    const isEmail = n.emailAlert || n.category === "email";
-                    return (
-                      <div
-                        key={n.id}
-                        style={{
-                          padding: "12px 14px",
-                          background: !n.read ? "#FFF7E6" : "#FDF9F3",
-                          borderRadius: "16px",
-                          border: !n.read ? "1.5px solid rgba(211, 84, 0, 0.35)" : "1px solid rgba(196, 154, 108, 0.25)",
-                        }}
-                      >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "4px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                            <span
-                              style={{
-                                background: n.type === "success" ? "rgba(16, 185, 129, 0.12)" : n.type === "warning" ? "rgba(211, 84, 0, 0.12)" : n.type === "error" ? "rgba(190, 18, 60, 0.12)" : "rgba(37, 99, 235, 0.12)",
-                                color: n.type === "success" ? "#047857" : n.type === "warning" ? "#D35400" : n.type === "error" ? "#BE123C" : "#1D4ED8",
-                                padding: "2px 8px",
-                                borderRadius: "999px",
-                                fontSize: "0.72rem",
-                                fontWeight: 800,
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              {n.category || n.type}
-                            </span>
-                            {!n.read && <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#D35400" }} />}
-                          </div>
-                          <span style={{ fontSize: "0.72rem", color: "#8C7A6A" }}>{n.date}</span>
-                        </div>
-
-                        <h5 style={{ margin: "4px 0 2px", color: "#241A14", fontSize: "0.9rem", fontWeight: 700 }}>
-                          {isEmail ? "📧 " : ""}{n.title}
-                        </h5>
-                        <p style={{ margin: 0, fontSize: "0.82rem", color: "#66564A", lineHeight: 1.4 }}>
-                          {n.message}
-                        </p>
-                      </div>
-                    );
-                  })
                 )}
               </div>
-              )}
+            </div>
 
-              {/* FOOTER ACTIONS */}
-              <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "0.78rem", color: "#8C7A6A" }}>
-                  Showing {filteredNotifs.length} items
-                </span>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button type="button" className="ms-btn-secondary" style={{ padding: "6px 14px", fontSize: "0.8rem", background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", fontWeight: 600 }} onClick={() => actions.markAllNotificationsRead()}>
-                    Mark All as Read
-                  </button>
-                  <button type="button" className="ms-btn-primary" style={{ padding: "6px 14px", fontSize: "0.8rem", background: "#D35400", color: "#FFFFFF", borderRadius: "12px", fontWeight: 700 }} onClick={() => setShowNotifDrawer(false)}>
-                    Close
-                  </button>
+            {/* Wallet card for students */}
+            {store.role === "student" && (
+              <div style={{
+                margin: "12px 16px",
+                background: "linear-gradient(135deg, #7C3AED 0%, #D35400 100%)",
+                borderRadius: "14px", padding: "14px 16px",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
+                <div>
+                  <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase" }}>Neo Wallet</div>
+                  <div style={{ color: "#FFF", fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", marginTop: "2px" }}>
+                    ৳{(store.balances?.walletBalance ?? 0).toLocaleString("en-BD")}
+                  </div>
                 </div>
+                <Wallet size={28} color="rgba(255,255,255,0.45)" />
               </div>
+            )}
 
+            {/* Menu items */}
+            <div style={{ padding: "4px 8px" }}>
+              {[
+                { icon: <UserCircle size={19} color={ROLE_TEXT["student"]} />, label: "Profile", sub: "Edit your info", bg: ROLE_COLORS["student"], action: () => { setActiveTab("overview"); setShowProfile(false); } },
+                { icon: <Bell size={19} color={ROLE_TEXT["admin"]} />, label: "Notifications", sub: `${unreadCount} unread`, bg: ROLE_COLORS["admin"], action: () => setShowProfile(false) },
+                { icon: isDarkMode ? <Sun size={19} color="#6B7280" /> : <Moon size={19} color="#6B7280" />, label: isDarkMode ? "Light Mode" : "Dark Mode", sub: "Toggle appearance", bg: "rgba(107,114,128,0.1)", action: () => { toggleTheme(); setShowProfile(false); } },
+                { icon: <Settings size={19} color="#6B7280" />, label: "Settings", sub: "Preferences & security", bg: "rgba(107,114,128,0.1)", action: () => setShowProfile(false) },
+              ].map((item) => (
+                <button key={item.label} type="button" onClick={item.action}
+                  style={{ width: "100%", display: "flex", alignItems: "center", gap: "12px", padding: "11px 10px", background: "none", border: "none", cursor: "pointer", borderRadius: "12px", textAlign: "left", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "#F9FAFB")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+                >
+                  <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: item.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    {item.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "#1C140E" }}>{item.label}</div>
+                    <div style={{ fontSize: "0.74rem", color: "#9CA3AF", marginTop: "1px" }}>{item.sub}</div>
+                  </div>
+                  <ChevronRight size={15} color="#D1D5DB" />
+                </button>
+              ))}
+
+              {/* Sign out */}
+              <button type="button" onClick={() => { setShowProfile(false); onSignOut(); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: "12px", padding: "11px 10px", background: "none", border: "none", cursor: "pointer", borderRadius: "12px", textAlign: "left", marginTop: "4px", transition: "background 0.15s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
+              >
+                <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <LogOut size={19} color="#EF4444" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "#EF4444" }}>Sign Out</div>
+                  <div style={{ fontSize: "0.74rem", color: "#9CA3AF", marginTop: "1px" }}>End your session</div>
+                </div>
+                <ChevronRight size={15} color="#FCA5A5" />
+              </button>
             </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
-      {/* RECEIPT MODAL */}
       {receiptTxn && (
         <ReceiptModal transaction={receiptTxn} onClose={() => setReceiptTxn(null)} />
       )}
+
+      <FloatingAI />
+
+      <style>{`
+        /* ── RESPONSIVE: hide/show sidebar vs bottom nav ── */
+        @media (min-width: 768px) {
+          .mobile-bottom-nav { display: none !important; }
+          .mobile-only-logo  { display: none !important; }
+          .mobile-only-btn   { display: none !important; }
+          #main-scroll       { --show-bottom-nav: 0; padding-bottom: 0 !important; }
+        }
+        @media (max-width: 767px) {
+          .desktop-sidebar   { display: none !important; }
+          #main-scroll       { --show-bottom-nav: 1; padding-bottom: 64px; }
+        }
+
+        /* ── Animations ── */
+        @keyframes slideUp {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); opacity: 0.5; }
+          50%       { transform: translateY(-4px); opacity: 1; }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .floating-ai-orb.pulse {
+          animation: orbPulse 2s ease infinite;
+        }
+        @keyframes orbPulse {
+          0%, 100% { box-shadow: 0 4px 20px rgba(124,58,237,0.5); transform: scale(1); }
+          50%       { box-shadow: 0 4px 32px rgba(124,58,237,0.8); transform: scale(1.07); }
+        }
+        /* Thin scrollbar */
+        #main-scroll::-webkit-scrollbar { width: 4px; }
+        #main-scroll::-webkit-scrollbar-track { background: transparent; }
+        #main-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.2); border-radius: 4px; }
+      `}</style>
     </div>
   );
 }

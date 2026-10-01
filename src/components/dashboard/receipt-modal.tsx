@@ -1,6 +1,8 @@
-import { Transaction, useNeoStore } from "@/lib/neo-cash-store";
-import { Printer, X, ShieldCheck } from "lucide-react";
+﻿import { Transaction, useNeoStore } from "@/lib/neo-cash-store";
+import { Printer, X, ShieldCheck, Download } from "lucide-react";
 import purpleLogo from "@/assets/neo-purple-logo.png";
+import { generatePaymentReceipt } from "@/lib/receipt-generator";
+
 
 export function ReceiptModal({
   transaction,
@@ -11,9 +13,24 @@ export function ReceiptModal({
 }) {
   const [store] = useNeoStore();
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadPDF = () => {
+    generatePaymentReceipt({
+      receiptNumber:  transaction.receiptNumber ?? "N/A",
+      transactionId:  transaction.id ?? "N/A",
+      studentName:    store.currentSessionUser?.fullName ?? store.studentProfile.name ?? "Student",
+      studentId:      store.currentSessionUser?.id ?? "—",
+      institution:    store.currentSessionUser?.institutionName ?? store.studentProfile.institution ?? "—",
+      paymentFor:     transaction.title ?? "Payment",
+      amount:         transaction.amount ?? 0,
+      method:         transaction.method ?? "Online",
+      status:         transaction.status === "Success" ? "completed" : transaction.status === "Failed" ? "failed" : "pending",
+      paidAt:         transaction.date ?? new Date().toISOString(),
+      referenceId:    transaction.referenceId,
+    });
   };
+
+  const handlePrint = () => window.print();
+
 
   return (
     <div className="ms-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
@@ -97,24 +114,20 @@ export function ReceiptModal({
         </div>
 
         {/* Action Buttons */}
-        <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end", marginTop: "24px" }}>
+        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "24px" }}>
           <button
             type="button"
             onClick={handlePrint}
-            style={{
-              background: "#D35400",
-              color: "#FFFFFF",
-              border: "none",
-              padding: "10px 18px",
-              borderRadius: "12px",
-              fontWeight: "700",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
+            style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196,154,108,0.3)", padding: "10px 16px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "0.85rem" }}
           >
-            <Printer size={16} /> Print / Save PDF Receipt
+            <Printer size={15} /> Print
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadPDF}
+            style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 18px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "0.85rem" }}
+          >
+            <Download size={15} /> Download PDF Receipt
           </button>
         </div>
       </div>

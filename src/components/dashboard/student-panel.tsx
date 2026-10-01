@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Student Panel Component — Refined Institutional Financial Portal
  * 
  * Strict Visual Hierarchy & Autumn Vibes Palette System:
@@ -16,6 +16,10 @@
 
 import { useState } from "react";
 import { useNeoStore, Fee, Transaction } from "@/lib/neo-cash-store";
+import { WalletTopUpModal } from "@/components/payment/wallet-topup-modal";
+import { DocumentUploadVerifier } from "@/components/verification/document-upload-verifier";
+import { generatePaymentReceipt } from "@/lib/receipt-generator";
+import { FeePaymentModal } from "@/components/payment/fee-payment-modal";
 import { StatusBadge } from "@/components/design-system/status-badge";
 import { formatTaka, StatusType } from "@/components/design-system/tokens";
 import {
@@ -298,6 +302,7 @@ export function StudentPanel({
       const targetFee = store.fees.find(f => f.id === action.feeId) || store.fees[0];
       if (targetFee) setSelectedPayFee(targetFee);
     } else if (action.actionType === "view_receipts") {
+      setActiveTab("transactions");
       setActiveTab("transactions");
     } else if (action.actionType === "topup_wallet") {
       setShowTopUpModal(true);
@@ -1543,7 +1548,10 @@ export function StudentPanel({
                     </span>
                     <button
                       type="button"
-                      onClick={() => alert(`Manage payment method for ${pm.name}`)}
+                      onClick={() => {
+                        // Payment method management via SSLCommerz dashboard
+                        window.open("https://developer.sslcommerz.com", "_blank");
+                      }}
                       style={{ background: "none", border: "none", color: "#D35400", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0 }}
                     >
                       Manage
@@ -2706,59 +2714,24 @@ export function StudentPanel({
         </div>
       )}
 
-      {/* FULL PAYMENT MODAL */}
+      {/* FULL PAYMENT MODAL — Phase 3: SSLCommerz gateway */}
       {selectedPayFee && (
-        <div className="ms-modal-overlay">
-          <div className="ms-modal">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Confirm Fee Payment</h3>
-              <button type="button" onClick={() => setSelectedPayFee(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <p style={{ margin: "0 0 16px", color: "#66564A", fontSize: "0.88rem" }}>
-              Paying for: <strong style={{ color: "#241A14" }}>{selectedPayFee.title}</strong>
-            </p>
-
-            <form onSubmit={handlePaySubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ background: "#FDF9F3", padding: "16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
-                <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#66564A", textTransform: "uppercase" }}>Total Payable Amount</span>
-                <h2 style={{ margin: "4px 0 0", color: "#241A14", fontSize: "1.8rem", fontWeight: 800 }}>
-                  {formatTaka(selectedPayFee.approvedPartialAmount || selectedPayFee.amount, false)}
-                </h2>
-              </div>
-
-              <div>
-                <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "6px" }}>
-                  Select Payment Method
-                </label>
-                <select
-                  value={payMethod}
-                  onChange={(e) => setPayMethod(e.target.value)}
-                  style={{ width: "100%", padding: "12px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem" }}
-                >
-                  <option value="bKash Mobile Banking">bKash Mobile Banking</option>
-                  <option value="Dutch-Bangla Rocket">Dutch-Bangla Rocket</option>
-                  <option value="City Bank Visa Debit">City Bank Visa Debit</option>
-                  <option value="Mastercard Credit">Mastercard Credit</option>
-                  <option value="Neo Digital Wallet">Neo Digital Wallet ({formatTaka(store.balances.walletBalance, false)})</option>
-                </select>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "8px" }}>
-                <button type="button" className="ms-btn-secondary" onClick={() => setSelectedPayFee(null)} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
-                  Cancel
-                </button>
-                <button type="submit" className="ms-btn-primary" disabled={isProcessingPay} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
-                  {isProcessingPay ? "Processing..." : "Confirm & Pay " + formatTaka(selectedPayFee.approvedPartialAmount || selectedPayFee.amount, false)}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <FeePaymentModal
+          fee={{
+            id:                    selectedPayFee.id,
+            title:                 selectedPayFee.title,
+            amount:                selectedPayFee.amount,
+            due_date:              selectedPayFee.dueDate,
+            partial_allowed:       !!selectedPayFee.approvedPartialAmount,
+            ...(selectedPayFee.approvedPartialAmount != null ? { approved_partial_amt: selectedPayFee.approvedPartialAmount } : {}),
+            status:                selectedPayFee.status,
+            category:              selectedPayFee.category,
+          }}
+          institutionId={store.currentSessionUser?.institutionId ?? store.selectedInstitution.name}
+          walletBalance={store.balances.walletBalance}
+          onClose={() => setSelectedPayFee(null)}
+        />
       )}
-
       {/* PARTIAL PAYMENT APPLICATION MODAL */}
       {selectedPartialFee && (
         <div className="ms-modal-overlay">
@@ -2856,8 +2829,24 @@ export function StudentPanel({
             </div>
 
             <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-              <button type="button" className="ms-btn-secondary" onClick={() => { onOpenReceipt(paySuccessTxn); setPaySuccessTxn(null); }} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 700 }}>
-                View Digital Receipt 🧾
+              <button type="button" className="ms-btn-secondary"
+                onClick={() => {
+                  generatePaymentReceipt({
+                    receiptNumber:  paySuccessTxn.receiptNumber ?? "N/A",
+                    transactionId:  paySuccessTxn.id ?? "N/A",
+                    studentName:    store.currentSessionUser?.fullName ?? "Student",
+                    studentId:      store.currentSessionUser?.id ?? "—",
+                    institution:    store.currentSessionUser?.institutionName ?? "—",
+                    paymentFor:     paySuccessTxn.title ?? "Payment",
+                    amount:         paySuccessTxn.amount ?? 0,
+                    method:         paySuccessTxn.method ?? "Online",
+                    status:         "completed",
+                    paidAt:         paySuccessTxn.date ?? new Date().toISOString(),
+                    referenceId:    paySuccessTxn.referenceId,
+                  });
+                }}
+                style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 700 }}>
+                ⬇️ Download PDF Receipt
               </button>
               <button type="button" className="ms-btn-primary" onClick={() => setPaySuccessTxn(null)} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
                 Done
@@ -2867,44 +2856,16 @@ export function StudentPanel({
         </div>
       )}
 
-      {/* TOP UP WALLET MODAL */}
+      {/* TOP UP WALLET MODAL — Phase 3: SSLCommerz */}
       {showTopUpModal && (
-        <div className="ms-modal-overlay">
-          <div className="ms-modal">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Top Up Neo Digital Wallet</h3>
-              <button type="button" onClick={() => setShowTopUpModal(false)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
-                <X size={18} />
-              </button>
-            </div>
-
-            <form onSubmit={handleTopUpSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div>
-                <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>
-                  Amount (৳)
-                </label>
-                <input
-                  type="number"
-                  min="500"
-                  step="500"
-                  value={topUpAmount}
-                  onChange={(e) => setTopUpAmount(Number(e.target.value))}
-                  style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontWeight: 800, fontSize: "1.1rem" }}
-                />
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
-                <button type="button" className="ms-btn-secondary" onClick={() => setShowTopUpModal(false)} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
-                  Cancel
-                </button>
-                <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
-                  Confirm Top-Up of {formatTaka(topUpAmount, false)}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <WalletTopUpModal
+          institutionId={store.currentSessionUser?.institutionId ?? store.selectedInstitution.name}
+          currentBalance={store.balances.walletBalance}
+          onClose={() => setShowTopUpModal(false)}
+        />
       )}
+
+
 
       {/* FEE DETAIL MODAL */}
       {selectedDetailFee && (

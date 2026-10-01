@@ -15,6 +15,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ApiPaymentCancelRouteImport } from './routes/api/payment/cancel'
+import { Route as ApiPaymentFailRouteImport } from './routes/api/payment/fail'
+import { Route as ApiPaymentSuccessRouteImport } from './routes/api/payment/success'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -45,6 +48,21 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPaymentCancelRoute = ApiPaymentCancelRouteImport.update({
+  id: '/api/payment/cancel',
+  path: '/api/payment/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentFailRoute = ApiPaymentFailRouteImport.update({
+  id: '/api/payment/fail',
+  path: '/api/payment/fail',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaymentSuccessRoute = ApiPaymentSuccessRouteImport.update({
+  id: '/api/payment/success',
+  path: '/api/payment/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -52,6 +70,9 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/payment/cancel': typeof ApiPaymentCancelRoute
+  '/api/payment/fail': typeof ApiPaymentFailRoute
+  '/api/payment/success': typeof ApiPaymentSuccessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -59,6 +80,9 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/payment/cancel': typeof ApiPaymentCancelRoute
+  '/api/payment/fail': typeof ApiPaymentFailRoute
+  '/api/payment/success': typeof ApiPaymentSuccessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,12 +92,31 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/api/payment/cancel': typeof ApiPaymentCancelRoute
+  '/api/payment/fail': typeof ApiPaymentFailRoute
+  '/api/payment/success': typeof ApiPaymentSuccessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/reset-password' | '/signup' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/reset-password'
+    | '/signup'
+    | '/dashboard'
+    | '/api/payment/cancel'
+    | '/api/payment/fail'
+    | '/api/payment/success'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/reset-password' | '/signup' | '/dashboard'
+  to:
+    | '/'
+    | '/login'
+    | '/reset-password'
+    | '/signup'
+    | '/dashboard'
+    | '/api/payment/cancel'
+    | '/api/payment/fail'
+    | '/api/payment/success'
   id:
     | '__root__'
     | '/'
@@ -82,6 +125,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/signup'
     | '/_authenticated/dashboard'
+    | '/api/payment/cancel'
+    | '/api/payment/fail'
+    | '/api/payment/success'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -90,6 +136,9 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  ApiPaymentCancelRoute: typeof ApiPaymentCancelRoute
+  ApiPaymentFailRoute: typeof ApiPaymentFailRoute
+  ApiPaymentSuccessRoute: typeof ApiPaymentSuccessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -136,6 +185,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/payment/cancel': {
+      id: '/api/payment/cancel'
+      path: '/api/payment/cancel'
+      fullPath: '/api/payment/cancel'
+      preLoaderRoute: typeof ApiPaymentCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment/fail': {
+      id: '/api/payment/fail'
+      path: '/api/payment/fail'
+      fullPath: '/api/payment/fail'
+      preLoaderRoute: typeof ApiPaymentFailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/payment/success': {
+      id: '/api/payment/success'
+      path: '/api/payment/success'
+      fullPath: '/api/payment/success'
+      preLoaderRoute: typeof ApiPaymentSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -156,6 +226,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  ApiPaymentCancelRoute: ApiPaymentCancelRoute,
+  ApiPaymentFailRoute: ApiPaymentFailRoute,
+  ApiPaymentSuccessRoute: ApiPaymentSuccessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

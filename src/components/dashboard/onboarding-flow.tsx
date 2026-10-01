@@ -14,6 +14,7 @@
 
 import { useState } from "react";
 import { useNeoStore } from "@/lib/neo-cash-store";
+import { IdentityVerificationPanel } from "./identity-verification-panel";
 import {
   Search, ShieldCheck, CheckCircle2, Lock, ArrowRight, Building2,
   Wallet, CreditCard, Sparkles, UserCheck, Phone, Camera, User,
@@ -46,17 +47,20 @@ export const INSTITUTION_DATABASE: DemoInstitution[] = [
 export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
   const [store, actions] = useNeoStore();
   
-  // Step tracker: 1: Search, 2: Verification SSO, 3: Verified Data, 4: Profile Setup, 5: Wallet Creation, 6: Payment Methods, 7: Ready
+  // Step tracker: 1: Search, 2: Verification, 3: Verified Data, 4: Profile Setup, 5: Wallet, 6: Payment Methods, 7: Ready
   const [step, setStep] = useState<number>(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedInst, setSelectedInst] = useState<DemoInstitution>(INSTITUTION_DATABASE[0]!);
 
-  // Step 2 SSO Verification states
+  // Step 2 — verified profile data returned from IdentityVerificationPanel
+  const [verifiedProfile, setVerifiedProfile] = useState<{
+    institutionId: string;
+    institutionName: string;
+    method: string;
+    studentId?: string;
+  } | null>(null);
   const [studentIdInput, setStudentIdInput] = useState(store.studentProfile.studentId);
   const [instEmailInput, setInstEmailInput] = useState(store.studentProfile.email);
-  const [verifying, setVerifying] = useState(false);
-  const [verifyMessage, setVerifyMessage] = useState("");
-  const [verifiedDone, setVerifiedDone] = useState(false);
 
   // Step 4 Profile Setup states
   const [avatarSeed, setAvatarSeed] = useState(store.studentProfile.name.split(" ")[0] || "Student");
@@ -81,56 +85,50 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
       inst.code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  /** Handle initiating demo SSO authentication */
+  /** Handle institution selection — go to verification step */
   const handleStartSSO = (inst: DemoInstitution) => {
     setSelectedInst(inst);
     setStudentIdInput(`${inst.code}-CSE-24-1024`);
     setStep(2);
-    setVerifying(false);
-    setVerifiedDone(false);
+    setVerifiedProfile(null);
   };
 
-  /** Trigger official-looking verification sequence */
-  const runVerificationSequence = () => {
-    setVerifying(true);
-    setVerifiedDone(false);
-    setVerifyMessage(`Connecting to ${selectedInst.name} Identity Gateway…`);
-
-    setTimeout(() => {
-      setVerifyMessage(`Authenticating student credentials (${studentIdInput})…`);
-      setTimeout(() => {
-        setVerifyMessage("Confirming active registration, session & department status…");
-        setTimeout(() => {
-          setVerifyMessage("Verified identity payload returned to Neo Cash AI!");
-          setVerifying(false);
-          setVerifiedDone(true);
-        }, 1100);
-      }, 1100);
-    }, 1000);
+  /** Called by IdentityVerificationPanel when verification succeeds */
+  const handleVerified = (profile: {
+    institutionId: string;
+    institutionName: string;
+    method: string;
+    studentId?: string;
+  }) => {
+    setVerifiedProfile(profile);
+    if (profile.studentId) setStudentIdInput(profile.studentId);
+    setStep(3);
   };
 
   /** Save profile edits and proceed to Wallet creation */
   const handleProfileComplete = () => {
-    // Update central store
+    const instName = verifiedProfile?.institutionName ?? selectedInst.name;
+    const instId   = verifiedProfile?.institutionId   ?? selectedInst.id;
+
     actions.setSelectedInstitution({
-      name: selectedInst.name,
-      type: selectedInst.type,
+      name:     instName,
+      type:     selectedInst.type,
       location: selectedInst.location,
-      logo: selectedInst.logo,
+      logo:     selectedInst.logo,
       verified: true,
     });
 
     actions.updateStudentProfile({
-      name: store.currentSessionUser?.fullName || store.studentProfile.name,
-      studentId: studentIdInput,
-      institution: selectedInst.name,
-      department: "Computer Science & Engineering",
+      name:         store.currentSessionUser?.fullName || store.studentProfile.name,
+      studentId:    verifiedProfile?.studentId ?? studentIdInput,
+      institution:  instName,
+      department:   "Computer Science & Engineering",
       classSection: "1st Year, 2nd Semester",
-      session: "2024–2025",
-      email: instEmailInput,
-      phone: phoneInput,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
-      isVerified: true,
+      session:      "2024–2025",
+      email:        instEmailInput,
+      phone:        phoneInput,
+      avatar:       `https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`,
+      isVerified:   true,
     });
 
     setStep(5);
@@ -305,115 +303,14 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
           </div>
         )}
 
-        {/* STEP 2: INSTITUTION VERIFICATION (SSO GATEWAY) */}
+        {/* STEP 2: INSTITUTIONAL IDENTITY VERIFICATION (Phase 2 — real verification) */}
         {step === 2 && (
-          <div>
-            {/* Conceptual Gateway Header */}
-            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)", padding: "18px 22px", borderRadius: "16px", marginBottom: "24px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <span style={{ fontSize: "2.2rem" }}>{selectedInst.logo}</span>
-                  <div>
-                    <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700, color: "#241A14" }}>{selectedInst.name}</h3>
-                    <p style={{ margin: "2px 0 0", fontSize: "0.8rem", color: "#66564A" }}>Official Identity Gateway (Demo Environment)</p>
-                  </div>
-                </div>
-                <span style={{ fontSize: "0.75rem", background: "#211710", color: "#FF8C42", padding: "4px 10px", borderRadius: "6px", fontWeight: 700 }}>
-                  DEMO OAUTH 2.0
-                </span>
-              </div>
-
-              {/* Conceptual Flow Diagram */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 700, color: "#66564A", borderTop: "1px dashed rgba(196, 154, 108, 0.4)", paddingTop: "12px" }}>
-                <span>Neo Cash AI</span>
-                <span>➔</span>
-                <span>{selectedInst.code} Auth Server</span>
-                <span>➔</span>
-                <span>Identity Verified</span>
-              </div>
-            </div>
-
-            <div style={{ background: "rgba(211, 84, 0, 0.05)", border: "1px solid rgba(211, 84, 0, 0.2)", borderRadius: "12px", padding: "12px 16px", marginBottom: "22px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <ShieldCheck size={20} style={{ color: "#D35400", flexShrink: 0 }} />
-              <p style={{ margin: 0, fontSize: "0.83rem", color: "#241A14" }}>
-                <strong>Security Guarantee:</strong> Neo Cash AI does NOT request or store your institutional password directly. Identity confirmation is handled via official token handshake.
-              </p>
-            </div>
-
-            {!verifying && !verifiedDone && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
-                <div>
-                  <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
-                    Student Roll / ID Number (*)
-                  </label>
-                  <input
-                    type="text"
-                    value={studentIdInput}
-                    onChange={(e) => setStudentIdInput(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "11px 14px",
-                      border: "1px solid rgba(196, 154, 108, 0.4)",
-                      borderRadius: "10px",
-                      fontSize: "0.92rem",
-                      color: "#241A14",
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
-                    Institutional Email Address (*)
-                  </label>
-                  <input
-                    type="email"
-                    value={instEmailInput}
-                    onChange={(e) => setInstEmailInput(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "11px 14px",
-                      border: "1px solid rgba(196, 154, 108, 0.4)",
-                      borderRadius: "10px",
-                      fontSize: "0.92rem",
-                      color: "#241A14",
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {verifying && (
-              <div style={{ background: "#FFF7E6", padding: "32px", borderRadius: "16px", textAlign: "center", border: "1px solid rgba(196, 154, 108, 0.4)", marginBottom: "24px" }}>
-                <div style={{ width: "44px", height: "44px", border: "4px solid rgba(211, 84, 0, 0.2)", borderTopColor: "#D35400", borderRadius: "50%", animation: "spin 0.9s linear infinite", margin: "0 auto 16px" }} />
-                <h4 style={{ margin: "0 0 6px", fontSize: "1.05rem", fontWeight: 700, color: "#241A14" }}>Identity Verification in Progress</h4>
-                <p style={{ margin: 0, fontSize: "0.88rem", color: "#66564A", fontWeight: 600 }}>{verifyMessage}</p>
-              </div>
-            )}
-
-            {verifiedDone && (
-              <div style={{ background: "rgba(4, 120, 87, 0.08)", padding: "28px", borderRadius: "16px", textAlign: "center", border: "1px solid rgba(4, 120, 87, 0.3)", marginBottom: "24px" }}>
-                <ShieldCheck size={48} style={{ color: "#047857", margin: "0 auto 12px" }} />
-                <h4 style={{ margin: "0 0 6px", color: "#047857", fontSize: "1.2rem", fontWeight: 700 }}>Identity Verified Successfully!</h4>
-                <p style={{ margin: "0 0 20px", fontSize: "0.88rem", color: "#66564A" }}>
-                  Active registration confirmed for <strong>{studentIdInput}</strong> at {selectedInst.name}.
-                </p>
-                <button type="button" className="auth-primary" onClick={() => setStep(3)} style={{ width: "auto", padding: "11px 24px" }}>
-                  View Verified Identity Data <ArrowRight size={16} />
-                </button>
-              </div>
-            )}
-
-            {!verifying && !verifiedDone && (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <button type="button" className="auth-inline-link" onClick={() => setStep(1)}>
-                  ← Choose different institution
-                </button>
-                <button type="button" className="auth-primary" onClick={runVerificationSequence} style={{ width: "auto" }}>
-                  Verify Identity via {selectedInst.code} Gateway <ArrowRight size={16} />
-                </button>
-              </div>
-            )}
-          </div>
+          <IdentityVerificationPanel
+            institution={selectedInst}
+            userEmail={store.currentSessionUser?.email ?? store.studentProfile.email}
+            onVerified={handleVerified}
+            onBack={() => setStep(1)}
+          />
         )}
 
         {/* STEP 3: VERIFIED DATA RETURNED */}

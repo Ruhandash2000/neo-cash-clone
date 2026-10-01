@@ -89,7 +89,7 @@ export function LoginModal({
   /** Complete login process and navigate to dashboard */
   const finishLogin = async () => {
     onClose();
-    await navigate({ to: "/dashboard", search: {}, replace: true });
+    await navigate({ to: "/dashboard", search: { payment: undefined, tran_id: undefined, purpose: undefined }, replace: true });
   };
 
   /** Update signup form fields */
@@ -212,11 +212,14 @@ export function LoginModal({
       return;
     }
 
-    const { data: profile } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profileData } = await supabase
       .from("profiles")
       .select("id, username, full_name, role, institution_id, is_demo_user")
       .eq("id", data.user.id)
       .single();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const profile = profileData as any;
     if (!profile || !["student", "admin", "head", "demo_controller"].includes(profile.role)) {
       setStatus({ tone: "error", message: "Your account has not been provisioned with an authorized role." });
       await supabase.auth.signOut();

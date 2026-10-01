@@ -1755,3 +1755,97 @@ button { font: inherit; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Phase 7: PWA + Mobile Polish ──────────────────────────────────────────── */
+
+/* Safe area insets for iPhone notch / Dynamic Island */
+.ms-header {
+  padding-top: max(12px, env(safe-area-inset-top));
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+}
+
+.ms-sidebar {
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+/* PWA standalone: add status bar space at top */
+@media (display-mode: standalone) {
+  .ms-header {
+    padding-top: max(20px, env(safe-area-inset-top));
+    background: rgba(253, 249, 243, 0.98) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .dash-midnight .ms-header {
+    background: rgba(20, 14, 10, 0.98) !important;
+  }
+}
+
+/* Extra small phones (375px and under, e.g. iPhone SE) */
+@media (max-width: 375px) {
+  .ms-content { padding: 12px 10px calc(24px + env(safe-area-inset-bottom)); }
+  .ms-card { padding: 12px; border-radius: 12px; }
+  .ms-header { padding: max(10px, env(safe-area-inset-top)) 12px 10px; }
+  .ms-btn-primary, .ms-btn-secondary { padding: 9px 12px; font-size: 0.85rem; }
+  .ms-nav-item button { font-size: 0.85rem; }
+
+  /* Stat cards → single column */
+  .ms-grid-2, .ms-grid-3, .ms-grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+
+/* Tablet (768px – 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .ms-sidebar { width: 220px; }
+  .ms-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .ms-content { padding: 20px 18px; }
+}
+
+/* Touch: increase tap target sizes globally */
+@media (pointer: coarse) {
+  button, [role="button"], a, select, input[type="checkbox"], input[type="radio"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  .ms-nav-item button { min-height: 48px; }
+  select, input, textarea { font-size: 16px; } /* prevents iOS zoom */
+}
+
+/* Improve scrolling momentum on iOS */
+.ms-content,
+.ms-sidebar,
+.ms-modal,
+.ms-notifications-drawer {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Bottom nav spacing for Android gesture nav bar */
+@media (max-width: 768px) {
+  .ms-content {
+    padding-bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Chart responsive: shrink on mobile */
+@media (max-width: 768px) {
+  /* Analytics charts stack vertically */
+  [class*="recharts-wrapper"] {
+    max-width: 100% !important;
+  }
+
+  /* Fix horizontal scroll in analytics */
+  .recharts-responsive-container {
+    min-height: 180px;
+  }
+}
+
+/* PWA Install Banner animation */
+@keyframes pwaSlideUp {
+  from { transform: translateX(-50%) translateY(24px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}

@@ -8,8 +8,9 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-
 import appCss from "../styles.css?url";
+import { PWAManager } from "@/components/pwa/pwa-manager";
+
 
 /**
  * Fallback component rendered when a route is not found (404).
@@ -82,22 +83,33 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: "Neo Cashless" },
-      { name: "description", content: "Intelligent cashless financial ecosystem." },
+      { name: "description", content: "Intelligent cashless financial ecosystem for educational institutions." },
       { name: "author", content: "Neo Cashless" },
+      // PWA
+      { name: "theme-color", content: "#D35400" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "NeoCash" },
+      { name: "application-name", content: "Neo Cashless" },
+      { name: "msapplication-TileColor", content: "#241A14" },
+      // OG / Twitter
       { property: "og:type", content: "website" },
+      { property: "og:title", content: "Neo Cashless" },
+      { property: "og:description", content: "Intelligent cashless financial ecosystem." },
+      { property: "og:image", content: "/icon-512.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.json" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&family=Nunito+Sans:wght@400;500;600;700&display=swap" },
       { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/icon-192.jpg" },
     ],
   }),
   shellComponent: RootShell,
@@ -125,6 +137,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <PWAManager />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>

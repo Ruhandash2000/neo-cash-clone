@@ -27,7 +27,8 @@ function getRelyingParty() {
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  return supabaseAdmin;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return supabaseAdmin as any;
 }
 
 function toBase64Url(bytes: Uint8Array) {
@@ -43,7 +44,8 @@ async function storeChallenge(input: {
   purpose: "registration" | "authentication";
   userId?: string | null;
 }) {
-  const db = await admin();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = await admin() as any;
   await db.from("webauthn_challenges").insert({
     challenge: input.challenge,
     purpose: input.purpose,
@@ -52,7 +54,8 @@ async function storeChallenge(input: {
 }
 
 async function consumeChallenge(challenge: string, purpose: string) {
-  const db = await admin();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = await admin() as any;
   const { data } = await db
     .from("webauthn_challenges")
     .select("id, expires_at, consumed, user_id")
@@ -89,7 +92,8 @@ export const getRegistrationOptions = createServerFn({ method: "POST" })
         userName: email,
         userDisplayName: email,
         attestationType: "none",
-        excludeCredentials: (existing ?? []).map((credential) => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        excludeCredentials: (existing ?? []).map((credential: any) => ({
           id: credential.credential_id,
           transports: credential.transports as never,
         })),

@@ -1,0 +1,53 @@
+{
+  "name": "Neo Cashless",
+  "short_name": "NeoCash",
+  "description": "Intelligent cashless financial ecosystem for educational institutions.",
+  "start_url": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#241A14",
+  "theme_color": "#D35400",
+  "lang": "en",
+  "scope": "/",
+  "categories": ["finance", "education", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Neo Cashless Student Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Wallet",
+      "short_name": "Wallet",
+      "description": "View and top up your wallet",
+      "url": "/?tab=wallet",
+      "icons": [{ "src": "/icon-192.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pay Fees",
+      "short_name": "Fees",
+      "description": "Pay your institution fees",
+      "url": "/?tab=fees",
+      "icons": [{ "src": "/icon-192.jpg", "sizes": "192x192" }]
+    }
+  ]
+}
