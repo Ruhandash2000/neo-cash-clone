@@ -154,21 +154,10 @@ export function StudentPanel({
   const [partialRequestedAmount, setPartialRequestedAmount] = useState<number>(3000);
 
   const [partialReason, setPartialReason] = useState("");
-
-  const [partialPlan, setPartialPlan] = useState("");
-
   const [guardianName, setGuardianName] = useState("Robert Paul");
-
   const [guardianPhone, setGuardianPhone] = useState("+880 1711-998877");
-
   const [isAiScanning, setIsAiScanning] = useState(false);
-
   const [aiScanResult, setAiScanResult] = useState<{ score: number; status: string } | null>(null);
-
-  const [aiPlanScore, setAiPlanScore] = useState<number | null>(null);
-
-  const [isAnalyzingPlan, setIsAnalyzingPlan] = useState(false);
-
   const [partialSubmitMsg, setPartialSubmitMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // ── Document Verification State ──────────────────────────────────────────────
@@ -351,44 +340,8 @@ export function StudentPanel({
 
 
 
-  /** AI Plan Analysis: scores financial plan 0-100. 90%+ = auto-approve */
-
-  const analyzePlan = () => {
-
-    if (!partialPlan.trim() || !selectedPartialFee) return;
-
-    setIsAnalyzingPlan(true);
-
-    setAiPlanScore(null);
-
-    setTimeout(() => {
-
-      const words = partialPlan.trim().split(/\s+/).length;
-
-      const hasAmount = /\d/.test(partialPlan);
-
-      const hasPeriod = /month|week|instal|semester|pay/i.test(partialPlan);
-
-      const hasReason = partialReason.trim().length > 20;
-
-      const baseScore = Math.min(60 + Math.floor(words / 3), 90);
-
-      const bonus = (hasAmount ? 4 : 0) + (hasPeriod ? 4 : 0) + (hasReason ? 5 : 0);
-
-      setAiPlanScore(Math.min(baseScore + bonus, 99));
-
-      setIsAnalyzingPlan(false);
-
-    }, 1800);
-
-  };
-
-
-
   const handlePartialSubmit = (e: React.FormEvent) => {
-
     e.preventDefault();
-
     if (!selectedPartialFee) return;
 
     if (!partialReason.trim()) {
@@ -415,15 +368,15 @@ export function StudentPanel({
       }
     }
 
-    const isAutoApproved = (aiPlanScore ?? 0) >= 90;
-    const verScore    = docVerificationResult?.similarityScore ?? (VERIFICATION_DEMO_MODE ? 96 : 0);
-    const verVerdict  = docVerificationResult?.verdict         ?? (VERIFICATION_DEMO_MODE ? "verified" : "pending");
-    const verId       = docVerificationResult?.verificationId  ?? tempAppId;
+    const verScore = docVerificationResult?.similarityScore ?? (VERIFICATION_DEMO_MODE ? 96 : 0);
+    const isAutoApproved = verScore >= 90;
+    const verVerdict = docVerificationResult?.verdict ?? (VERIFICATION_DEMO_MODE ? "verified" : "pending");
+    const verId = docVerificationResult?.verificationId ?? tempAppId;
 
     const res = actions.applyPartialPayment({
-      feeId:            selectedPartialFee.id,
-      requestedAmount:  Number(partialRequestedAmount),
-      reason:           partialReason.trim(),
+      feeId: selectedPartialFee.id,
+      requestedAmount: Number(partialRequestedAmount),
+      reason: partialReason.trim(),
       guardianName,
       guardianPhone,
       guardianIdDocUrl: VERIFICATION_DEMO_MODE
@@ -432,31 +385,27 @@ export function StudentPanel({
       signatureDocUrl: VERIFICATION_DEMO_MODE
         ? "demo://Guardian-Signature.png"
         : `verified:id=${verId}`,
-      autoApproved:     isAutoApproved,
-      aiMatchScore:     verScore,
-      aiMatchStatus:    verScore >= 80 ? "Signature Match" : "Needs Review",
+      autoApproved: isAutoApproved,
+      aiMatchScore: verScore,
+      aiMatchStatus: verScore >= 70 ? "Signature Match" : "Needs Review",
     });
 
     if (res.ok) {
       const demoTag = VERIFICATION_DEMO_MODE ? " [Demo Mode]" : "";
       const reviewTag = verVerdict === "manual_review" ? " (Pending manual review of signature)" : "";
       const msg = isAutoApproved
-        ? `🎉 Auto-approved! Your plan scored ${aiPlanScore}% and signature verified at ${verScore.toFixed(0)}%${demoTag}. Partial payment unlocked.`
-        : `✅ Submitted!${reviewTag} Admin & Head notified. You will hear back within 24-48 hours.${demoTag}`;
+        ? `🎉 Auto-approved! Biometric signature verified at ${verScore.toFixed(0)}% (≥90% Auto-Approval threshold met)${demoTag}. Partial payment of ৳${Number(partialRequestedAmount).toLocaleString()} unlocked!`
+        : `✅ Submitted!${reviewTag} Biometric signature verified at ${verScore.toFixed(0)}%. Admin & Head notified for clearance.${demoTag}`;
 
       setPartialSubmitMsg({ ok: true, text: msg });
       setPartialReason("");
-      setPartialPlan("");
       setAiScanResult(null);
-      setAiPlanScore(null);
       setDocVerificationResult(null);
 
-      setTimeout(() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); }, 3500);
-
+      setTimeout(() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); }, 3000);
     } else {
       setPartialSubmitMsg({ ok: false, text: "Failed to submit. Please try again." });
     }
-
   };
 
 
@@ -4358,7 +4307,6 @@ export function StudentPanel({
             if (e.target === e.currentTarget) {
               setSelectedPartialFee(null);
               setPartialSubmitMsg(null);
-              setAiPlanScore(null);
               setDocVerificationResult(null);
             }
           }}
@@ -4374,7 +4322,7 @@ export function StudentPanel({
               </div>
               <button
                 type="button"
-                onClick={() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); setAiPlanScore(null); }}
+                onClick={() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); setDocVerificationResult(null); }}
                 style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", borderRadius: "8px" }}
                 aria-label="Close modal"
               >
@@ -4453,89 +4401,12 @@ export function StudentPanel({
                 />
               </div>
 
-              {/* AI PLAN ANALYSIS SECTION */}
-              <div style={{ background: "linear-gradient(135deg, #FDF9F3, #FFF7ED)", border: "1px solid rgba(196,154,108,0.35)", borderRadius: "14px", padding: "16px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-                  <Sparkles size={16} color="#7C3AED" />
-                  <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#241A14" }}>AI Financial Plan Analysis</span>
-                  <span style={{ fontSize: "0.72rem", padding: "2px 8px", background: "rgba(124,58,237,0.1)", color: "#7C3AED", borderRadius: "999px", fontWeight: 700 }}>Auto-approve at 90%+</span>
-                </div>
-                <p style={{ margin: "0 0 10px", fontSize: "0.78rem", color: "#8C7A6A", lineHeight: 1.5 }}>
-                  Write your repayment plan below. If the AI scores it 90% or above, your partial payment will be <strong style={{ color: "#047857" }}>automatically approved</strong> without waiting for Admin review.
-                </p>
-                <textarea
-                  rows={4}
-                  value={partialPlan}
-                  onChange={(e) => setPartialPlan(e.target.value)}
-                  placeholder={`Example:\n"I will pay the remaining ৳${Math.max(0, selectedPartialFee.amount - partialRequestedAmount).toLocaleString()} in 2 monthly installments of ৳${Math.ceil(Math.max(0, selectedPartialFee.amount - partialRequestedAmount) / 2).toLocaleString()} each — first by [date], second by [date]. My father's monthly income of ৳[X] covers living expenses, and I will use my part-time tutoring income for installments."`}
-                  style={{ width: "100%", padding: "10px 12px", background: "#FFFFFF", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.85rem", resize: "vertical", marginBottom: "10px", boxSizing: "border-box" }}
-                />
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    onClick={analyzePlan}
-                    disabled={isAnalyzingPlan || !partialPlan.trim()}
-                    style={{
-                      background: partialPlan.trim() ? "linear-gradient(135deg, #7C3AED, #9D4EDD)" : "rgba(0,0,0,0.08)",
-                      color: partialPlan.trim() ? "#FFF" : "#9CA3AF",
-                      border: "none", padding: "8px 16px", borderRadius: "8px",
-                      fontSize: "0.8rem", fontWeight: 700, cursor: partialPlan.trim() ? "pointer" : "default",
-                      display: "flex", alignItems: "center", gap: "6px",
-                    }}
-                  >
-                    {isAnalyzingPlan ? (
-                      <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Analyzing Plan…</>
-                    ) : (
-                      <><Sparkles size={13} /> Analyze with AI</>
-                    )}
-                  </button>
-
-                  {aiPlanScore !== null && (
-                    <div style={{
-                      display: "flex", alignItems: "center", gap: "10px", flex: 1,
-                      padding: "8px 12px", borderRadius: "8px",
-                      background: aiPlanScore >= 90 ? "rgba(16,185,129,0.1)" : aiPlanScore >= 70 ? "rgba(245,158,11,0.1)" : "rgba(185,28,28,0.08)",
-                      border: `1px solid ${
-                        aiPlanScore >= 90 ? "rgba(16,185,129,0.3)" :
-                        aiPlanScore >= 70 ? "rgba(245,158,11,0.3)" :
-                        "rgba(185,28,28,0.2)"
-                      }`,
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: aiPlanScore >= 90 ? "#047857" : aiPlanScore >= 70 ? "#92400E" : "#B91C1C" }}>
-                            {aiPlanScore >= 90 ? "✅ Auto-Approved!" : aiPlanScore >= 70 ? "⚠️ Needs Review" : "❌ Improve Plan"}
-                          </span>
-                          <span style={{ fontSize: "0.75rem", fontWeight: 800, color: aiPlanScore >= 90 ? "#047857" : aiPlanScore >= 70 ? "#92400E" : "#B91C1C" }}>
-                            {aiPlanScore}%
-                          </span>
-                        </div>
-                        <div style={{ height: "4px", background: "rgba(0,0,0,0.08)", borderRadius: "2px" }}>
-                          <div style={{
-                            height: "100%", borderRadius: "2px",
-                            width: `${aiPlanScore}%`,
-                            background: aiPlanScore >= 90 ? "#10B981" : aiPlanScore >= 70 ? "#F59E0B" : "#EF4444",
-                            transition: "width 0.5s ease",
-                          }} />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {aiPlanScore !== null && aiPlanScore < 90 && (
-                  <p style={{ margin: "8px 0 0", fontSize: "0.75rem", color: "#8C7A6A" }}>
-                    💡 Tip: Include specific dates, amounts, and income sources to improve your score.
-                  </p>
-                )}
-              </div>
-
               {/* ── REAL AI DOCUMENT & SIGNATURE VERIFICATION ENGINE ──────────
                     DocumentUploadVerifier handles:
-                    1. Upload ID card photo → Supabase Storage
-                    2. Upload signed application form photo → Supabase Storage
+                    1. Upload signed application form photo → Supabase Storage
+                    2. Upload ID card photo (front & back) → Supabase Storage
                     3. Send both to Gemini Vision (Vertex AI) for comparison
-                    4. Return similarity score + verdict + AI reasoning
-                    In VERIFICATION_DEMO_MODE a static badge replaces the UI. */}
+                    4. Return similarity score + verdict + AI reasoning. Scores ≥90% trigger instant auto-approval! */}
               {VERIFICATION_DEMO_MODE ? (
                 <div style={{
                   background: "rgba(4,120,87,0.06)", border: "1.5px solid rgba(4,120,87,0.3)",
@@ -4545,10 +4416,10 @@ export function StudentPanel({
                   <ShieldCheck size={18} style={{ color: "#047857", flexShrink: 0 }} />
                   <div>
                     <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 800, color: "#047857" }}>
-                      ✅ Signature Verified — Demo Mode
+                      ✅ Signature Verified — Demo Mode (Auto-Approved)
                     </p>
                     <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#66564A" }}>
-                      VITE_VERIFICATION_DEMO_MODE=true · Set to false to enable real AI upload
+                      VITE_VERIFICATION_DEMO_MODE=true · High-confidence biometric match detected (96%)
                     </p>
                   </div>
                 </div>
@@ -4570,8 +4441,7 @@ export function StudentPanel({
                 }}>
                   <AlertTriangle size={15} style={{ color: "#D35400", flexShrink: 0, marginTop: "2px" }} />
                   <span>
-                    <strong style={{ color: "#D35400" }}>Required:</strong> Upload both documents above and run the AI
-                    signature check before you can submit your application.
+                    <strong style={{ color: "#D35400" }}>Required:</strong> Upload both documents above (Signed Application Form & ID Card) and run the AI signature check before you can submit your application.
                   </span>
                 </div>
               )}
@@ -4586,9 +4456,7 @@ export function StudentPanel({
                 }}>
                   <AlertCircle size={15} style={{ color: "#D97706", flexShrink: 0, marginTop: "2px" }} />
                   <span>
-                    <strong>Manual Review Flagged:</strong> Your signature match score is in the uncertain range
-                    ({(docVerificationResult.similarityScore ?? 0).toFixed(0)}%). An admin will review your
-                    application before approving. You may still submit.
+                    <strong>Manual Review Flagged:</strong> Your signature match score is in the review range ({(docVerificationResult.similarityScore ?? 0).toFixed(0)}%). An admin will review your application before approving. You may still submit.
                   </span>
                 </div>
               )}
@@ -4600,7 +4468,6 @@ export function StudentPanel({
                   onClick={() => {
                     setSelectedPartialFee(null);
                     setPartialSubmitMsg(null);
-                    setAiPlanScore(null);
                     setDocVerificationResult(null);
                   }}
                   style={{
@@ -4614,7 +4481,8 @@ export function StudentPanel({
                 {(() => {
                   const verPassed = VERIFICATION_DEMO_MODE ||
                     (docVerificationResult?.ok === true && docVerificationResult.verdict !== "rejected");
-                  const planAutoApprove = (aiPlanScore ?? 0) >= 90;
+                  const verScore = docVerificationResult?.similarityScore ?? (VERIFICATION_DEMO_MODE ? 96 : 0);
+                  const isAutoApproved = verScore >= 90;
                   return (
                     <button
                       type="submit"
@@ -4622,17 +4490,26 @@ export function StudentPanel({
                       style={{
                         background: !verPassed
                           ? "rgba(196,154,108,0.3)"
-                          : planAutoApprove
+                          : isAutoApproved
                           ? "linear-gradient(135deg, #047857, #10B981)"
                           : "linear-gradient(135deg, #D35400, #FF8C42)",
                         color: !verPassed ? "#8C7A6A" : "#FFFFFF",
-                        padding: "10px 20px", borderRadius: "10px", fontWeight: 700, border: "none",
+                        padding: "11px 22px", borderRadius: "10px", fontWeight: 700, border: "none",
                         cursor: !verPassed ? "not-allowed" : "pointer",
                         transition: "all 0.2s",
                         display: "flex", alignItems: "center", gap: "6px",
+                        boxShadow: verPassed
+                          ? isAutoApproved
+                            ? "0 4px 14px rgba(16, 185, 129, 0.3)"
+                            : "0 4px 14px rgba(211, 84, 0, 0.25)"
+                          : "none",
                       }}
                     >
-                      {planAutoApprove ? "🎉 Submit & Auto-Approve" : "Submit Application"}
+                      {!verPassed
+                        ? "Upload & Verify Documents First"
+                        : isAutoApproved
+                        ? `🎉 Submit & Auto-Approve (৳${Number(partialRequestedAmount).toLocaleString()})`
+                        : "Submit Application for Review"}
                     </button>
                   );
                 })()}

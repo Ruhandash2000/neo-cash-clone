@@ -13,7 +13,7 @@
 import { useState, useRef } from "react";
 import {
   Upload, ScanLine, CheckCircle2, XCircle, AlertCircle,
-  FileImage, Loader2, ShieldCheck, Eye,
+  FileImage, Loader2, ShieldCheck, Eye, Sparkles,
 } from "lucide-react";
 import { uploadDocument, verifySignatures } from "@/lib/signature-verification.functions";
 import type { SignatureVerificationResult } from "@/lib/signature-verification.functions";
@@ -55,13 +55,15 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 75) return "#047857";
+  if (score >= 90) return "#047857";
+  if (score >= 70) return "#10B981";
   if (score >= 50) return "#D97706";
   return "#DC2626";
 }
 
 function scoreLabel(score: number): string {
-  if (score >= 75) return "High Confidence Match";
+  if (score >= 90) return "Auto-Approved! (≥90% High Confidence Match)";
+  if (score >= 70) return "High Confidence Match — Standard Review";
   if (score >= 50) return "Requires Manual Review";
   return "Low Confidence — Likely Mismatch";
 }
@@ -287,6 +289,20 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
           </p>
         </div>
 
+        {/* Auto-Approval Callout */}
+        {score >= 90 && (
+          <div style={{
+            background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.35)",
+            borderRadius: "10px", padding: "10px 12px", marginBottom: "12px",
+            display: "flex", alignItems: "center", gap: "8px",
+          }}>
+            <Sparkles size={16} style={{ color: "#10B981", flexShrink: 0 }} />
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#047857" }}>
+              🎉 90%+ Match Achieved! Your partial payment will be <strong>automatically approved</strong> upon submission.
+            </span>
+          </div>
+        )}
+
         {/* Verdict badge */}
         <div style={{
           display: "inline-flex", alignItems: "center", gap: "6px",
@@ -299,7 +315,7 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
             ? <XCircle size={14} style={{ color }} />
             : <AlertCircle size={14} style={{ color }} />}
           <span style={{ fontSize: "0.78rem", fontWeight: 800, color, textTransform: "uppercase" }}>
-            {result.verdict === "verified" ? "Verified"
+            {score >= 90 ? "Auto-Approved" : result.verdict === "verified" ? "Verified"
               : result.verdict === "rejected" ? "Rejected"
               : "Manual Review Required"}
           </span>
@@ -327,39 +343,50 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
 
   return (
     <div style={{ marginTop: "4px" }}>
-      {/* Header */}
+      {/* Header with 90%+ Auto-Approval Badge */}
       <div style={{
-        display: "flex", alignItems: "center", gap: "8px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "8px",
         marginBottom: "14px", padding: "12px 14px",
         background: "linear-gradient(135deg, #241A14, #3D2B1F)",
         borderRadius: "12px",
       }}>
-        <ShieldCheck size={18} style={{ color: "#FF8C42" }} />
-        <div>
-          <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 800, color: "#FFFFFF" }}>
-            AI Signature Verification Engine
-          </p>
-          <p style={{ margin: 0, fontSize: "0.72rem", color: "#C49A6C" }}>
-            Powered by Google Gemini Vision · Upload both documents to verify
-          </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <ShieldCheck size={20} style={{ color: "#FF8C42" }} />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 800, color: "#FFFFFF" }}>
+                AI Document & Signature Verification Engine
+              </p>
+              <span style={{
+                fontSize: "0.7rem", padding: "2px 8px",
+                background: "rgba(16, 185, 129, 0.2)", color: "#34D399",
+                borderRadius: "999px", fontWeight: 700, border: "1px solid rgba(16, 185, 129, 0.4)",
+              }}>
+                Auto-approve at 90%+
+              </span>
+            </div>
+            <p style={{ margin: "2px 0 0", fontSize: "0.74rem", color: "#C49A6C" }}>
+              Upload your Signed Application Form and ID Card below. Signatures scoring ≥90% match are automatically approved.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Upload boxes */}
+      {/* Upload boxes: 1. Signed Application Form first, 2. ID Card second */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "14px" }}>
         <UploadBox
-          label="National ID / Student ID"
-          hint="Photo of your ID card (front side)"
-          docType="id_card"
-          state={idCard}
-          inputRef={idRef}
-        />
-        <UploadBox
           label="Signed Application Form"
-          hint="Photo of your signed application"
+          hint="Photo of your signed application form"
           docType="application_form"
           state={appForm}
           inputRef={appRef}
+        />
+        <UploadBox
+          label="National ID / Student ID Card"
+          hint="Photo of your ID card (front & back)"
+          docType="id_card"
+          state={idCard}
+          inputRef={idRef}
         />
       </div>
 
@@ -370,23 +397,24 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
           onClick={() => void handleVerify()}
           disabled={!bothUploaded || verifying}
           style={{
-            width: "100%", padding: "12px",
+            width: "100%", padding: "13px",
             background: bothUploaded && !verifying
-              ? "linear-gradient(135deg, #D35400, #FF8C42)"
+              ? "linear-gradient(135deg, #7C3AED, #9D4EDD)"
               : "rgba(196, 154, 108, 0.3)",
             color: bothUploaded ? "#FFFFFF" : "#8C7A6A",
             border: "none", borderRadius: "12px",
-            fontWeight: 800, fontSize: "0.9rem", cursor: bothUploaded ? "pointer" : "not-allowed",
+            fontWeight: 800, fontSize: "0.92rem", cursor: bothUploaded ? "pointer" : "not-allowed",
             display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+            boxShadow: bothUploaded && !verifying ? "0 4px 16px rgba(124, 58, 237, 0.25)" : "none",
             transition: "all 0.2s",
           }}
         >
           {verifying ? (
             <><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} />
-            Gemini AI is analyzing signatures…</>
+            Gemini AI is analyzing signatures & documents…</>
           ) : (
-            <><ScanLine size={16} />
-            {bothUploaded ? "Run AI Signature Verification" : "Upload both documents first"}</>
+            <><Sparkles size={16} />
+            {bothUploaded ? "Run AI Signature Match & Auto-Check ⚡" : "Upload both documents first"}</>
           )}
         </button>
       )}
