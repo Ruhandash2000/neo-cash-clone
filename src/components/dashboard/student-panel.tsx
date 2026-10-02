@@ -432,6 +432,9 @@ export function StudentPanel({
       signatureDocUrl: VERIFICATION_DEMO_MODE
         ? "demo://Guardian-Signature.png"
         : `verified:id=${verId}`,
+      autoApproved:     isAutoApproved,
+      aiMatchScore:     verScore,
+      aiMatchStatus:    verScore >= 80 ? "Signature Match" : "Needs Review",
     });
 
     if (res.ok) {
@@ -4348,7 +4351,18 @@ export function StudentPanel({
 
       {/* PARTIAL PAYMENT APPLICATION MODAL — with AI Plan Analysis */}
       {selectedPartialFee && (
-        <div className="ms-modal-overlay" style={{ zIndex: 500 }}>
+        <div
+          className="ms-modal-overlay"
+          style={{ zIndex: 500 }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedPartialFee(null);
+              setPartialSubmitMsg(null);
+              setAiPlanScore(null);
+              setDocVerificationResult(null);
+            }
+          }}
+        >
           <div className="ms-modal" style={{ maxWidth: "640px", maxHeight: "90vh", overflowY: "auto" }}>
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "14px", borderBottom: "1px solid rgba(196,154,108,0.25)" }}>
@@ -4358,7 +4372,12 @@ export function StudentPanel({
                   {selectedPartialFee.title} · Full amount: <strong style={{ color: "#D35400" }}>{formatTaka(selectedPartialFee.amount, false)}</strong>
                 </p>
               </div>
-              <button type="button" onClick={() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); setAiPlanScore(null); }} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}>
+              <button
+                type="button"
+                onClick={() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); setAiPlanScore(null); }}
+                style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", borderRadius: "8px" }}
+                aria-label="Close modal"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -4627,7 +4646,7 @@ export function StudentPanel({
 
       {paySuccessTxn && (
 
-        <div className="ms-modal-overlay">
+        <div className="ms-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPaySuccessTxn(null); }}>
 
           <div className="ms-modal" style={{ textAlign: "center" }}>
 
@@ -4747,7 +4766,7 @@ export function StudentPanel({
 
       {selectedDetailFee && (
 
-        <div className="ms-modal-overlay">
+        <div className="ms-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDetailFee(null); }}>
 
           <div className="ms-modal" style={{ maxWidth: "580px" }}>
 
@@ -4775,7 +4794,12 @@ export function StudentPanel({
 
               </div>
 
-              <button type="button" onClick={() => setSelectedDetailFee(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}>
+              <button
+                type="button"
+                onClick={() => setSelectedDetailFee(null)}
+                style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", borderRadius: "8px" }}
+                aria-label="Close modal"
+              >
 
                 <X size={20} />
 
@@ -4999,7 +5023,7 @@ export function StudentPanel({
 
       {selectedDetailTxn && (
 
-        <div className="ms-modal-overlay">
+        <div className="ms-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedDetailTxn(null); }}>
 
           <div className="ms-modal" style={{ maxWidth: "600px" }}>
 
@@ -5043,7 +5067,9 @@ export function StudentPanel({
 
                 onClick={() => setSelectedDetailTxn(null)}
 
-                style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}
+                style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", borderRadius: "8px" }}
+
+                aria-label="Close modal"
 
               >
 

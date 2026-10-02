@@ -57,21 +57,26 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
   const amountFmt = (n: number) => `৳${n.toLocaleString("en-BD")}`;
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 200,
-      background: "rgba(33, 23, 16, 0.75)", backdropFilter: "blur(6px)",
-      display: "grid", placeItems: "center", padding: "20px",
-    }}>
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        background: "rgba(33, 23, 16, 0.75)", backdropFilter: "blur(6px)",
+        display: "grid", placeItems: "center", padding: "20px",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div style={{
         background: "#FFFFFF", borderRadius: "20px", width: "100%", maxWidth: "440px",
         boxShadow: "0 24px 70px rgba(36, 26, 20, 0.28)",
         border: "1px solid rgba(196, 154, 108, 0.35)",
+        maxHeight: "90vh", overflowY: "auto",
       }}>
         {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "22px 24px 20px",
           borderBottom: "1px solid rgba(196, 154, 108, 0.2)",
+          position: "sticky", top: 0, background: "#FFFFFF", zIndex: 1,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{
@@ -89,10 +94,16 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} style={{
-            background: "none", border: "none", color: "#8C7A6A",
-            cursor: "pointer", display: "grid", placeItems: "center",
-          }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: "none", border: "none", color: "#8C7A6A",
+              cursor: "pointer", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center",
+              borderRadius: "8px",
+            }}
+            aria-label="Close modal"
+          >
             <X size={20} />
           </button>
         </div>

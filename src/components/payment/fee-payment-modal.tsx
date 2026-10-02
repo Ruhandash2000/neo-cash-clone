@@ -85,11 +85,14 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
   };
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 200,
-      background: "rgba(33, 23, 16, 0.75)", backdropFilter: "blur(6px)",
-      display: "grid", placeItems: "center", padding: "20px",
-    }}>
+    <div
+      style={{
+        position: "fixed", inset: 0, zIndex: 200,
+        background: "rgba(33, 23, 16, 0.75)", backdropFilter: "blur(6px)",
+        display: "grid", placeItems: "center", padding: "20px",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div style={{
         background: "#FFFFFF", borderRadius: "20px", width: "100%", maxWidth: "460px",
         boxShadow: "0 24px 70px rgba(36, 26, 20, 0.28)",
@@ -119,10 +122,16 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} style={{
-            background: "none", border: "none", color: "#8C7A6A", cursor: "pointer",
-            display: "grid", placeItems: "center",
-          }}>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              background: "none", border: "none", color: "#8C7A6A", cursor: "pointer",
+              minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center",
+              borderRadius: "8px",
+            }}
+            aria-label="Close modal"
+          >
             <X size={20} />
           </button>
         </div>

@@ -3713,8 +3713,11 @@ export function AdminPanel({
 
       {/* REVIEW APPLICATION MODAL */}
       {reviewApp && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "20px", width: "100%", maxWidth: "800px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setReviewApp(null); }}
+        >
+          <div className="ms-modal" style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "20px", width: "100%", maxWidth: "800px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
             
             {/* HEADER */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "12px" }}>
@@ -3726,7 +3729,12 @@ export function AdminPanel({
                   Application ID: <strong style={{ color: "#D35400", fontFamily: "monospace" }}>{reviewApp.id}</strong> • Submitted: {reviewApp.submittedAt || "Recent"}
                 </span>
               </div>
-              <button type="button" onClick={() => setReviewApp(null)} style={{ background: "none", border: "none", color: "#8C7A6A", cursor: "pointer" }}>
+              <button
+                type="button"
+                onClick={() => setReviewApp(null)}
+                style={{ background: "none", border: "none", color: "#8C7A6A", cursor: "pointer", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", borderRadius: "8px" }}
+                aria-label="Close review modal"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -3871,8 +3879,11 @@ export function AdminPanel({
 
       {/* PHASE 12 — STUDENT FINANCIAL DOSSIER & ADMINISTRATIVE EDIT MODAL */}
       {selectedStudentDossier && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "20px", width: "100%", maxWidth: "950px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.25)", display: "flex", flexDirection: "column" }}>
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSelectedStudentDossier(null); }}
+        >
+          <div className="ms-modal" style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", borderRadius: "20px", width: "100%", maxWidth: "950px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.25)", display: "flex", flexDirection: "column" }}>
             
             {/* MODAL HEADER */}
             <div style={{ padding: "20px 24px", background: "#FFF7E6", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
@@ -4820,8 +4831,11 @@ export function AdminPanel({
       )}
 
       {showBulkConfirmModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}>
-          <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "560px", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBulkConfirmModal(false); }}
+        >
+          <div className="ms-modal" style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "560px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
             
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "#FFF7E6", border: "1.5px solid #D35400", display: "flex", alignItems: "center", justifyContent: "center" }}>

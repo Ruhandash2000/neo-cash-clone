@@ -1048,6 +1048,10 @@ export function useNeoStore(): [NeoState, typeof storeActions] {
   return [state, storeActions];
 }
 
+export function getNeoState(): NeoState {
+  return currentState;
+}
+
 export interface DemoStudentProfile {
   id: string;
   name: string;
@@ -1813,11 +1817,18 @@ export const storeActions = {
     guardianPhone: string;
     guardianIdDocUrl: string;
     signatureDocUrl: string;
+    autoApproved?: boolean;
+    aiMatchScore?: number;
+    aiMatchStatus?: "Signature Match" | "Needs Review" | "Mismatch";
   }) {
     const targetFee = currentState.fees.find((f) => f.id === data.feeId);
     if (!targetFee) return { ok: false, error: "Fee not found." };
 
     const appId = "APP-" + Math.floor(1000 + Math.random() * 9000);
+    const isAutoApproved = !!data.autoApproved;
+    const score = data.aiMatchScore ?? 96;
+    const matchStatus = data.aiMatchStatus ?? (score >= 80 ? "Signature Match" : "Needs Review");
+
     const newApp: PartialApplication = {
       id: appId,
       studentName: currentState.studentProfile.name,
@@ -1831,35 +1842,89 @@ export const storeActions = {
       guardianPhone: data.guardianPhone,
       guardianIdDocUrl: data.guardianIdDocUrl || "NID-Uploaded.pdf",
       signatureDocUrl: data.signatureDocUrl || "Signature-Doc.png",
-      aiMatchScore: 96,
-      aiMatchStatus: "Signature Match",
-      status: "pending_admin",
+      aiMatchScore: score,
+      aiMatchStatus: matchStatus,
+      status: isAutoApproved ? "approved_head" : "pending_admin",
       submittedAt: new Date().toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }),
+      ...(isAutoApproved
+        ? {
+            approvedAmount: data.requestedAmount,
+            remainingAmount: Math.max(0, targetFee.amount - data.requestedAmount),
+            newDeadline: "2026-11-15",
+            headNotes: "Auto-Approved by AI Financial Plan Engine (Score ≥ 90%). Installment 1 unlocked.",
+          }
+        : {}),
     };
 
     currentState.partialApplications.unshift(newApp);
-    targetFee.status = "pending_partial";
+
+    if (isAutoApproved) {
+      targetFee.status = "partial_approved";
+      targetFee.approvedPartialAmount = data.requestedAmount;
+      targetFee.partialAllowed = true;
+    } else {
+      targetFee.status = "pending_partial";
+    }
 
     currentState.notifications.unshift({
       id: "notif-" + Date.now(),
-      title: "Partial Payment Submitted",
-      message: `Your application ${appId} for ৳${data.requestedAmount.toLocaleString()} is under Admin review.`,
+      title: isAutoApproved ? "Partial Payment Auto-Approved! 🎉" : "Partial Payment Submitted",
+      message: isAutoApproved
+        ? `Your repayment plan scored ≥90%! Application ${appId} is auto-approved. Pay Installment 1 of ৳${data.requestedAmount.toLocaleString()} now.`
+        : `Your application ${appId} for ৳${data.requestedAmount.toLocaleString()} is under Admin review.`,
       date: "Just now",
-      type: "info",
+      type: isAutoApproved ? "success" : "info",
       read: false,
     });
 
     currentState.auditLogs.unshift({
       id: "log-" + Date.now(),
-      actor: currentState.studentProfile.name,
-      role: "Student",
-      action: "Submitted Partial Payment Application",
-      details: `App ${appId} for ${targetFee.title}. Requested: ৳${data.requestedAmount}. AI Similarity: 96%`,
+      actor: isAutoApproved ? "AI Financial Plan Engine" : currentState.studentProfile.name,
+      role: isAutoApproved ? "System" : "Student",
+      action: isAutoApproved ? "Auto-Approved Partial Payment" : "Submitted Partial Payment Application",
+      details: isAutoApproved
+        ? `App ${appId} auto-approved (Plan score ≥90%). Unlocked ৳${data.requestedAmount} installment for ${targetFee.title}.`
+        : `App ${appId} for ${targetFee.title}. Requested: ৳${data.requestedAmount}. AI Similarity: ${score}%`,
       timestamp: new Date().toLocaleString(),
     });
 
     saveState();
     return { ok: true, application: newApp };
+  },
+
+  /** Head returns partial payment application to Admin review */
+  returnToAdminPartial(appId: string, notes: string) {
+    const app = currentState.partialApplications.find((a) => a.id === appId);
+    if (!app) return { ok: false, error: "Application not found." };
+
+    app.status = "pending_admin";
+    app.changeRequestNotes = notes;
+
+    const targetFee = currentState.fees.find((f) => f.id === app.feeId);
+    if (targetFee) {
+      targetFee.status = "pending_partial";
+    }
+
+    currentState.notifications.unshift({
+      id: "notif-" + Date.now(),
+      title: "Application Returned to Admin Review",
+      message: `Head of Institution returned application ${appId} to Admin for further review: "${notes}".`,
+      date: "Just now",
+      type: "warning",
+      read: false,
+    });
+
+    currentState.auditLogs.unshift({
+      id: "log-" + Date.now(),
+      actor: "Head / Director (Prof. Dr. M. A. Karim)",
+      role: "Head",
+      action: "Returned Application to Admin",
+      details: `App ${appId} for ${app.studentName} returned to Admin review. Note: "${notes}"`,
+      timestamp: new Date().toLocaleString(),
+    });
+
+    saveState();
+    return { ok: true, application: app };
   },
 
   /** Admin forwards partial payment application to Head */
@@ -2112,7 +2177,7 @@ export const storeActions = {
     });
 
     saveState();
-    return { ok: true, transaction: newTxn };
+    return { ok: true, transaction: newTxn, newBalance: currentState.balances.walletBalance };
   },
 
   /** Admin bulk fee assignment */
