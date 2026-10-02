@@ -140,6 +140,15 @@ export function StudentPanel({
 
   // Partial Payment Application Modal State
 
+  /**
+   * VERIFICATION_DEMO_MODE — set VITE_VERIFICATION_DEMO_MODE=true in .env to
+   * bypass the real Supabase upload + Gemini AI call.  In demo mode the
+   * submit button is always enabled and a "Verified — Demo Mode" badge is
+   * shown instead of the upload boxes.
+   */
+  const VERIFICATION_DEMO_MODE =
+    (import.meta.env as Record<string, string>)["VITE_VERIFICATION_DEMO_MODE"] === "true";
+
   const [selectedPartialFee, setSelectedPartialFee] = useState<Fee | null>(null);
 
   const [partialRequestedAmount, setPartialRequestedAmount] = useState<number>(3000);
@@ -161,6 +170,20 @@ export function StudentPanel({
   const [isAnalyzingPlan, setIsAnalyzingPlan] = useState(false);
 
   const [partialSubmitMsg, setPartialSubmitMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // ── Document Verification State ──────────────────────────────────────────────
+  /** Result returned by DocumentUploadVerifier after real AI signature check. */
+  type SignatureVerificationResult = import("@/lib/signature-verification.functions").SignatureVerificationResult;
+  const [docVerificationResult, setDocVerificationResult] = useState<SignatureVerificationResult | null>(null);
+
+  /**
+   * Stable client-side ID for the upcoming partial-payment application.
+   * Passed to DocumentUploadVerifier as partialAppId so the document rows
+   * have a FK reference before the application is formally inserted.
+   */
+  const [tempAppId] = useState<string>(
+    () => `temp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+  );
 
 
 
@@ -369,51 +392,66 @@ export function StudentPanel({
     if (!selectedPartialFee) return;
 
     if (!partialReason.trim()) {
-
       setPartialSubmitMsg({ ok: false, text: "Please enter your reason for partial payment." });
-
       return;
+    }
 
+    // ── Verification gate ─────────────────────────────────────────────────────
+    if (!VERIFICATION_DEMO_MODE) {
+      if (!docVerificationResult || !docVerificationResult.ok) {
+        setPartialSubmitMsg({
+          ok: false,
+          text: "🔒 Document verification is required. Please upload both documents and run the AI signature check first.",
+        });
+        return;
+      }
+      const verScore = docVerificationResult.similarityScore ?? 0;
+      if (docVerificationResult.verdict === "rejected" || verScore < 50) {
+        setPartialSubmitMsg({
+          ok: false,
+          text: `❌ Signature verification failed (score: ${verScore.toFixed(0)}%). Please re-upload clear document images and try again.`,
+        });
+        return;
+      }
     }
 
     const isAutoApproved = (aiPlanScore ?? 0) >= 90;
+    const verScore    = docVerificationResult?.similarityScore ?? (VERIFICATION_DEMO_MODE ? 96 : 0);
+    const verVerdict  = docVerificationResult?.verdict         ?? (VERIFICATION_DEMO_MODE ? "verified" : "pending");
+    const verId       = docVerificationResult?.verificationId  ?? tempAppId;
 
     const res = actions.applyPartialPayment({
-
-      feeId: selectedPartialFee.id,
-
-      requestedAmount: Number(partialRequestedAmount),
-
-      reason: partialReason.trim(),
-
+      feeId:            selectedPartialFee.id,
+      requestedAmount:  Number(partialRequestedAmount),
+      reason:           partialReason.trim(),
       guardianName,
-
       guardianPhone,
-
-      guardianIdDocUrl: "Guardian-NID-Doc.pdf",
-
-      signatureDocUrl: "Guardian-Signature.png",
-
+      guardianIdDocUrl: VERIFICATION_DEMO_MODE
+        ? "demo://Guardian-NID-Doc.pdf"
+        : `verified:score=${verScore.toFixed(0)},verdict=${verVerdict}`,
+      signatureDocUrl: VERIFICATION_DEMO_MODE
+        ? "demo://Guardian-Signature.png"
+        : `verified:id=${verId}`,
     });
 
     if (res.ok) {
-
+      const demoTag = VERIFICATION_DEMO_MODE ? " [Demo Mode]" : "";
+      const reviewTag = verVerdict === "manual_review" ? " (Pending manual review of signature)" : "";
       const msg = isAutoApproved
-
-        ? `🎉 Auto-approved! Your plan scored ${aiPlanScore}% — meets the 90% threshold. Partial payment unlocked.`
-
-        : `✅ Submitted! Admin & Head notified. You will hear back within 24-48 hours.`;
+        ? `🎉 Auto-approved! Your plan scored ${aiPlanScore}% and signature verified at ${verScore.toFixed(0)}%${demoTag}. Partial payment unlocked.`
+        : `✅ Submitted!${reviewTag} Admin & Head notified. You will hear back within 24-48 hours.${demoTag}`;
 
       setPartialSubmitMsg({ ok: true, text: msg });
-
-      setPartialReason(""); setPartialPlan(""); setAiScanResult(null); setAiPlanScore(null);
+      setPartialReason("");
+      setPartialPlan("");
+      setAiScanResult(null);
+      setAiPlanScore(null);
+      setDocVerificationResult(null);
 
       setTimeout(() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); }, 3500);
 
     } else {
-
       setPartialSubmitMsg({ ok: false, text: "Failed to submit. Please try again." });
-
     }
 
   };
@@ -4472,42 +4510,113 @@ export function StudentPanel({
                 )}
               </div>
 
-              {/* AI SIGNATURE ENGINE */}
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#D35400", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <Sparkles size={14} /> Guardian Signature Verification
-                  </span>
-                  <button type="button" onClick={startAiSignatureScan} disabled={isAiScanning} style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "4px 10px", borderRadius: "6px", fontSize: "0.73rem", fontWeight: 700, cursor: "pointer" }}>
-                    {isAiScanning ? "Scanning..." : "Run AI Signature Match"}
-                  </button>
-                </div>
-                {isAiScanning ? (
-                  <p style={{ margin: 0, fontSize: "0.78rem", color: "#D35400" }}>Analyzing signature vector match…</p>
-                ) : aiScanResult ? (
-                  <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", padding: "8px 12px", borderRadius: "8px", color: "#047857", fontSize: "0.8rem", display: "flex", justifyContent: "space-between" }}>
-                    <span>Status: <strong>{aiScanResult.status}</strong></span>
-                    <span>Match: <strong>{aiScanResult.score}%</strong></span>
+              {/* ── REAL AI DOCUMENT & SIGNATURE VERIFICATION ENGINE ──────────
+                    DocumentUploadVerifier handles:
+                    1. Upload ID card photo → Supabase Storage
+                    2. Upload signed application form photo → Supabase Storage
+                    3. Send both to Gemini Vision (Vertex AI) for comparison
+                    4. Return similarity score + verdict + AI reasoning
+                    In VERIFICATION_DEMO_MODE a static badge replaces the UI. */}
+              {VERIFICATION_DEMO_MODE ? (
+                <div style={{
+                  background: "rgba(4,120,87,0.06)", border: "1.5px solid rgba(4,120,87,0.3)",
+                  borderRadius: "12px", padding: "14px",
+                  display: "flex", alignItems: "center", gap: "10px",
+                }}>
+                  <ShieldCheck size={18} style={{ color: "#047857", flexShrink: 0 }} />
+                  <div>
+                    <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 800, color: "#047857" }}>
+                      ✅ Signature Verified — Demo Mode
+                    </p>
+                    <p style={{ margin: "2px 0 0", fontSize: "0.72rem", color: "#66564A" }}>
+                      VITE_VERIFICATION_DEMO_MODE=true · Set to false to enable real AI upload
+                    </p>
                   </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: "0.76rem", color: "#66564A" }}>
-                    Click to verify guardian signature automatically. Document: Guardian-Signature.png
-                  </p>
-                )}
-              </div>
+                </div>
+              ) : (
+                <DocumentUploadVerifier
+                  studentId={store.studentProfile.studentId}
+                  partialAppId={tempAppId}
+                  onVerified={(result) => setDocVerificationResult(result)}
+                />
+              )}
 
+              {/* Warning: verification not yet completed */}
+              {!VERIFICATION_DEMO_MODE && !docVerificationResult && (
+                <div style={{
+                  background: "rgba(211,84,0,0.06)", border: "1px solid rgba(211,84,0,0.2)",
+                  borderRadius: "10px", padding: "10px 14px",
+                  display: "flex", alignItems: "flex-start", gap: "8px",
+                  fontSize: "0.78rem", color: "#66564A",
+                }}>
+                  <AlertTriangle size={15} style={{ color: "#D35400", flexShrink: 0, marginTop: "2px" }} />
+                  <span>
+                    <strong style={{ color: "#D35400" }}>Required:</strong> Upload both documents above and run the AI
+                    signature check before you can submit your application.
+                  </span>
+                </div>
+              )}
+
+              {/* Info: manual review flagged */}
+              {!VERIFICATION_DEMO_MODE && docVerificationResult?.verdict === "manual_review" && (
+                <div style={{
+                  background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)",
+                  borderRadius: "10px", padding: "10px 14px",
+                  display: "flex", alignItems: "flex-start", gap: "8px",
+                  fontSize: "0.78rem", color: "#92400E",
+                }}>
+                  <AlertCircle size={15} style={{ color: "#D97706", flexShrink: 0, marginTop: "2px" }} />
+                  <span>
+                    <strong>Manual Review Flagged:</strong> Your signature match score is in the uncertain range
+                    ({(docVerificationResult.similarityScore ?? 0).toFixed(0)}%). An admin will review your
+                    application before approving. You may still submit.
+                  </span>
+                </div>
+              )}
+
+              {/* Footer actions */}
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", paddingTop: "4px" }}>
-                <button type="button" onClick={() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); setAiPlanScore(null); }} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196,154,108,0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600, cursor: "pointer" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPartialFee(null);
+                    setPartialSubmitMsg(null);
+                    setAiPlanScore(null);
+                    setDocVerificationResult(null);
+                  }}
+                  style={{
+                    background: "#FDF9F3", color: "#241A14",
+                    border: "1px solid rgba(196,154,108,0.3)", padding: "10px 18px",
+                    borderRadius: "10px", fontWeight: 600, cursor: "pointer",
+                  }}
+                >
                   Cancel
                 </button>
-                <button type="submit" style={{
-                  background: (aiPlanScore ?? 0) >= 90
-                    ? "linear-gradient(135deg, #047857, #10B981)"
-                    : "#D35400",
-                  color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700, border: "none", cursor: "pointer",
-                }}>
-                  {(aiPlanScore ?? 0) >= 90 ? "🎉 Submit & Auto-Approve" : "Submit Application"}
-                </button>
+                {(() => {
+                  const verPassed = VERIFICATION_DEMO_MODE ||
+                    (docVerificationResult?.ok === true && docVerificationResult.verdict !== "rejected");
+                  const planAutoApprove = (aiPlanScore ?? 0) >= 90;
+                  return (
+                    <button
+                      type="submit"
+                      disabled={!verPassed}
+                      style={{
+                        background: !verPassed
+                          ? "rgba(196,154,108,0.3)"
+                          : planAutoApprove
+                          ? "linear-gradient(135deg, #047857, #10B981)"
+                          : "linear-gradient(135deg, #D35400, #FF8C42)",
+                        color: !verPassed ? "#8C7A6A" : "#FFFFFF",
+                        padding: "10px 20px", borderRadius: "10px", fontWeight: 700, border: "none",
+                        cursor: !verPassed ? "not-allowed" : "pointer",
+                        transition: "all 0.2s",
+                        display: "flex", alignItems: "center", gap: "6px",
+                      }}
+                    >
+                      {planAutoApprove ? "🎉 Submit & Auto-Approve" : "Submit Application"}
+                    </button>
+                  );
+                })()}
               </div>
             </form>
           </div>
