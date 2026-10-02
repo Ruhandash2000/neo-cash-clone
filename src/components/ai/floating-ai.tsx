@@ -1,224 +1,447 @@
 /**
- * FloatingAI — Always-on AI financial assistant
- * Positioned bottom-LEFT (avoids overlap with mobile tab bar)
- * Chat-bubble shape with dark teal accent matching background
+ * FloatingAI — Global AI Financial Assistant
+ *
+ * Design:
+ *   • Burnt orange (#D35400) color scheme — matching the app brand
+ *   • Positioned BOTTOM-RIGHT (desktop & mobile)
+ *   • Chat-bubble shape: border-radius top-left + bottom corners = round, bottom-right = sharp
+ *   • Carries ALL AI features from the dashboard:
+ *       - Live store data (balance, fees, transactions)
+ *       - Smart contextual responses with action buttons
+ *       - Quick suggestion chips
+ *       - Partial payment, fee payment, wallet top-up, escalation triggers
+ *       - Typing indicator + smooth scroll
  */
-import { useState, useRef, useEffect } from "react";
-import { X, Send, Sparkles, Minimize2, MessageSquare } from "lucide-react";
-import { useNeoStore } from "@/lib/neo-cash-store";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { X, Send, Sparkles, Minimize2, ChevronDown } from "lucide-react";
+import { useNeoStore, Fee } from "@/lib/neo-cash-store";
+import { formatTaka } from "@/components/design-system/tokens";
 import purpleLogo from "@/assets/neo-purple-logo.png";
 
-interface Message {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface ActionBtn {
+  label: string;
+  actionType: "apply_partial" | "pay_fee" | "view_receipts" | "topup_wallet" | "escalate_admin" | "view_fees";
+  feeId?: string;
+}
+interface Msg {
+  id: string;
   role: "user" | "ai";
   text: string;
+  actions?: ActionBtn[];
+  isEscalationNotice?: boolean;
   ts: number;
 }
 
-const AI_RESPONSES: { [key: string]: string } = {
-  balance:   "💰 Your Neo Wallet balance shows your current available funds. Top up via bKash, Rocket, or Nagad in the Wallet tab.",
-  fee:       "📋 All pending fees are listed under the Fees tab. You can pay in full or apply for partial payment if admin-approved.",
-  partial:   "📝 To apply for partial payment, go to Fees → select a fee → tap 'Apply Partial'. Provide a reason and supporting documents. If your financial plan matches 90%+ of the fee, it can be auto-approved.",
-  late:      "⚠️ Overdue fees accumulate a 2% penalty per week. Contact your admin if you need an extension.",
-  receipt:   "🧾 Tap any transaction in the Transactions tab → 'Download PDF Receipt' to get an official receipt.",
-  wallet:    "💳 Neo Wallet lets you store BDT and pay fees instantly. Go to Wallet tab to add payment methods.",
-  topup:     "📲 Top up your wallet from the Wallet tab → 'Top Up Wallet' button. Supports bKash, Nagad, Rocket, card.",
-  document:  "📄 Upload your ID and signature documents in the AI Verification tab. Our AI will verify them instantly.",
-  signature: "✍️ Your digital signature is verified using AI similarity scoring. Upload in the AI tab.",
-  contact:   "📞 Contact your institution admin from the Overview tab → 'Escalate to Admin' button.",
-  verify:    "🎓 Student verification: go to the Verification tab and search for your university or college in Bangladesh to link your student ID.",
-  help:      "🤖 I can help with: balance queries, fee payment, partial payment applications, receipt downloads, document uploads, and wallet top-ups. What do you need?",
-  hi:        "👋 Hello! I'm your Neo Cash AI assistant. How can I help you today?",
-  hello:     "👋 Hi there! I'm here to help with all your financial queries. Ask me anything!",
-  default:   "🤖 I can help with fees, wallet balance, payments, receipts, and documents. Could you rephrase your question?",
+// ─── External action bus ──────────────────────────────────────────────────────
+// Components that want to trigger dashboard actions subscribe to this
+type ExternalAction = {
+  type: "apply_partial" | "pay_fee" | "topup_wallet" | "escalate_admin" | "view_fees" | "view_receipts";
+  feeId?: string;
+};
+type ActionListener = (action: ExternalAction) => void;
+const _listeners = new Set<ActionListener>();
+export const AIBus = {
+  emit: (a: ExternalAction) => _listeners.forEach((l) => l(a)),
+  subscribe: (l: ActionListener) => { _listeners.add(l); return () => _listeners.delete(l); },
 };
 
-function getAIReply(q: string): string {
-  const low = q.toLowerCase();
-  for (const [key, val] of Object.entries(AI_RESPONSES)) {
-    if (low.includes(key)) return val;
+// ─── Smart AI Brain ───────────────────────────────────────────────────────────
+function buildReply(
+  query: string,
+  store: ReturnType<typeof useNeoStore>[0]
+): { text: string; actions: ActionBtn[] } {
+  const q = query.toLowerCase();
+  const unpaid = store.fees?.filter((f: Fee) => f.status !== "paid") ?? [];
+  const primaryFee = unpaid[0] ?? store.fees?.[0];
+  const latestTxn = store.transactions?.[0];
+  const walletBal = store.balances?.walletBalance ?? 0;
+  const totalDue  = store.balances?.totalDue ?? 0;
+  const name = store.studentProfile?.name?.split(" ")[0] ?? "there";
+
+  if (q.match(/hi|hello|hey|salaam|asa/)) {
+    return {
+      text: `👋 Hello ${name}! I'm your Neo AI financial assistant. I can help with fees, partial payments, wallet balance, receipts, and escalations. What do you need today?`,
+      actions: [
+        { label: "📋 Check my fees", actionType: "view_fees" },
+        { label: "💰 My wallet balance", actionType: "topup_wallet" },
+      ],
+    };
   }
-  if (low.includes("pay"))      return AI_RESPONSES["fee"]      ?? "";
-  if (low.includes("money") || low.includes("fund")) return AI_RESPONSES["balance"] ?? "";
-  if (low.includes("upload") || low.includes("nid")) return AI_RESPONSES["document"] ?? "";
-  if (low.includes("student") || low.includes("university") || low.includes("college")) return AI_RESPONSES["verify"] ?? "";
-  return AI_RESPONSES["default"] ?? "";
+
+  if (q.match(/partial|can'?t pay|cannot pay|hardship|installment|split|কিস্তি/)) {
+    return {
+      text: `📝 **Partial Payment** lets you split your fees into installments. Here's how it works:\n\n1. Select an unpaid fee\n2. Enter the amount you can pay now\n3. Write a financial plan\n4. Our AI scores it — **90%+ = auto-approved instantly!**\n\nYou currently have **${unpaid.length}** unpaid fee(s) totaling **${formatTaka(totalDue, false)}**.`,
+      actions: [
+        { label: "📋 Apply Partial Payment", actionType: "apply_partial", ...(primaryFee?.id !== undefined ? { feeId: primaryFee?.id } : {}) },
+        { label: "👤 Talk to Admin", actionType: "escalate_admin" },
+      ],
+    };
+  }
+
+  if (q.match(/due|deadline|when.*pay|pay.*when|overdue|late|penalty/)) {
+    if (primaryFee) {
+      return {
+        text: `⏰ Your next due: **${primaryFee.title}** — **${formatTaka(primaryFee.amount, false)}** due on **${primaryFee.dueDate}**.\n\nYou have **${unpaid.length}** pending fee(s) totalling **${formatTaka(totalDue, false)}**. Late fees attract a 2% penalty per week after the deadline.`,
+        actions: [
+          { label: "💳 Pay Now", actionType: "pay_fee", feeId: primaryFee.id },
+          { label: "📋 Apply Partial", actionType: "apply_partial", feeId: primaryFee.id },
+        ],
+      };
+    }
+    return { text: "✅ Great news! All your fees are paid. No upcoming deadlines.", actions: [] };
+  }
+
+  if (q.match(/fee|dues|tuition|semester|course fee/)) {
+    const feeList = unpaid.slice(0, 3).map((f: Fee) => `• ${f.title}: ${formatTaka(f.amount, false)} (due ${f.dueDate})`).join("\n");
+    return {
+      text: unpaid.length > 0
+        ? `📋 You have **${unpaid.length}** unpaid fee(s):\n\n${feeList}\n\nTotal outstanding: **${formatTaka(totalDue, false)}**`
+        : "✅ All fees paid! No outstanding dues.",
+      actions: unpaid.length > 0 ? [
+        { label: "💳 Pay Fee", actionType: "pay_fee", ...(primaryFee?.id !== undefined ? { feeId: primaryFee?.id } : {}) },
+        { label: "📋 Apply Partial", actionType: "apply_partial", ...(primaryFee?.id !== undefined ? { feeId: primaryFee?.id } : {}) },
+      ] : [],
+    };
+  }
+
+  if (q.match(/wallet|balance|money|fund|bkash|nagad|rocket|topup|top.?up|add.*fund/)) {
+    return {
+      text: `💰 Your **Neo Wallet balance** is **${formatTaka(walletBal, false)}**.\n\nYou can top up via bKash, Nagad, Rocket, or Debit/Credit card. Wallet funds can be used to pay fees instantly without going through the SSLCommerz gateway.`,
+      actions: [
+        { label: "➕ Top Up Wallet", actionType: "topup_wallet" },
+        { label: "💳 Pay Fee with Wallet", actionType: "pay_fee", ...(primaryFee?.id !== undefined ? { feeId: primaryFee?.id } : {}) },
+      ],
+    };
+  }
+
+  if (q.match(/receipt|paid.*proof|transaction|download|pdf|history/)) {
+    return {
+      text: `🧾 Your latest transaction: **${latestTxn?.title ?? "Tuition Fee"}** — Receipt **#${latestTxn?.receiptNumber ?? "REC-982104"}**.\n\nAll receipts are cryptographically signed and stored in the institutional ledger. You can download PDF receipts from the Transactions section.`,
+      actions: [
+        { label: "🧾 View Receipts", actionType: "view_receipts" },
+      ],
+    };
+  }
+
+  if (q.match(/document|nid|signature|guardian|id.*card|upload|verify|proof/)) {
+    return {
+      text: `📄 For a **Partial Payment** application, you'll need:\n\n1. Guardian National ID (NID/Passport photo)\n2. Guardian digital signature (AI vector-matched)\n3. Financial hardship statement\n\nOur AI verifies these instantly using signature similarity scoring.`,
+      actions: [
+        { label: "📋 Open Application Form", actionType: "apply_partial" },
+      ],
+    };
+  }
+
+  if (q.match(/admin|escalat|support|help|complaint|human|contact|talk|problem/)) {
+    return {
+      text: `🆘 I can escalate your request directly to the **Financial Admin**. They'll review your student profile and respond in your notification inbox.\n\nAlternatively, I can help you:\n• Apply for partial payment\n• Check fee deadlines\n• Download receipts`,
+      actions: [
+        { label: "👤 Contact Admin", actionType: "escalate_admin" },
+        { label: "📋 Apply Partial Payment", actionType: "apply_partial" },
+      ],
+    };
+  }
+
+  if (q.match(/notice|policy|rule|penalty|regulation|guideline/)) {
+    return {
+      text: `📢 **Institutional Policy Notice:**\n\n• Late fee penalty: **2% per week** after due date\n• Partial payment requests must be submitted **before** the due date to freeze penalties\n• All partial applications require guardian ID and signature verification\n• Auto-approval threshold: **90%** AI plan score`,
+      actions: [
+        { label: "📋 Apply Before Deadline", actionType: "apply_partial" },
+      ],
+    };
+  }
+
+  if (q.match(/scholarship|burs|discount|waiver|exemption/)) {
+    return {
+      text: `🎓 **Scholarship & Fee Waiver** information:\n\nFor institutional scholarships, bursaries, or fee waivers, you'll need to contact the Financial Admin directly. Our partial payment system can help bridge the gap while your application is being processed.`,
+      actions: [
+        { label: "👤 Contact Admin", actionType: "escalate_admin" },
+      ],
+    };
+  }
+
+  // Default contextual fallback
+  return {
+    text: `🤖 I can help you with:\n\n• **Fees & deadlines** — check what's due\n• **Partial payments** — split fees into installments\n• **Wallet** — check balance or top up\n• **Receipts** — download payment proofs\n• **Admin escalation** — get human support\n\nYou currently owe **${formatTaka(totalDue, false)}** and have **${formatTaka(walletBal, false)}** in your wallet. What would you like to do?`,
+    actions: [
+      { label: "📋 View Fees", actionType: "view_fees" },
+      { label: "➕ Top Up Wallet", actionType: "topup_wallet" },
+      { label: "👤 Contact Admin", actionType: "escalate_admin" },
+    ],
+  };
 }
 
+// ─── Quick chip suggestions ───────────────────────────────────────────────────
+const QUICK_CHIPS = [
+  "Check my fees",
+  "Can't pay full tuition",
+  "My wallet balance",
+  "Download receipt",
+  "Talk to admin",
+  "Fee deadline",
+];
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export function FloatingAI() {
   const [store] = useNeoStore();
-  const [isOpen, setIsOpen]           = useState(false);
+  const [isOpen, setIsOpen]         = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [input, setInput]             = useState("");
-  const [messages, setMessages]       = useState<Message[]>([
-    { role: "ai", text: `👋 Hi ${store.studentProfile.name?.split(" ")[0] ?? "there"}! I'm Neo AI. Ask about fees, payments, or your wallet.`, ts: Date.now() },
-  ]);
-  const [typing, setTyping]   = useState(false);
-  const [pulse, setPulse]     = useState(true);
-  const endRef                = useRef<HTMLDivElement>(null);
+  const [input, setInput]           = useState("");
+  const [typing, setTyping]         = useState(false);
+  const [pulse, setPulse]           = useState(true);
+  const [unread, setUnread]         = useState(0);
+  const [messages, setMessages]     = useState<Msg[]>([]);
+  const endRef    = useRef<HTMLDivElement>(null);
+  const inputRef  = useRef<HTMLInputElement>(null);
 
+  // Init greeting once store is loaded
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const name = store.studentProfile?.name?.split(" ")[0] ?? "there";
+    setMessages([{
+      id: "init",
+      role: "ai",
+      text: `👋 Hi ${name}! I'm Neo AI — your financial assistant. I can help with fees, partial payments, wallet balance, receipts, and admin escalations.`,
+      actions: [
+        { label: "📋 View my fees", actionType: "view_fees" },
+        { label: "💰 My wallet", actionType: "topup_wallet" },
+      ],
+      ts: Date.now(),
+    }]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.studentProfile?.name]);
 
-  useEffect(() => {
-    if (isOpen) setPulse(false);
-  }, [isOpen]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, typing]);
+  useEffect(() => { if (isOpen) { setPulse(false); setUnread(0); inputRef.current?.focus(); } }, [isOpen]);
 
-  const sendMessage = () => {
-    const q = input.trim();
-    if (!q) return;
-    setMessages((prev) => [...prev, { role: "user", text: q, ts: Date.now() }]);
+  const send = useCallback((q?: string) => {
+    const text = (q ?? input).trim();
+    if (!text) return;
     setInput("");
+
+    setMessages(prev => [...prev, { id: `u-${Date.now()}`, role: "user", text, ts: Date.now() }]);
     setTyping(true);
+
     setTimeout(() => {
-      setMessages((prev) => [...prev, { role: "ai", text: getAIReply(q), ts: Date.now() }]);
+      const reply = buildReply(text, store);
+      setMessages(prev => [...prev, { id: `a-${Date.now()}`, role: "ai", ts: Date.now(), ...reply }]);
       setTyping(false);
-    }, 700 + Math.random() * 600);
+      if (!isOpen) setUnread(u => u + 1);
+    }, 600 + Math.random() * 500);
+  }, [input, store, isOpen]);
+
+  const handleAction = (action: ActionBtn) => {
+    const act: ExternalAction = { type: action.actionType };
+    if (action.feeId !== undefined) act.feeId = action.feeId;
+    AIBus.emit(act);
+    const labels: Record<string, string> = {
+      apply_partial:  "Opening Partial Payment form…",
+      pay_fee:        "Opening payment screen…",
+      topup_wallet:   "Opening Wallet Top-Up…",
+      escalate_admin: "Opening Admin Escalation…",
+      view_receipts:  "Navigating to Transactions…",
+      view_fees:      "Navigating to Fees & Dues…",
+    };
+    setMessages(prev => [...prev, {
+      id: `sys-${Date.now()}`, role: "ai", ts: Date.now(),
+      text: `✅ ${labels[action.actionType] ?? "Done!"}`,
+      actions: [],
+    }]);
   };
 
-  // Position: bottom-left on mobile (above bottom nav), bottom-left on desktop
-  const orbBottom = "calc(72px + env(safe-area-inset-bottom, 0px))";
-  const chatBottom = "calc(72px + 8px + env(safe-area-inset-bottom, 0px))";
+  // Orange color constants
+  const O = "#D35400";
+  const OLight = "rgba(211,84,0,0.12)";
+  const OBorder = "rgba(211,84,0,0.3)";
 
   return (
     <>
-      {/* FLOATING BUTTON — chat-bubble shape */}
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className={pulse ? "floating-ai-orb neo-ai-pulse" : "floating-ai-orb"}
-          aria-label="Open AI Assistant"
-          title="Ask Neo AI"
-          style={{
-            position: "fixed",
-            bottom: orbBottom,
-            left: "16px",            // ← LEFT side
-            right: "auto",
-            zIndex: 999,
-            width: "52px",
-            height: "48px",
-            // Chat bubble shape via border-radius
-            borderRadius: "16px 16px 16px 4px",
-            background: "linear-gradient(135deg, #0a2a3a 0%, #0d3d52 100%)",
-            border: "1.5px solid rgba(5, 209, 148, 0.35)",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 20px rgba(5, 209, 148, 0.22), 0 0 0 1px rgba(5,209,148,0.08)",
-            transition: "transform 0.2s, box-shadow 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.08)";
-            e.currentTarget.style.boxShadow = "0 6px 28px rgba(5,209,148,0.38), 0 0 0 1px rgba(5,209,148,0.15)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.style.boxShadow = "0 4px 20px rgba(5,209,148,0.22), 0 0 0 1px rgba(5,209,148,0.08)";
-          }}
-        >
-          <MessageSquare size={20} color="#05D194" />
-        </button>
-      )}
+      {/* ── FLOATING BUTTON ─────────────────────────────────────────── */}
+      <button
+        type="button"
+        onClick={() => setIsOpen(o => !o)}
+        aria-label="Open Neo AI Assistant"
+        title="Ask Neo AI"
+        style={{
+          position: "fixed",
+          bottom: "calc(72px + env(safe-area-inset-bottom, 0px))",
+          right: "16px",
+          left: "auto",
+          zIndex: 999,
+          width: "52px",
+          height: "48px",
+          // Chat-bubble: sharp corner bottom-right
+          borderRadius: "16px 16px 4px 16px",
+          background: `linear-gradient(135deg, ${O} 0%, #B84A00 100%)`,
+          border: `1.5px solid rgba(255,140,66,0.4)`,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: `0 4px 20px rgba(211,84,0,0.4), 0 0 0 1px rgba(211,84,0,0.15)`,
+          transition: "transform 0.2s, box-shadow 0.2s",
+          animation: pulse && !isOpen ? "neo-ai-orb-pulse 2.4s ease infinite" : "none",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.08)";
+          e.currentTarget.style.boxShadow = `0 6px 28px rgba(211,84,0,0.55), 0 0 0 2px rgba(211,84,0,0.2)`;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = `0 4px 20px rgba(211,84,0,0.4), 0 0 0 1px rgba(211,84,0,0.15)`;
+        }}
+      >
+        {isOpen
+          ? <ChevronDown size={20} color="#FFF" />
+          : <Sparkles size={20} color="#FFF" />
+        }
+        {/* Unread badge */}
+        {!isOpen && unread > 0 && (
+          <div style={{
+            position: "absolute", top: "-4px", right: "-4px",
+            background: "#EF4444", color: "#FFF",
+            fontSize: "0.6rem", fontWeight: 800,
+            minWidth: "17px", height: "17px", borderRadius: "999px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "0 3px", border: "2px solid #FFF",
+          }}>{unread > 9 ? "9+" : unread}</div>
+        )}
+      </button>
 
-      {/* CHAT PANEL */}
+      {/* ── CHAT PANEL ──────────────────────────────────────────────── */}
       {isOpen && (
         <div
           style={{
             position: "fixed",
-            bottom: chatBottom,
-            left: "12px",           // ← LEFT side
-            right: "auto",
+            bottom: "calc(72px + 8px + env(safe-area-inset-bottom, 0px))",
+            right: "12px",
+            left: "auto",
             zIndex: 1001,
-            width: "clamp(300px, 90vw, 360px)",
-            background: "#0d1b2a",
-            borderRadius: "16px 16px 16px 4px",  // chat-bubble shape
-            boxShadow: "0 12px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(5,209,148,0.15)",
-            border: "1px solid rgba(5,209,148,0.15)",
+            width: "clamp(300px, 92vw, 370px)",
+            borderRadius: "16px 16px 4px 16px",   // chat-bubble: sharp bottom-right
+            boxShadow: "0 16px 64px rgba(0,0,0,0.45), 0 0 0 1px rgba(211,84,0,0.2)",
+            border: `1px solid ${OBorder}`,
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            maxHeight: isMinimized ? "56px" : "min(500px, 70vh)",
-            transition: "max-height 0.3s ease",
+            maxHeight: isMinimized ? "56px" : "min(520px, 72vh)",
+            transition: "max-height 0.3s cubic-bezier(0.4,0,0.2,1)",
+            background: "#1A0E06",
           }}
         >
           {/* HEADER */}
           <div style={{
-            background: "linear-gradient(135deg, #0a2a3a 0%, #0d3d52 100%)",
-            padding: "10px 14px",
+            background: `linear-gradient(135deg, ${O} 0%, #9E3D00 100%)`,
+            padding: "11px 14px",
             display: "flex",
             alignItems: "center",
             gap: "10px",
             flexShrink: 0,
-            borderBottom: "1px solid rgba(5,209,148,0.12)",
-          }}>
+            cursor: isMinimized ? "pointer" : "default",
+          }} onClick={() => isMinimized && setIsMinimized(false)}>
             <div style={{
-              width: "30px", height: "30px", borderRadius: "10px",
-              background: "rgba(5,209,148,0.15)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
+              width: "32px", height: "32px", borderRadius: "10px",
+              background: "rgba(255,255,255,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>
               <img src={purpleLogo} alt="" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ color: "#E0F7F3", fontWeight: 700, fontSize: "0.85rem", lineHeight: 1.2 }}>Neo AI Assistant</div>
-              <div style={{ color: "#05D194", fontSize: "0.68rem", display: "flex", alignItems: "center", gap: "4px" }}>
-                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#05D194", display: "inline-block" }} />
-                Online · Always here
+              <div style={{ color: "#FFF", fontWeight: 800, fontSize: "0.88rem", lineHeight: 1.2 }}>Neo AI Assistant</div>
+              <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.68rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#FFF", display: "inline-block", opacity: 0.9 }} />
+                Online · Always available
               </div>
             </div>
-            <button type="button" onClick={() => setIsMinimized(!isMinimized)}
-              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", padding: "4px", borderRadius: "6px" }}>
-              <Minimize2 size={14} />
+            <button type="button" onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); }}
+              style={{ background: "rgba(255,255,255,0.15)", border: "none", color: "#FFF", cursor: "pointer", padding: "5px", borderRadius: "6px", display: "flex" }}>
+              <Minimize2 size={13} />
             </button>
             <button type="button" onClick={() => setIsOpen(false)}
-              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", padding: "4px", borderRadius: "6px" }}>
-              <X size={14} />
+              style={{ background: "rgba(255,255,255,0.15)", border: "none", color: "#FFF", cursor: "pointer", padding: "5px", borderRadius: "6px", display: "flex" }}>
+              <X size={13} />
             </button>
           </div>
 
           {!isMinimized && (
             <>
               {/* MESSAGES */}
-              <div style={{
-                flex: 1, overflowY: "auto", padding: "12px",
-                display: "flex", flexDirection: "column", gap: "8px",
-                background: "#0d1b2a",
+              <div className="neo-ai-scroll" style={{
+                flex: 1, overflowY: "auto", padding: "12px 10px",
+                display: "flex", flexDirection: "column", gap: "10px",
+                background: "#1A0E06",
               }}>
                 {messages.map((msg) => (
-                  <div key={msg.ts} style={{
+                  <div key={msg.id} style={{
                     display: "flex",
-                    justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                    flexDirection: "column",
+                    alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+                    gap: "4px",
                   }}>
+                    {/* Bubble */}
                     <div style={{
-                      maxWidth: "82%",
+                      maxWidth: "85%",
                       background: msg.role === "user"
-                        ? "linear-gradient(135deg, #0a2a3a, #0d4a60)"
+                        ? `linear-gradient(135deg, ${O}, #9E3D00)`
                         : "rgba(255,255,255,0.06)",
-                      color: msg.role === "user" ? "#E0F7F3" : "#CBD5E1",
+                      color: msg.role === "user" ? "#FFF" : "#E8D5C4",
                       border: msg.role === "user"
-                        ? "1px solid rgba(5,209,148,0.2)"
-                        : "1px solid rgba(255,255,255,0.06)",
+                        ? "1px solid rgba(255,140,66,0.3)"
+                        : "1px solid rgba(255,255,255,0.07)",
                       padding: "9px 13px",
                       borderRadius: msg.role === "user"
                         ? "14px 14px 4px 14px"
                         : "14px 14px 14px 4px",
                       fontSize: "0.82rem",
-                      lineHeight: 1.5,
-                      fontWeight: 400,
+                      lineHeight: 1.55,
+                      whiteSpace: "pre-wrap",
                     }}>
+                      {msg.isEscalationNotice && (
+                        <div style={{ fontSize: "0.7rem", color: "rgba(255,165,0,0.9)", fontWeight: 700, marginBottom: "3px" }}>
+                          📨 ESCALATION NOTICE
+                        </div>
+                      )}
                       {msg.text}
                     </div>
+
+                    {/* Action buttons */}
+                    {(msg.actions?.length ?? 0) > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", maxWidth: "90%" }}>
+                        {msg.actions!.map((action, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => handleAction(action)}
+                            style={{
+                              background: OLight,
+                              border: `1px solid ${OBorder}`,
+                              borderRadius: "8px",
+                              padding: "5px 10px",
+                              fontSize: "0.74rem",
+                              color: "#FF9F5A",
+                              cursor: "pointer",
+                              fontWeight: 700,
+                              transition: "background 0.15s",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(211,84,0,0.22)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = OLight)}
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
+
+                {/* Typing dots */}
                 {typing && (
-                  <div style={{ display: "flex", gap: "5px", padding: "4px 8px" }}>
+                  <div style={{ display: "flex", gap: "5px", padding: "4px 8px", alignItems: "center" }}>
                     {[0.1, 0.2, 0.3].map((d) => (
                       <div key={d} style={{
-                        width: "6px", height: "6px", borderRadius: "50%",
-                        background: "#05D194", opacity: 0.5,
-                        animation: `ai-bounce 1.2s ${d}s infinite`,
+                        width: "7px", height: "7px", borderRadius: "50%",
+                        background: O, opacity: 0.6,
+                        animation: `neo-ai-bounce 1.2s ${d}s infinite`,
                       }} />
                     ))}
                   </div>
@@ -226,31 +449,33 @@ export function FloatingAI() {
                 <div ref={endRef} />
               </div>
 
-              {/* QUICK SUGGESTIONS */}
+              {/* QUICK CHIPS */}
               <div style={{
-                display: "flex", gap: "5px", padding: "8px 10px 0",
-                overflowX: "auto", background: "rgba(0,0,0,0.2)", flexShrink: 0,
+                display: "flex", gap: "5px", padding: "7px 10px 0",
+                overflowX: "auto", flexShrink: 0,
+                background: "rgba(0,0,0,0.25)",
               }}>
-                {["Check my balance", "Pay a fee", "Partial payment", "Verify student ID"].map((s) => (
+                {QUICK_CHIPS.map((chip) => (
                   <button
-                    key={s} type="button"
-                    onClick={() => setInput(s)}
+                    key={chip} type="button"
+                    onClick={() => send(chip)}
                     style={{
                       flexShrink: 0,
-                      background: "rgba(5,209,148,0.08)",
-                      border: "1px solid rgba(5,209,148,0.2)",
+                      background: OLight,
+                      border: `1px solid ${OBorder}`,
                       borderRadius: "999px",
                       padding: "3px 9px",
                       fontSize: "0.71rem",
-                      color: "#05D194",
+                      color: "#FF9F5A",
                       cursor: "pointer",
                       fontWeight: 600,
                       whiteSpace: "nowrap",
-                      transition: "background 0.15s",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(5,209,148,0.15)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(5,209,148,0.08)")}
-                  >{s}</button>
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(211,84,0,0.22)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = OLight)}
+                  >
+                    {chip}
+                  </button>
                 ))}
               </div>
 
@@ -258,33 +483,34 @@ export function FloatingAI() {
               <div style={{
                 display: "flex", gap: "6px", padding: "8px 10px",
                 background: "rgba(0,0,0,0.3)",
-                borderTop: "1px solid rgba(255,255,255,0.06)",
+                borderTop: `1px solid rgba(211,84,0,0.12)`,
                 flexShrink: 0,
               }}>
                 <input
+                  ref={inputRef}
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  placeholder="Ask about fees, payments…"
+                  onKeyDown={(e) => e.key === "Enter" && send()}
+                  placeholder="Ask about fees, payments, receipts…"
                   style={{
                     flex: 1,
-                    border: "1px solid rgba(5,209,148,0.2)",
+                    border: `1px solid ${OBorder}`,
                     borderRadius: "12px",
                     padding: "8px 11px",
                     fontSize: "0.82rem",
                     outline: "none",
-                    background: "rgba(5,209,148,0.05)",
-                    color: "#E0F7F3",
+                    background: "rgba(211,84,0,0.06)",
+                    color: "#E8D5C4",
                   }}
                 />
                 <button
                   type="button"
-                  onClick={sendMessage}
+                  onClick={() => send()}
                   disabled={!input.trim()}
                   style={{
-                    background: input.trim() ? "rgba(5,209,148,0.2)" : "rgba(255,255,255,0.05)",
-                    border: `1px solid ${input.trim() ? "rgba(5,209,148,0.4)" : "rgba(255,255,255,0.1)"}`,
+                    background: input.trim() ? `linear-gradient(135deg, ${O}, #9E3D00)` : "rgba(255,255,255,0.05)",
+                    border: `1px solid ${input.trim() ? OBorder : "rgba(255,255,255,0.08)"}`,
                     borderRadius: "12px",
                     width: "38px", height: "38px",
                     display: "flex", alignItems: "center", justifyContent: "center",
@@ -293,7 +519,7 @@ export function FloatingAI() {
                     flexShrink: 0,
                   }}
                 >
-                  <Send size={15} color={input.trim() ? "#05D194" : "#4B5563"} />
+                  <Send size={15} color={input.trim() ? "#FFF" : "#6B7280"} />
                 </button>
               </div>
             </>
@@ -302,28 +528,20 @@ export function FloatingAI() {
       )}
 
       <style>{`
-        /* AI orb pulse — teal glow */
-        @keyframes neo-ai-pulse-anim {
-          0%, 100% { box-shadow: 0 4px 16px rgba(5,209,148,0.22), 0 0 0 1px rgba(5,209,148,0.08); }
-          50%       { box-shadow: 0 4px 28px rgba(5,209,148,0.45), 0 0 0 4px rgba(5,209,148,0.12); transform: scale(1.06); }
+        @keyframes neo-ai-orb-pulse {
+          0%, 100% { box-shadow: 0 4px 16px rgba(211,84,0,0.4), 0 0 0 1px rgba(211,84,0,0.15); }
+          50%       { box-shadow: 0 4px 28px rgba(211,84,0,0.65), 0 0 0 5px rgba(211,84,0,0.12); transform: scale(1.06); }
         }
-        .floating-ai-orb.neo-ai-pulse {
-          animation: neo-ai-pulse-anim 2.4s ease infinite;
-        }
-        @keyframes ai-bounce {
+        @keyframes neo-ai-bounce {
           0%, 100% { transform: translateY(0); opacity: 0.5; }
           50%       { transform: translateY(-4px); opacity: 1; }
         }
-        /* Thin scrollbar for AI chat */
-        .ai-chat-messages::-webkit-scrollbar { width: 3px; }
-        .ai-chat-messages::-webkit-scrollbar-track { background: transparent; }
-        .ai-chat-messages::-webkit-scrollbar-thumb { background: rgba(5,209,148,0.2); border-radius: 3px; }
-
-        /* On desktop, AI orb above sidebar — no overlap */
+        .neo-ai-scroll::-webkit-scrollbar { width: 3px; }
+        .neo-ai-scroll::-webkit-scrollbar-track { background: transparent; }
+        .neo-ai-scroll::-webkit-scrollbar-thumb { background: rgba(211,84,0,0.3); border-radius: 3px; }
         @media (min-width: 768px) {
-          .floating-ai-orb {
-            bottom: 24px !important;
-          }
+          /* On desktop, lift above the "fixed footer" area */
+          .floating-ai-btn { bottom: 24px !important; }
         }
       `}</style>
     </>
