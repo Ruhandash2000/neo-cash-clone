@@ -1,9 +1,10 @@
 /**
- * FloatingAI — Always-on AI financial assistant bubble
- * Visible across ALL panels. Tap the orb to open.
+ * FloatingAI — Always-on AI financial assistant
+ * Positioned bottom-LEFT (avoids overlap with mobile tab bar)
+ * Chat-bubble shape with dark teal accent matching background
  */
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Sparkles, Bot, ChevronDown, Minimize2 } from "lucide-react";
+import { X, Send, Sparkles, Minimize2, MessageSquare } from "lucide-react";
 import { useNeoStore } from "@/lib/neo-cash-store";
 import purpleLogo from "@/assets/neo-purple-logo.png";
 
@@ -14,20 +15,21 @@ interface Message {
 }
 
 const AI_RESPONSES: { [key: string]: string } = {
-  balance:     "💰 Your Neo Wallet balance shows your current available funds. Top up via bKash, Rocket, or Nagad in the Wallet tab.",
-  fee:         "📋 All pending fees are listed under the Fees tab. You can pay in full or apply for partial payment if admin-approved.",
-  partial:     "📝 To apply for partial payment, go to Fees → select a fee → tap 'Apply Partial'. Provide a reason and supporting documents.",
-  late:        "⚠️ Overdue fees accumulate a 2% penalty per week. Contact your admin if you need an extension.",
-  receipt:     "🧾 Tap any transaction in the Transactions tab → 'Download PDF Receipt' to get an official receipt.",
-  wallet:      "💳 Neo Wallet lets you store BDT and pay fees instantly. Go to Wallet tab to add payment methods.",
-  topup:       "📲 Top up your wallet from the Wallet tab → 'Top Up Wallet' button. Supports bKash, Nagad, Rocket, card.",
-  document:    "📄 Upload your ID and signature documents in the AI Verification tab. Our AI will verify them instantly.",
-  signature:   "✍️ Your digital signature is verified using AI similarity scoring. Upload in the AI tab.",
-  contact:     "📞 Contact your institution admin from the Overview tab → 'Escalate to Admin' button.",
-  help:        "🤖 I can help with: balance queries, fee payment, partial payment applications, receipt downloads, document uploads, and wallet top-ups. What do you need?",
-  hi:          "👋 Hello! I'm your Neo Cash AI assistant. How can I help you today?",
-  hello:       "👋 Hi there! I'm here to help with all your financial queries. Ask me anything!",
-  default:     "🤖 I can help with fees, wallet balance, payments, receipts, and documents. Could you rephrase your question?",
+  balance:   "💰 Your Neo Wallet balance shows your current available funds. Top up via bKash, Rocket, or Nagad in the Wallet tab.",
+  fee:       "📋 All pending fees are listed under the Fees tab. You can pay in full or apply for partial payment if admin-approved.",
+  partial:   "📝 To apply for partial payment, go to Fees → select a fee → tap 'Apply Partial'. Provide a reason and supporting documents. If your financial plan matches 90%+ of the fee, it can be auto-approved.",
+  late:      "⚠️ Overdue fees accumulate a 2% penalty per week. Contact your admin if you need an extension.",
+  receipt:   "🧾 Tap any transaction in the Transactions tab → 'Download PDF Receipt' to get an official receipt.",
+  wallet:    "💳 Neo Wallet lets you store BDT and pay fees instantly. Go to Wallet tab to add payment methods.",
+  topup:     "📲 Top up your wallet from the Wallet tab → 'Top Up Wallet' button. Supports bKash, Nagad, Rocket, card.",
+  document:  "📄 Upload your ID and signature documents in the AI Verification tab. Our AI will verify them instantly.",
+  signature: "✍️ Your digital signature is verified using AI similarity scoring. Upload in the AI tab.",
+  contact:   "📞 Contact your institution admin from the Overview tab → 'Escalate to Admin' button.",
+  verify:    "🎓 Student verification: go to the Verification tab and search for your university or college in Bangladesh to link your student ID.",
+  help:      "🤖 I can help with: balance queries, fee payment, partial payment applications, receipt downloads, document uploads, and wallet top-ups. What do you need?",
+  hi:        "👋 Hello! I'm your Neo Cash AI assistant. How can I help you today?",
+  hello:     "👋 Hi there! I'm here to help with all your financial queries. Ask me anything!",
+  default:   "🤖 I can help with fees, wallet balance, payments, receipts, and documents. Could you rephrase your question?",
 };
 
 function getAIReply(q: string): string {
@@ -35,29 +37,29 @@ function getAIReply(q: string): string {
   for (const [key, val] of Object.entries(AI_RESPONSES)) {
     if (low.includes(key)) return val;
   }
-  if (low.includes("pay")) return AI_RESPONSES["fee"] ?? "";
+  if (low.includes("pay"))      return AI_RESPONSES["fee"]      ?? "";
   if (low.includes("money") || low.includes("fund")) return AI_RESPONSES["balance"] ?? "";
   if (low.includes("upload") || low.includes("nid")) return AI_RESPONSES["document"] ?? "";
+  if (low.includes("student") || low.includes("university") || low.includes("college")) return AI_RESPONSES["verify"] ?? "";
   return AI_RESPONSES["default"] ?? "";
 }
 
 export function FloatingAI() {
   const [store] = useNeoStore();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen]           = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "ai", text: `👋 Hi ${store.studentProfile.name?.split(" ")[0] ?? "there"}! I'm your Neo Cash AI. Ask me about fees, payments, wallet, or documents.`, ts: Date.now() },
+  const [input, setInput]             = useState("");
+  const [messages, setMessages]       = useState<Message[]>([
+    { role: "ai", text: `👋 Hi ${store.studentProfile.name?.split(" ")[0] ?? "there"}! I'm Neo AI. Ask about fees, payments, or your wallet.`, ts: Date.now() },
   ]);
-  const [typing, setTyping] = useState(false);
-  const [pulse, setPulse] = useState(true);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [typing, setTyping]   = useState(false);
+  const [pulse, setPulse]     = useState(true);
+  const endRef                = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Pulse animation stops after first open
   useEffect(() => {
     if (isOpen) setPulse(false);
   }, [isOpen]);
@@ -65,46 +67,58 @@ export function FloatingAI() {
   const sendMessage = () => {
     const q = input.trim();
     if (!q) return;
-    const userMsg: Message = { role: "user", text: q, ts: Date.now() };
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, { role: "user", text: q, ts: Date.now() }]);
     setInput("");
     setTyping(true);
     setTimeout(() => {
-      const aiMsg: Message = { role: "ai", text: getAIReply(q), ts: Date.now() };
-      setMessages((prev) => [...prev, aiMsg]);
+      setMessages((prev) => [...prev, { role: "ai", text: getAIReply(q), ts: Date.now() }]);
       setTyping(false);
     }, 700 + Math.random() * 600);
   };
 
+  // Position: bottom-left on mobile (above bottom nav), bottom-left on desktop
+  const orbBottom = "calc(72px + env(safe-area-inset-bottom, 0px))";
+  const chatBottom = "calc(72px + 8px + env(safe-area-inset-bottom, 0px))";
+
   return (
     <>
-      {/* FLOATING ORB BUTTON */}
+      {/* FLOATING BUTTON — chat-bubble shape */}
       {!isOpen && (
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className={pulse ? "floating-ai-orb pulse" : "floating-ai-orb"}
+          className={pulse ? "floating-ai-orb neo-ai-pulse" : "floating-ai-orb"}
           aria-label="Open AI Assistant"
           title="Ask Neo AI"
           style={{
             position: "fixed",
-            bottom: "calc(72px + env(safe-area-inset-bottom, 0px))",
-            right: "16px",
-            zIndex: 1000,
-            width: "54px",
-            height: "54px",
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, #7C3AED, #D35400)",
-            border: "none",
+            bottom: orbBottom,
+            left: "16px",            // ← LEFT side
+            right: "auto",
+            zIndex: 999,
+            width: "52px",
+            height: "48px",
+            // Chat bubble shape via border-radius
+            borderRadius: "16px 16px 16px 4px",
+            background: "linear-gradient(135deg, #0a2a3a 0%, #0d3d52 100%)",
+            border: "1.5px solid rgba(5, 209, 148, 0.35)",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 4px 20px rgba(124, 58, 237, 0.5)",
+            boxShadow: "0 4px 20px rgba(5, 209, 148, 0.22), 0 0 0 1px rgba(5,209,148,0.08)",
             transition: "transform 0.2s, box-shadow 0.2s",
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.08)";
+            e.currentTarget.style.boxShadow = "0 6px 28px rgba(5,209,148,0.38), 0 0 0 1px rgba(5,209,148,0.15)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.style.boxShadow = "0 4px 20px rgba(5,209,148,0.22), 0 0 0 1px rgba(5,209,148,0.08)";
+          }}
         >
-          <Sparkles size={22} color="#FFF" />
+          <MessageSquare size={20} color="#05D194" />
         </button>
       )}
 
@@ -113,47 +127,54 @@ export function FloatingAI() {
         <div
           style={{
             position: "fixed",
-            bottom: "calc(72px + 8px + env(safe-area-inset-bottom, 0px))",
-            right: "12px",
+            bottom: chatBottom,
+            left: "12px",           // ← LEFT side
+            right: "auto",
             zIndex: 1001,
-            width: "clamp(300px, 90vw, 380px)",
-            background: "#FFFFFF",
-            borderRadius: "20px",
-            boxShadow: "0 12px 48px rgba(0,0,0,0.18), 0 0 0 1px rgba(124,58,237,0.12)",
+            width: "clamp(300px, 90vw, 360px)",
+            background: "#0d1b2a",
+            borderRadius: "16px 16px 16px 4px",  // chat-bubble shape
+            boxShadow: "0 12px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(5,209,148,0.15)",
+            border: "1px solid rgba(5,209,148,0.15)",
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            maxHeight: isMinimized ? "56px" : "min(520px, 70vh)",
+            maxHeight: isMinimized ? "56px" : "min(500px, 70vh)",
             transition: "max-height 0.3s ease",
           }}
         >
           {/* HEADER */}
           <div style={{
-            background: "linear-gradient(135deg, #7C3AED 0%, #D35400 100%)",
-            padding: "12px 16px",
+            background: "linear-gradient(135deg, #0a2a3a 0%, #0d3d52 100%)",
+            padding: "10px 14px",
             display: "flex",
             alignItems: "center",
             gap: "10px",
             flexShrink: 0,
+            borderBottom: "1px solid rgba(5,209,148,0.12)",
           }}>
             <div style={{
-              width: "32px", height: "32px", borderRadius: "50%",
-              background: "rgba(255,255,255,0.2)",
+              width: "30px", height: "30px", borderRadius: "10px",
+              background: "rgba(5,209,148,0.15)",
               display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
             }}>
-              <img src={purpleLogo} alt="" style={{ width: "22px", height: "22px", objectFit: "contain" }} />
+              <img src={purpleLogo} alt="" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ color: "#FFF", fontWeight: 700, fontSize: "0.88rem", lineHeight: 1.2 }}>Neo AI Assistant</div>
-              <div style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.72rem" }}>Always here to help ✨</div>
+              <div style={{ color: "#E0F7F3", fontWeight: 700, fontSize: "0.85rem", lineHeight: 1.2 }}>Neo AI Assistant</div>
+              <div style={{ color: "#05D194", fontSize: "0.68rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#05D194", display: "inline-block" }} />
+                Online · Always here
+              </div>
             </div>
             <button type="button" onClick={() => setIsMinimized(!isMinimized)}
-              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.8)", cursor: "pointer", padding: "4px" }}>
-              {isMinimized ? <Bot size={16} /> : <Minimize2 size={16} />}
+              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", padding: "4px", borderRadius: "6px" }}>
+              <Minimize2 size={14} />
             </button>
             <button type="button" onClick={() => setIsOpen(false)}
-              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.8)", cursor: "pointer", padding: "4px" }}>
-              <X size={16} />
+              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", padding: "4px", borderRadius: "6px" }}>
+              <X size={14} />
             </button>
           </div>
 
@@ -163,7 +184,7 @@ export function FloatingAI() {
               <div style={{
                 flex: 1, overflowY: "auto", padding: "12px",
                 display: "flex", flexDirection: "column", gap: "8px",
-                background: "#F9F7FF",
+                background: "#0d1b2a",
               }}>
                 {messages.map((msg) => (
                   <div key={msg.ts} style={{
@@ -173,14 +194,18 @@ export function FloatingAI() {
                     <div style={{
                       maxWidth: "82%",
                       background: msg.role === "user"
-                        ? "linear-gradient(135deg, #7C3AED, #9D4EDD)"
-                        : "#FFFFFF",
-                      color: msg.role === "user" ? "#FFF" : "#241A14",
+                        ? "linear-gradient(135deg, #0a2a3a, #0d4a60)"
+                        : "rgba(255,255,255,0.06)",
+                      color: msg.role === "user" ? "#E0F7F3" : "#CBD5E1",
+                      border: msg.role === "user"
+                        ? "1px solid rgba(5,209,148,0.2)"
+                        : "1px solid rgba(255,255,255,0.06)",
                       padding: "9px 13px",
-                      borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                      fontSize: "0.84rem",
+                      borderRadius: msg.role === "user"
+                        ? "14px 14px 4px 14px"
+                        : "14px 14px 14px 4px",
+                      fontSize: "0.82rem",
                       lineHeight: 1.5,
-                      boxShadow: msg.role === "ai" ? "0 2px 8px rgba(0,0,0,0.08)" : "none",
                       fontWeight: 400,
                     }}>
                       {msg.text}
@@ -191,9 +216,9 @@ export function FloatingAI() {
                   <div style={{ display: "flex", gap: "5px", padding: "4px 8px" }}>
                     {[0.1, 0.2, 0.3].map((d) => (
                       <div key={d} style={{
-                        width: "7px", height: "7px", borderRadius: "50%",
-                        background: "#7C3AED", opacity: 0.5,
-                        animation: `bounce 1.2s ${d}s infinite`,
+                        width: "6px", height: "6px", borderRadius: "50%",
+                        background: "#05D194", opacity: 0.5,
+                        animation: `ai-bounce 1.2s ${d}s infinite`,
                       }} />
                     ))}
                   </div>
@@ -203,34 +228,37 @@ export function FloatingAI() {
 
               {/* QUICK SUGGESTIONS */}
               <div style={{
-                display: "flex", gap: "6px", padding: "8px 12px 0",
-                overflowX: "auto", background: "#FFF", flexShrink: 0,
+                display: "flex", gap: "5px", padding: "8px 10px 0",
+                overflowX: "auto", background: "rgba(0,0,0,0.2)", flexShrink: 0,
               }}>
-                {["Check my balance", "How to pay fee?", "Get receipt"].map((s) => (
+                {["Check my balance", "Pay a fee", "Partial payment", "Verify student ID"].map((s) => (
                   <button
-                    key={s}
-                    type="button"
-                    onClick={() => { setInput(s); }}
+                    key={s} type="button"
+                    onClick={() => setInput(s)}
                     style={{
                       flexShrink: 0,
-                      background: "rgba(124,58,237,0.08)",
-                      border: "1px solid rgba(124,58,237,0.2)",
+                      background: "rgba(5,209,148,0.08)",
+                      border: "1px solid rgba(5,209,148,0.2)",
                       borderRadius: "999px",
-                      padding: "4px 10px",
-                      fontSize: "0.75rem",
-                      color: "#7C3AED",
+                      padding: "3px 9px",
+                      fontSize: "0.71rem",
+                      color: "#05D194",
                       cursor: "pointer",
                       fontWeight: 600,
                       whiteSpace: "nowrap",
+                      transition: "background 0.15s",
                     }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(5,209,148,0.15)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(5,209,148,0.08)")}
                   >{s}</button>
                 ))}
               </div>
 
               {/* INPUT */}
               <div style={{
-                display: "flex", gap: "8px", padding: "10px 12px",
-                background: "#FFF", borderTop: "1px solid rgba(124,58,237,0.1)",
+                display: "flex", gap: "6px", padding: "8px 10px",
+                background: "rgba(0,0,0,0.3)",
+                borderTop: "1px solid rgba(255,255,255,0.06)",
                 flexShrink: 0,
               }}>
                 <input
@@ -238,12 +266,16 @@ export function FloatingAI() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                  placeholder="Ask anything about your fees…"
+                  placeholder="Ask about fees, payments…"
                   style={{
-                    flex: 1, border: "1px solid rgba(124,58,237,0.25)",
-                    borderRadius: "12px", padding: "9px 12px",
-                    fontSize: "0.84rem", outline: "none",
-                    background: "#F9F7FF", color: "#241A14",
+                    flex: 1,
+                    border: "1px solid rgba(5,209,148,0.2)",
+                    borderRadius: "12px",
+                    padding: "8px 11px",
+                    fontSize: "0.82rem",
+                    outline: "none",
+                    background: "rgba(5,209,148,0.05)",
+                    color: "#E0F7F3",
                   }}
                 />
                 <button
@@ -251,21 +283,49 @@ export function FloatingAI() {
                   onClick={sendMessage}
                   disabled={!input.trim()}
                   style={{
-                    background: input.trim() ? "linear-gradient(135deg, #7C3AED, #D35400)" : "#E5E5E5",
-                    border: "none", borderRadius: "12px",
-                    width: "40px", height: "40px",
+                    background: input.trim() ? "rgba(5,209,148,0.2)" : "rgba(255,255,255,0.05)",
+                    border: `1px solid ${input.trim() ? "rgba(5,209,148,0.4)" : "rgba(255,255,255,0.1)"}`,
+                    borderRadius: "12px",
+                    width: "38px", height: "38px",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     cursor: input.trim() ? "pointer" : "default",
                     transition: "background 0.2s",
+                    flexShrink: 0,
                   }}
                 >
-                  <Send size={16} color={input.trim() ? "#FFF" : "#999"} />
+                  <Send size={15} color={input.trim() ? "#05D194" : "#4B5563"} />
                 </button>
               </div>
             </>
           )}
         </div>
       )}
+
+      <style>{`
+        /* AI orb pulse — teal glow */
+        @keyframes neo-ai-pulse-anim {
+          0%, 100% { box-shadow: 0 4px 16px rgba(5,209,148,0.22), 0 0 0 1px rgba(5,209,148,0.08); }
+          50%       { box-shadow: 0 4px 28px rgba(5,209,148,0.45), 0 0 0 4px rgba(5,209,148,0.12); transform: scale(1.06); }
+        }
+        .floating-ai-orb.neo-ai-pulse {
+          animation: neo-ai-pulse-anim 2.4s ease infinite;
+        }
+        @keyframes ai-bounce {
+          0%, 100% { transform: translateY(0); opacity: 0.5; }
+          50%       { transform: translateY(-4px); opacity: 1; }
+        }
+        /* Thin scrollbar for AI chat */
+        .ai-chat-messages::-webkit-scrollbar { width: 3px; }
+        .ai-chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .ai-chat-messages::-webkit-scrollbar-thumb { background: rgba(5,209,148,0.2); border-radius: 3px; }
+
+        /* On desktop, AI orb above sidebar — no overlap */
+        @media (min-width: 768px) {
+          .floating-ai-orb {
+            bottom: 24px !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

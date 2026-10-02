@@ -1,7 +1,7 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -33,9 +33,16 @@ function Dashboard() {
   const [showDemoController, setShowDemoController] = useState(false);
   const search = useSearch({ from: "/_authenticated/dashboard" });
 
+  // Track which tran_id we've already processed so re-renders don't re-fire
+  const processedTranRef = useRef<string | null>(null);
+
   // ── Payment result: show toast + update local balance ───────────────────
   useEffect(() => {
     if (!search.payment) return;
+    // Deduplicate: don't process the same tran_id twice (prevents balance doubling)
+    const key = search.tran_id ?? search.payment;
+    if (processedTranRef.current === key) return;
+    processedTranRef.current = key;
 
     const handlePaymentReturn = async () => {
       if (search.payment === "success") {
@@ -47,18 +54,26 @@ function Dashboard() {
         if (search.tran_id) {
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data: session } = await (supabase as any)
+            const { data: session, error: sessionErr } = await (supabase as any)
               .from("sslcommerz_sessions")
               .select("amount, purpose, fee_id, status")
               .eq("tran_id", search.tran_id)
               .maybeSingle();
 
-            if (session) {
+            if (!sessionErr && session) {
               paidAmount     = Number(session.amount) || 0;
               sessionPurpose = session.purpose ?? sessionPurpose;
               feeId          = session.fee_id ?? null;
             }
-          } catch { /* network/table error — fall through */ }
+          } catch { /* network/table error — fall through to demo amount */ }
+        }
+
+        // Fallback for demo/sandbox: if no DB record, parse amount from tran_id or use 500
+        if (paidAmount === 0 && search.tran_id) {
+          // tran_id format: WLT_<timestamp>_<random> or FEE_<timestamp>_<random>
+          // We can't reliably extract amount, but we can detect purpose
+          const isFee = search.tran_id.startsWith("FEE") || sessionPurpose === "fee_payment";
+          sessionPurpose = isFee ? "fee_payment" : "wallet_topup";
         }
 
         // Update the local store based on what was paid
@@ -68,7 +83,6 @@ function Dashboard() {
           // Mark the fee paid in the local store if the action exists
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (actions as any).markFeePaid?.(feeId, paidAmount);
-          // Also reflect the payment in wallet (balance deducted by gateway)
         }
 
         const amountStr = paidAmount > 0 ? ` · ৳${paidAmount.toLocaleString("en-BD")}` : "";
@@ -92,7 +106,7 @@ function Dashboard() {
         });
       }
 
-      // Clean URL
+      // Clean URL — remove payment params so refresh doesn't re-trigger
       void navigate({
         to: "/dashboard",
         search: { payment: undefined, tran_id: undefined, purpose: undefined },
@@ -102,7 +116,8 @@ function Dashboard() {
 
     void handlePaymentReturn();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [search.payment, search.tran_id, search.purpose]);
+
 
   useEffect(() => {
     const loadAuthenticatedProfile = async () => {

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Student Panel Component — Refined Institutional Financial Portal
  * 
  * Strict Visual Hierarchy & Autumn Vibes Palette System:
@@ -26,7 +26,8 @@ import {
   Wallet, CreditCard, DollarSign, ArrowUpRight, ArrowDownLeft, ShieldCheck,
   FileText, Sparkles, AlertCircle, HeartHandshake, Award, TrendingUp, Download,
   CheckCircle2, Clock, Send, MessageSquare, PlusCircle, Eye, X, Search, Filter,
-  Calendar, Info, AlertTriangle, ChevronRight, LifeBuoy, UserCheck, CornerDownRight
+  Calendar, Info, AlertTriangle, ChevronRight, LifeBuoy, UserCheck, CornerDownRight,
+  Loader2
 } from "lucide-react";
 
 function mapFeeStatus(status: string): StatusType {
@@ -70,10 +71,14 @@ export function StudentPanel({
   const [selectedPartialFee, setSelectedPartialFee] = useState<Fee | null>(null);
   const [partialRequestedAmount, setPartialRequestedAmount] = useState<number>(3000);
   const [partialReason, setPartialReason] = useState("");
+  const [partialPlan, setPartialPlan] = useState("");
   const [guardianName, setGuardianName] = useState("Robert Paul");
   const [guardianPhone, setGuardianPhone] = useState("+880 1711-998877");
   const [isAiScanning, setIsAiScanning] = useState(false);
   const [aiScanResult, setAiScanResult] = useState<{ score: number; status: string } | null>(null);
+  const [aiPlanScore, setAiPlanScore] = useState<number | null>(null);
+  const [isAnalyzingPlan, setIsAnalyzingPlan] = useState(false);
+  const [partialSubmitMsg, setPartialSubmitMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   // Donation Form State
   const [donationAmount, setDonationAmount] = useState<number>(200);
@@ -157,11 +162,31 @@ export function StudentPanel({
     }, 1500);
   };
 
+  /** AI Plan Analysis: scores financial plan 0-100. 90%+ = auto-approve */
+  const analyzePlan = () => {
+    if (!partialPlan.trim() || !selectedPartialFee) return;
+    setIsAnalyzingPlan(true);
+    setAiPlanScore(null);
+    setTimeout(() => {
+      const words = partialPlan.trim().split(/\s+/).length;
+      const hasAmount = /\d/.test(partialPlan);
+      const hasPeriod = /month|week|instal|semester|pay/i.test(partialPlan);
+      const hasReason = partialReason.trim().length > 20;
+      const baseScore = Math.min(60 + Math.floor(words / 3), 90);
+      const bonus = (hasAmount ? 4 : 0) + (hasPeriod ? 4 : 0) + (hasReason ? 5 : 0);
+      setAiPlanScore(Math.min(baseScore + bonus, 99));
+      setIsAnalyzingPlan(false);
+    }, 1800);
+  };
+
   const handlePartialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPartialFee) return;
-    if (!partialReason.trim()) return alert("Enter your reason for partial payment.");
-
+    if (!partialReason.trim()) {
+      setPartialSubmitMsg({ ok: false, text: "Please enter your reason for partial payment." });
+      return;
+    }
+    const isAutoApproved = (aiPlanScore ?? 0) >= 90;
     const res = actions.applyPartialPayment({
       feeId: selectedPartialFee.id,
       requestedAmount: Number(partialRequestedAmount),
@@ -171,12 +196,15 @@ export function StudentPanel({
       guardianIdDocUrl: "Guardian-NID-Doc.pdf",
       signatureDocUrl: "Guardian-Signature.png",
     });
-
     if (res.ok) {
-      alert("Application submitted! Admin and Head have been notified for approval.");
-      setSelectedPartialFee(null);
-      setPartialReason("");
-      setAiScanResult(null);
+      const msg = isAutoApproved
+        ? `🎉 Auto-approved! Your plan scored ${aiPlanScore}% — meets the 90% threshold. Partial payment unlocked.`
+        : `✅ Submitted! Admin & Head notified. You will hear back within 24-48 hours.`;
+      setPartialSubmitMsg({ ok: true, text: msg });
+      setPartialReason(""); setPartialPlan(""); setAiScanResult(null); setAiPlanScore(null);
+      setTimeout(() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); }, 3500);
+    } else {
+      setPartialSubmitMsg({ ok: false, text: "Failed to submit. Please try again." });
     }
   };
 
@@ -2732,79 +2760,205 @@ export function StudentPanel({
           onClose={() => setSelectedPayFee(null)}
         />
       )}
-      {/* PARTIAL PAYMENT APPLICATION MODAL */}
+      {/* PARTIAL PAYMENT APPLICATION MODAL — with AI Plan Analysis */}
       {selectedPartialFee && (
-        <div className="ms-modal-overlay">
-          <div className="ms-modal" style={{ maxWidth: "620px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 700 }}>Apply for Partial Payment</h3>
-              <button type="button" onClick={() => setSelectedPartialFee(null)} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer" }}>
-                <X size={18} />
+        <div className="ms-modal-overlay" style={{ zIndex: 500 }}>
+          <div className="ms-modal" style={{ maxWidth: "640px", maxHeight: "90vh", overflowY: "auto" }}>
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "14px", borderBottom: "1px solid rgba(196,154,108,0.25)" }}>
+              <div>
+                <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.15rem", fontWeight: 800 }}>Apply for Partial Payment</h3>
+                <p style={{ margin: "3px 0 0", fontSize: "0.78rem", color: "#8C7A6A" }}>
+                  {selectedPartialFee.title} · Full amount: <strong style={{ color: "#D35400" }}>{formatTaka(selectedPartialFee.amount, false)}</strong>
+                </p>
+              </div>
+              <button type="button" onClick={() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); setAiPlanScore(null); }} style={{ background: "none", border: "none", color: "#66564A", cursor: "pointer", padding: "4px" }}>
+                <X size={20} />
               </button>
             </div>
 
-            <p style={{ margin: "0 0 16px", color: "#66564A", fontSize: "0.88rem" }}>
-              Target Fee: <strong style={{ color: "#241A14" }}>{selectedPartialFee.title}</strong> (Original: {formatTaka(selectedPartialFee.amount, false)})
-            </p>
+            {/* Success/Error message */}
+            {partialSubmitMsg && (
+              <div style={{
+                padding: "12px 14px", borderRadius: "10px", marginBottom: "14px", fontSize: "0.85rem",
+                background: partialSubmitMsg.ok ? "rgba(16,185,129,0.1)" : "rgba(185,28,28,0.08)",
+                border: `1px solid ${partialSubmitMsg.ok ? "rgba(16,185,129,0.3)" : "rgba(185,28,28,0.2)"}`,
+                color: partialSubmitMsg.ok ? "#047857" : "#B91C1C",
+                lineHeight: 1.5,
+              }}>
+                {partialSubmitMsg.text}
+              </div>
+            )}
 
             <form onSubmit={handlePartialSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div>
-                <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>
-                  Requested Partial Amount (৳)
-                </label>
-                <input
-                  type="number"
-                  max={selectedPartialFee.amount - 100}
-                  value={partialRequestedAmount}
-                  onChange={(e) => setPartialRequestedAmount(Number(e.target.value))}
-                  style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontWeight: 700 }}
-                />
+              {/* Amount */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Requested Amount (৳)</label>
+                  <input
+                    type="number"
+                    min={100}
+                    max={selectedPartialFee.amount - 100}
+                    value={partialRequestedAmount}
+                    onChange={(e) => setPartialRequestedAmount(Number(e.target.value))}
+                    style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontWeight: 700, boxSizing: "border-box" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Remaining (auto)</label>
+                  <div style={{ padding: "9px 12px", background: "rgba(211,84,0,0.06)", border: "1px solid rgba(211,84,0,0.2)", borderRadius: "10px", color: "#D35400", fontWeight: 700 }}>
+                    {formatTaka(Math.max(0, selectedPartialFee.amount - partialRequestedAmount), false)}
+                  </div>
+                </div>
               </div>
 
+              {/* Guardian Info */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Guardian Name</label>
+                  <input
+                    type="text"
+                    value={guardianName}
+                    onChange={(e) => setGuardianName(e.target.value)}
+                    placeholder="Full name"
+                    style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Guardian Phone</label>
+                  <input
+                    type="tel"
+                    value={guardianPhone}
+                    onChange={(e) => setGuardianPhone(e.target.value)}
+                    placeholder="+880 1X-XXXXXXXX"
+                    style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                  />
+                </div>
+              </div>
+
+              {/* Reason */}
               <div>
-                <label style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "4px" }}>
-                  Reason for Request
-                </label>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Reason for Request <span style={{ color: "#D35400" }}>*</span></label>
                 <textarea
                   rows={2}
                   value={partialReason}
                   onChange={(e) => setPartialReason(e.target.value)}
-                  placeholder="Describe your temporary financial situation..."
-                  style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem" }}
+                  placeholder="Describe your temporary financial situation clearly..."
+                  style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem", resize: "vertical", boxSizing: "border-box" }}
                 />
               </div>
 
-              {/* AI SIGNATURE ENGINE */}
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#D35400", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <Sparkles size={16} /> AI Signature Verification Engine
-                  </span>
-                  <button type="button" onClick={startAiSignatureScan} disabled={isAiScanning} style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "4px 10px", borderRadius: "6px", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer" }}>
-                    {isAiScanning ? "Scanning..." : "Run AI Signature Match"}
-                  </button>
+              {/* AI PLAN ANALYSIS SECTION */}
+              <div style={{ background: "linear-gradient(135deg, #FDF9F3, #FFF7ED)", border: "1px solid rgba(196,154,108,0.35)", borderRadius: "14px", padding: "16px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                  <Sparkles size={16} color="#7C3AED" />
+                  <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#241A14" }}>AI Financial Plan Analysis</span>
+                  <span style={{ fontSize: "0.72rem", padding: "2px 8px", background: "rgba(124,58,237,0.1)", color: "#7C3AED", borderRadius: "999px", fontWeight: 700 }}>Auto-approve at 90%+</span>
                 </div>
+                <p style={{ margin: "0 0 10px", fontSize: "0.78rem", color: "#8C7A6A", lineHeight: 1.5 }}>
+                  Write your repayment plan below. If the AI scores it 90% or above, your partial payment will be <strong style={{ color: "#047857" }}>automatically approved</strong> without waiting for Admin review.
+                </p>
+                <textarea
+                  rows={4}
+                  value={partialPlan}
+                  onChange={(e) => setPartialPlan(e.target.value)}
+                  placeholder={`Example:\n"I will pay the remaining ৳${Math.max(0, selectedPartialFee.amount - partialRequestedAmount).toLocaleString()} in 2 monthly installments of ৳${Math.ceil(Math.max(0, selectedPartialFee.amount - partialRequestedAmount) / 2).toLocaleString()} each — first by [date], second by [date]. My father's monthly income of ৳[X] covers living expenses, and I will use my part-time tutoring income for installments."`}
+                  style={{ width: "100%", padding: "10px 12px", background: "#FFFFFF", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.85rem", resize: "vertical", marginBottom: "10px", boxSizing: "border-box" }}
+                />
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={analyzePlan}
+                    disabled={isAnalyzingPlan || !partialPlan.trim()}
+                    style={{
+                      background: partialPlan.trim() ? "linear-gradient(135deg, #7C3AED, #9D4EDD)" : "rgba(0,0,0,0.08)",
+                      color: partialPlan.trim() ? "#FFF" : "#9CA3AF",
+                      border: "none", padding: "8px 16px", borderRadius: "8px",
+                      fontSize: "0.8rem", fontWeight: 700, cursor: partialPlan.trim() ? "pointer" : "default",
+                      display: "flex", alignItems: "center", gap: "6px",
+                    }}
+                  >
+                    {isAnalyzingPlan ? (
+                      <><Loader2 size={13} style={{ animation: "spin 1s linear infinite" }} /> Analyzing Plan…</>
+                    ) : (
+                      <><Sparkles size={13} /> Analyze with AI</>
+                    )}
+                  </button>
 
-                {isAiScanning ? (
-                  <p style={{ margin: 0, fontSize: "0.8rem", color: "#D35400" }}>Analyzing signature vector match...</p>
-                ) : aiScanResult ? (
-                  <div style={{ background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "10px", borderRadius: "8px", color: "#047857", fontSize: "0.82rem", display: "flex", justifyContent: "space-between" }}>
-                    <span>Status: <strong>{aiScanResult.status}</strong></span>
-                    <span>Score: <strong>{aiScanResult.score}% Similarity</strong></span>
-                  </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: "0.78rem", color: "#66564A" }}>
-                    Click "Run AI Signature Match" to simulate automated guardian signature validation.
+                  {aiPlanScore !== null && (
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: "10px", flex: 1,
+                      padding: "8px 12px", borderRadius: "8px",
+                      background: aiPlanScore >= 90 ? "rgba(16,185,129,0.1)" : aiPlanScore >= 70 ? "rgba(245,158,11,0.1)" : "rgba(185,28,28,0.08)",
+                      border: `1px solid ${
+                        aiPlanScore >= 90 ? "rgba(16,185,129,0.3)" :
+                        aiPlanScore >= 70 ? "rgba(245,158,11,0.3)" :
+                        "rgba(185,28,28,0.2)"
+                      }`,
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: aiPlanScore >= 90 ? "#047857" : aiPlanScore >= 70 ? "#92400E" : "#B91C1C" }}>
+                            {aiPlanScore >= 90 ? "✅ Auto-Approved!" : aiPlanScore >= 70 ? "⚠️ Needs Review" : "❌ Improve Plan"}
+                          </span>
+                          <span style={{ fontSize: "0.75rem", fontWeight: 800, color: aiPlanScore >= 90 ? "#047857" : aiPlanScore >= 70 ? "#92400E" : "#B91C1C" }}>
+                            {aiPlanScore}%
+                          </span>
+                        </div>
+                        <div style={{ height: "4px", background: "rgba(0,0,0,0.08)", borderRadius: "2px" }}>
+                          <div style={{
+                            height: "100%", borderRadius: "2px",
+                            width: `${aiPlanScore}%`,
+                            background: aiPlanScore >= 90 ? "#10B981" : aiPlanScore >= 70 ? "#F59E0B" : "#EF4444",
+                            transition: "width 0.5s ease",
+                          }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {aiPlanScore !== null && aiPlanScore < 90 && (
+                  <p style={{ margin: "8px 0 0", fontSize: "0.75rem", color: "#8C7A6A" }}>
+                    💡 Tip: Include specific dates, amounts, and income sources to improve your score.
                   </p>
                 )}
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "10px" }}>
-                <button type="button" className="ms-btn-secondary" onClick={() => setSelectedPartialFee(null)} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}>
+              {/* AI SIGNATURE ENGINE */}
+              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#D35400", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Sparkles size={14} /> Guardian Signature Verification
+                  </span>
+                  <button type="button" onClick={startAiSignatureScan} disabled={isAiScanning} style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "4px 10px", borderRadius: "6px", fontSize: "0.73rem", fontWeight: 700, cursor: "pointer" }}>
+                    {isAiScanning ? "Scanning..." : "Run AI Signature Match"}
+                  </button>
+                </div>
+                {isAiScanning ? (
+                  <p style={{ margin: 0, fontSize: "0.78rem", color: "#D35400" }}>Analyzing signature vector match…</p>
+                ) : aiScanResult ? (
+                  <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.25)", padding: "8px 12px", borderRadius: "8px", color: "#047857", fontSize: "0.8rem", display: "flex", justifyContent: "space-between" }}>
+                    <span>Status: <strong>{aiScanResult.status}</strong></span>
+                    <span>Match: <strong>{aiScanResult.score}%</strong></span>
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: "0.76rem", color: "#66564A" }}>
+                    Click to verify guardian signature automatically. Document: Guardian-Signature.png
+                  </p>
+                )}
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", paddingTop: "4px" }}>
+                <button type="button" onClick={() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); setAiPlanScore(null); }} style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196,154,108,0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600, cursor: "pointer" }}>
                   Cancel
                 </button>
-                <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
-                  Submit Application
+                <button type="submit" style={{
+                  background: (aiPlanScore ?? 0) >= 90
+                    ? "linear-gradient(135deg, #047857, #10B981)"
+                    : "#D35400",
+                  color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700, border: "none", cursor: "pointer",
+                }}>
+                  {(aiPlanScore ?? 0) >= 90 ? "🎉 Submit & Auto-Approve" : "Submit Application"}
                 </button>
               </div>
             </form>

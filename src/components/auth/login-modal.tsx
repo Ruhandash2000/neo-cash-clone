@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNeoStore } from "@/lib/neo-cash-store";
 import { enrollBiometric, signInWithBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "./biometric-panel";
+import { StudentVerificationFlow } from "@/components/verification/student-verification-flow";
 import skeletonArt from "@/assets/skeleton-illustration.png";
 import signupArt from "@/assets/signup-skeleton-illustration.png";
 
@@ -59,7 +60,7 @@ export function LoginModal({
     terms: false,
   });
   const [signupErrors, setSignupErrors] = useState<SignupErrors>({});
-  const [signupStage, setSignupStage] = useState<"form" | "biometric" | "done">("form");
+  const [signupStage, setSignupStage] = useState<"form" | "biometric" | "verify" | "done">("form");
 
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<Status>(null);
@@ -146,7 +147,8 @@ export function LoginModal({
       });
       return;
     }
-    setSignupStage("biometric");
+    // Go to university verification before finalising
+    setSignupStage("verify");
   };
 
   /** Enroll biometric passkey during signup */
@@ -160,7 +162,8 @@ export function LoginModal({
       return;
     }
     setStatus({ tone: "success", message: "Fingerprint login enabled for this device." });
-    setTimeout(() => void finishLogin(), 900);
+    // After biometric, still go verify institution
+    setSignupStage("verify");
   };
 
   /** Authenticate user using Email and Password via Supabase with Demo fallback */
@@ -341,10 +344,23 @@ export function LoginModal({
                 actionLabel="Enable Fingerprint Login"
                 cancelLabel="Skip for Now"
                 onScan={handleSignupEnroll}
-                onCancel={() => void finishLogin()}
+                onCancel={() => setSignupStage("verify")}
                 status={status}
                 busy={busy}
-                secondary={{ label: "Skip for Now", onClick: () => void finishLogin() }}
+                secondary={{ label: "Skip for Now", onClick: () => setSignupStage("verify") }}
+              />
+            ) : signupStage === "verify" ? (
+              <StudentVerificationFlow
+                userEmail={signupForm.email || email}
+                onVerified={(_institutionId, institutionName) => {
+                  setStatus({ tone: "success", message: `Verified as a student at ${institutionName}!` });
+                  setSignupStage("done");
+                  setTimeout(() => void finishLogin(), 1800);
+                }}
+                onSkip={() => {
+                  setSignupStage("done");
+                  void finishLogin();
+                }}
               />
             ) : signupStage === "done" ? (
               <div className="auth-form">
