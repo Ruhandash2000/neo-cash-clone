@@ -47,7 +47,7 @@ function ResetPassword() {
       return;
     }
     setStatus({ tone: "success", message: "Password updated. Taking you to your dashboard…" });
-    setTimeout(() => void navigate({ to: "/dashboard", search: { payment: undefined, tran_id: undefined, purpose: undefined } }), 900);
+    setTimeout(() => void navigate({ to: "/dashboard", search: {} }), 900);
   };
 
   return (

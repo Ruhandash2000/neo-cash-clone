@@ -90,7 +90,7 @@ export function LoginModal({
   /** Complete login process and navigate to dashboard */
   const finishLogin = async () => {
     onClose();
-    await navigate({ to: "/dashboard", search: { payment: undefined, tran_id: undefined, purpose: undefined }, replace: true });
+    await navigate({ to: "/dashboard", search: {}, replace: true });
   };
 
   /** Update signup form fields */

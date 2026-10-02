@@ -11,11 +11,27 @@ import { DEMO_ACCOUNTS, DEMO_ACCOUNT_PASSWORDS } from "@/lib/demo-auth";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
-    payment:  (search["payment"]  as string | undefined) ?? undefined,
-    tran_id:  (search["tran_id"]  as string | undefined) ?? undefined,
-    purpose:  (search["purpose"]  as string | undefined) ?? undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): {
+    payment?: string;
+    tran_id?: string;
+    purpose?: string;
+    amount?: string;
+    fee_id?: string;
+  } => {
+    const res: {
+      payment?: string;
+      tran_id?: string;
+      purpose?: string;
+      amount?: string;
+      fee_id?: string;
+    } = {};
+    if (search["payment"]) res.payment = String(search["payment"]);
+    if (search["tran_id"]) res.tran_id = String(search["tran_id"]);
+    if (search["purpose"]) res.purpose = String(search["purpose"]);
+    if (search["amount"]) res.amount = String(search["amount"]);
+    if (search["fee_id"]) res.fee_id = String(search["fee_id"]);
+    return res;
+  },
   head: () => ({
     meta: [
       { title: "Neo Cash AI — Role-Based Financial Ecosystem Dashboard" },
@@ -46,10 +62,9 @@ function Dashboard() {
 
     const handlePaymentReturn = async () => {
       if (search.payment === "success") {
-        // Try to fetch the actual amount from the SSLCommerz session in DB
-        let paidAmount = 0;
-        let sessionPurpose = search.purpose ?? "fee_payment";
-        let feeId: string | null = null;
+        let paidAmount = Number(search.amount) || 0;
+        let sessionPurpose = search.purpose ?? (search.tran_id?.startsWith("WLT") ? "wallet_topup" : "fee_payment");
+        let feeId: string | null = search.fee_id ?? null;
 
         if (search.tran_id) {
           try {
@@ -61,38 +76,50 @@ function Dashboard() {
               .maybeSingle();
 
             if (!sessionErr && session) {
-              paidAmount     = Number(session.amount) || 0;
+              paidAmount     = Number(session.amount) || paidAmount;
               sessionPurpose = session.purpose ?? sessionPurpose;
-              feeId          = session.fee_id ?? null;
+              feeId          = session.fee_id ?? feeId;
             }
           } catch { /* network/table error — fall through to demo amount */ }
         }
 
-        // Fallback for demo/sandbox: if no DB record, parse amount from tran_id or use 500
-        if (paidAmount === 0 && search.tran_id) {
-          // tran_id format: WLT_<timestamp>_<random> or FEE_<timestamp>_<random>
-          // We can't reliably extract amount, but we can detect purpose
-          const isFee = search.tran_id.startsWith("FEE") || sessionPurpose === "fee_payment";
-          sessionPurpose = isFee ? "fee_payment" : "wallet_topup";
+        // Clarify purpose from prefix if still ambiguous
+        if (search.tran_id?.startsWith("FEE")) {
+          sessionPurpose = "fee_payment";
+        } else if (search.tran_id?.startsWith("WLT")) {
+          sessionPurpose = "wallet_topup";
         }
 
         // Update the local store based on what was paid
-        if (sessionPurpose === "wallet_topup" && paidAmount > 0) {
-          actions.topUpWallet(paidAmount, "SSLCommerz");
-        } else if (sessionPurpose === "fee_payment" && feeId) {
-          // Mark the fee paid in the local store if the action exists
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (actions as any).markFeePaid?.(feeId, paidAmount);
-        }
+        if (sessionPurpose === "fee_payment") {
+          // Identify fee from feeId or first unpaid fee
+          let targetFee = feeId ? store.fees.find((f) => f.id === feeId) : null;
+          if (!targetFee) {
+            targetFee = store.fees.find((f) => f.status !== "paid") ?? null;
+          }
+          const finalFeeId = targetFee?.id ?? feeId ?? (store.fees[0]?.id || "fee-r1");
+          const finalAmount = paidAmount > 0
+            ? paidAmount
+            : (targetFee?.approvedPartialAmount || targetFee?.amount || 5000);
 
-        const amountStr = paidAmount > 0 ? ` · ৳${paidAmount.toLocaleString("en-BD")}` : "";
-        const msg = sessionPurpose === "wallet_topup"
-          ? `Wallet topped up successfully!${amountStr} 🎉`
-          : `Fee payment confirmed!${amountStr} ✅`;
-        toast.success(msg, {
-          description: search.tran_id ? `Ref: ${search.tran_id}` : undefined,
-          duration: 6000,
-        });
+          // Mark fee paid in store, which automatically deducts totalDue and increments paidThisMonth
+          actions.payFee(finalFeeId, "SSLCommerz", finalAmount);
+
+          const amountStr = finalAmount > 0 ? ` · ৳${finalAmount.toLocaleString("en-BD")}` : "";
+          toast.success(`Fee payment confirmed!${amountStr} ✅`, {
+            description: search.tran_id ? `Ref: ${search.tran_id}` : undefined,
+            duration: 6000,
+          });
+        } else {
+          // Wallet top-up
+          const topupAmt = paidAmount > 0 ? paidAmount : 500;
+          actions.topUpWallet(topupAmt, "SSLCommerz");
+
+          toast.success(`Wallet topped up successfully! · ৳${topupAmt.toLocaleString("en-BD")} 🎉`, {
+            description: search.tran_id ? `Ref: ${search.tran_id}` : undefined,
+            duration: 6000,
+          });
+        }
 
       } else if (search.payment === "failed") {
         toast.error("Payment failed", {
@@ -106,17 +133,21 @@ function Dashboard() {
         });
       }
 
-      // Clean URL — remove payment params so refresh doesn't re-trigger
-      void navigate({
-        to: "/dashboard",
-        search: { payment: undefined, tran_id: undefined, purpose: undefined },
-        replace: true,
-      });
+      // Clean URL params cleanly so refresh doesn't re-trigger and router doesn't deadlock
+      try {
+        void navigate({
+          to: "/dashboard",
+          search: {},
+          replace: true,
+        });
+      } catch {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
     };
 
     void handlePaymentReturn();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.payment, search.tran_id, search.purpose]);
+  }, [search.payment, search.tran_id, search.purpose, search.amount, search.fee_id]);
 
 
   useEffect(() => {
@@ -195,7 +226,7 @@ function Dashboard() {
     await supabase.auth.signOut();
     const { error } = await supabase.auth.signInWithPassword({ email: account.email, password });
     if (error) throw new Error(`Unable to start ${account.fullName}'s demo session. Provision this demo user in Supabase Auth first.`);
-    await navigate({ to: "/dashboard", search: { payment: undefined, tran_id: undefined, purpose: undefined }, replace: true });
+    await navigate({ to: "/dashboard", search: {}, replace: true });
   };
 
   /** Handle user session sign out */

@@ -6,7 +6,7 @@ function PaymentCancelPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      void navigate({ to: "/dashboard", search: { payment: "cancelled", tran_id: undefined, purpose: undefined }, replace: true });
+      void navigate({ to: "/dashboard", search: { payment: "cancelled" }, replace: true });
     }, 300);
     return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps

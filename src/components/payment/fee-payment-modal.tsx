@@ -12,6 +12,7 @@ import {
   AlertCircle, CalendarDays, CheckCircle2, Clock,
 } from "lucide-react";
 import { initiatePayment } from "@/lib/sslcommerz.functions";
+import { useNeoStore } from "@/lib/neo-cash-store";
 
 interface Fee {
   id: string;
@@ -32,6 +33,7 @@ interface Props {
 }
 
 export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: Props) {
+  const [, actions] = useNeoStore();
   const isPartialAllowed = fee.partial_allowed && !!fee.approved_partial_amt;
   const [payMode, setPayMode] = useState<"full" | "partial">(
     isPartialAllowed ? "partial" : "full"
@@ -49,6 +51,18 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
     : null;
 
   const amountFmt = (n: number) => `৳${n.toLocaleString("en-BD")}`;
+
+  const handlePayWithWallet = () => {
+    setBusy(true);
+    setError("");
+    const res = actions.payFee(fee.id, "Neo Cash Wallet", payAmount);
+    setBusy(false);
+    if (res.ok) {
+      onClose();
+    } else {
+      setError(res.error || "Wallet payment failed.");
+    }
+  };
 
   const handlePay = async () => {
     setBusy(true);
@@ -254,7 +268,30 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
             </span>
           </div>
 
-          {/* CTA */}
+          {/* Wallet Balance Payment Option (Instant) */}
+          {walletBalance >= payAmount && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={handlePayWithWallet}
+              style={{
+                width: "100%", display: "flex", alignItems: "center",
+                justifyContent: "center", gap: "8px",
+                padding: "13px",
+                background: "#047857",
+                color: "#FFF", border: "none", borderRadius: "12px",
+                fontSize: "0.95rem", fontWeight: 800,
+                cursor: busy ? "not-allowed" : "pointer",
+                marginBottom: "12px",
+                boxShadow: "0 4px 12px rgba(4, 120, 87, 0.25)",
+              }}
+            >
+              <CheckCircle2 size={18} />
+              Pay {amountFmt(payAmount)} from Wallet Balance
+            </button>
+          )}
+
+          {/* SSLCommerz CTA */}
           <button
             type="button"
             disabled={busy}
@@ -273,7 +310,7 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
             {busy ? (
               <><Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> Connecting…</>
             ) : (
-              <>Pay {amountFmt(payAmount)} <ChevronRight size={16} /></>
+              <>Pay {amountFmt(payAmount)} via SSLCommerz Gateway <ChevronRight size={16} /></>
             )}
           </button>
 

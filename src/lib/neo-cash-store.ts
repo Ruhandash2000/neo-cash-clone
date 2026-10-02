@@ -1733,6 +1733,11 @@ export const storeActions = {
     return { ok: true, student: newStudent };
   },
 
+  /** Mark a fee as paid (alias used by payment gateways and callbacks) */
+  markFeePaid(feeId: string, customAmount?: number) {
+    return this.payFee(feeId, "SSLCommerz", customAmount);
+  },
+
   /** Process full or partial payment of a fee */
   payFee(feeId: string, method: string, customAmount?: number) {
     const feeIndex = currentState.fees.findIndex((f) => f.id === feeId);

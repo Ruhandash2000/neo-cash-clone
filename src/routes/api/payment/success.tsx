@@ -13,15 +13,36 @@ function PaymentSuccessPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tranId  = params.get("tran_id") ?? "";
-    const purpose = params.get("value_c") ?? "fee_payment";
+    const purpose = params.get("value_c") || params.get("purpose") || (tranId.startsWith("WLT") ? "wallet_topup" : "fee_payment");
+    const amount  = params.get("amount") || params.get("currency_amount") || "";
+    const feeId   = params.get("value_d") || params.get("fee_id") || "";
 
-    const returnUrl = `/dashboard?payment=success${tranId ? `&tran_id=${encodeURIComponent(tranId)}` : ""}${purpose ? `&purpose=${encodeURIComponent(purpose)}` : ""}`;
+    const searchParams = new URLSearchParams();
+    searchParams.set("payment", "success");
+    if (tranId)  searchParams.set("tran_id", tranId);
+    if (purpose) searchParams.set("purpose", purpose);
+    if (amount)  searchParams.set("amount", amount);
+    if (feeId)   searchParams.set("fee_id", feeId);
+
+    const returnUrl = `/dashboard?${searchParams.toString()}`;
+
+    const searchObj: {
+      payment: string;
+      tran_id?: string;
+      purpose?: string;
+      amount?: string;
+      fee_id?: string;
+    } = { payment: "success" };
+    if (tranId)  searchObj.tran_id = tranId;
+    if (purpose) searchObj.purpose = purpose;
+    if (amount)  searchObj.amount = amount;
+    if (feeId)   searchObj.fee_id = feeId;
 
     const timer = setTimeout(() => {
       try {
         void navigate({
           to: "/dashboard",
-          search: { payment: "success", tran_id: tranId || undefined, purpose: purpose || undefined },
+          search: searchObj,
           replace: true,
         });
       } catch {
@@ -36,8 +57,18 @@ function PaymentSuccessPage() {
   const handleManualReturn = () => {
     const params = new URLSearchParams(window.location.search);
     const tranId  = params.get("tran_id") ?? "";
-    const purpose = params.get("value_c") ?? "fee_payment";
-    window.location.href = `/dashboard?payment=success${tranId ? `&tran_id=${encodeURIComponent(tranId)}` : ""}${purpose ? `&purpose=${encodeURIComponent(purpose)}` : ""}`;
+    const purpose = params.get("value_c") || params.get("purpose") || (tranId.startsWith("WLT") ? "wallet_topup" : "fee_payment");
+    const amount  = params.get("amount") || params.get("currency_amount") || "";
+    const feeId   = params.get("value_d") || params.get("fee_id") || "";
+
+    const searchParams = new URLSearchParams();
+    searchParams.set("payment", "success");
+    if (tranId)  searchParams.set("tran_id", tranId);
+    if (purpose) searchParams.set("purpose", purpose);
+    if (amount)  searchParams.set("amount", amount);
+    if (feeId)   searchParams.set("fee_id", feeId);
+
+    window.location.href = `/dashboard?${searchParams.toString()}`;
   };
 
   return (
