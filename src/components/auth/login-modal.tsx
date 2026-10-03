@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { DEMO_ACCOUNTS } from "@/lib/demo-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNeoStore } from "@/lib/neo-cash-store";
-import { enrollBiometric, signInWithBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "./biometric-panel";
 import { StudentVerificationFlow } from "@/components/verification/student-verification-flow";
+import { CreditCard, Wallet, Sparkles, ShieldCheck } from "lucide-react";
 import purpleLogo from "@/assets/neo-purple-logo.png";
 
 /** View modes for the authentication modal dialog */
@@ -324,26 +324,34 @@ export function LoginModal({
         </button>
 
         {!isBiometricView && (
-          <aside className="auth-art" style={{ position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #1a0533 0%, #0f172a 50%, #052e16 100%)" }}>
+          <aside
+            className="auth-art"
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              background: "linear-gradient(155deg, #120826 0%, #0c061a 50%, #15092b 100%)",
+              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            }}
+          >
             {/* Animated background orbs */}
-            <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
               <div style={{
-                position: "absolute", top: "10%", left: "15%",
-                width: "220px", height: "220px", borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%)",
-                animation: "authOrb1 6s ease-in-out infinite",
+                position: "absolute", top: "8%", left: "10%",
+                width: "240px", height: "240px", borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(124,58,237,0.38) 0%, transparent 70%)",
+                animation: "authOrb1 7s ease-in-out infinite",
               }} />
               <div style={{
-                position: "absolute", bottom: "15%", right: "10%",
-                width: "180px", height: "180px", borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(5,150,105,0.3) 0%, transparent 70%)",
-                animation: "authOrb2 8s ease-in-out infinite",
+                position: "absolute", bottom: "12%", right: "8%",
+                width: "200px", height: "200px", borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)",
+                animation: "authOrb2 9s ease-in-out infinite",
               }} />
               <div style={{
-                position: "absolute", top: "50%", right: "25%",
-                width: "120px", height: "120px", borderRadius: "50%",
-                background: "radial-gradient(circle, rgba(211,84,0,0.2) 0%, transparent 70%)",
-                animation: "authOrb3 10s ease-in-out infinite",
+                position: "absolute", top: "45%", right: "20%",
+                width: "140px", height: "140px", borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(217,70,239,0.18) 0%, transparent 65%)",
+                animation: "authOrb3 11s ease-in-out infinite",
               }} />
             </div>
 
@@ -352,84 +360,261 @@ export function LoginModal({
               position: "relative", zIndex: 1,
               display: "flex", flexDirection: "column",
               alignItems: "center", justifyContent: "center",
-              height: "100%", padding: "40px 32px", gap: "28px",
+              height: "100%", padding: "40px 28px", gap: "24px",
+              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             }}>
-              {/* Logo mark — real Neo logo with glow */}
+              {/* Logo mark — real Neo logo with glowing radiance */}
               <div style={{
-                width: "88px", height: "88px",
+                width: "84px", height: "84px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                filter: "drop-shadow(0 0 24px rgba(124,58,237,0.8))",
-                animation: "authLogo 3s ease-in-out infinite",
+                filter: "drop-shadow(0 0 24px rgba(168,85,247,0.75))",
+                animation: "authLogo 3.5s ease-in-out infinite",
               }}>
                 <img
                   src={purpleLogo}
                   alt="Neo Cash AI"
-                  style={{ width: "88px", height: "88px", objectFit: "contain" }}
+                  style={{ width: "84px", height: "84px", objectFit: "contain" }}
                 />
               </div>
 
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                <div style={{
+                  fontSize: "1.65rem",
+                  fontWeight: 800,
+                  letterSpacing: "-0.03em",
+                  lineHeight: 1.2,
+                  background: "linear-gradient(180deg, #FFFFFF 20%, #E9D5FF 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                }}>
                   Neo Cash AI
                 </div>
-                <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.55)", marginTop: "6px", lineHeight: 1.5 }}>
-                  Smart financial management<br />for students & institutions
+                <div style={{
+                  fontSize: "0.82rem",
+                  color: "rgba(255,255,255,0.62)",
+                  marginTop: "6px",
+                  lineHeight: 1.45,
+                  fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                }}>
+                  Next-Gen Campus Payments & AI Financial Intelligence
                 </div>
               </div>
 
-              {/* Floating stat cards */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "240px" }}>
-                {[
-                  { icon: "💳", label: "Fee Payments", value: "Instant & Secure", color: "#7C3AED" },
-                  { icon: "🏦", label: "Neo Wallet", value: "৳12,450 Available", color: "#059669" },
-                  { icon: "📊", label: "AI Analytics", value: "Real-time Insights", color: "#D35400" },
-                ].map((card, i) => (
-                  <div key={card.label} style={{
-                    background: "rgba(255,255,255,0.07)",
-                    backdropFilter: "blur(12px)",
+              {/* Floating fintech showcase cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "268px" }}>
+                {/* Card 1: Fee Payments */}
+                <div
+                  className="auth-feature-card"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
+                    backdropFilter: "blur(16px)",
                     border: "1px solid rgba(255,255,255,0.12)",
-                    borderRadius: "12px", padding: "12px 14px",
-                    display: "flex", alignItems: "center", gap: "12px",
-                    animation: `authCard${i + 1} 0.5s ease ${i * 0.1}s both`,
-                    boxShadow: `0 0 16px ${card.color}22`,
+                    borderRadius: "14px",
+                    padding: "11px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    boxShadow: "0 8px 24px -4px rgba(0,0,0,0.4)",
+                    animation: "authCard1 0.5s ease 0s both",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <div style={{
+                    width: "36px", height: "36px", borderRadius: "10px",
+                    background: "linear-gradient(135deg, rgba(124,58,237,0.35) 0%, rgba(139,92,246,0.15) 100%)",
+                    border: "1px solid rgba(139,92,246,0.4)",
+                    display: "grid", placeItems: "center", flexShrink: 0,
                   }}>
-                    <span style={{ fontSize: "20px" }}>{card.icon}</span>
-                    <div>
-                      <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.45)", letterSpacing: "0.05em", textTransform: "uppercase" }}>{card.label}</div>
-                      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff", marginTop: "1px" }}>{card.value}</div>
+                    <CreditCard style={{ width: "18px", height: "18px", color: "#C4B5FD" }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: "0.66rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "rgba(255,255,255,0.48)",
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}>
+                      Fee Payments
                     </div>
                     <div style={{
-                      marginLeft: "auto", width: "6px", height: "6px",
-                      borderRadius: "50%", background: card.color,
-                      boxShadow: `0 0 8px ${card.color}`,
-                      animation: "authPing 2s ease infinite",
-                    }} />
+                      fontSize: "0.84rem",
+                      fontWeight: 600,
+                      color: "#FFFFFF",
+                      letterSpacing: "-0.01em",
+                      marginTop: "1px",
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}>
+                      Instant & Zero-Fee
+                    </div>
                   </div>
-                ))}
+                  <span style={{
+                    fontSize: "0.62rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.05em",
+                    color: "#C4B5FD",
+                    background: "rgba(124,58,237,0.25)",
+                    border: "1px solid rgba(139,92,246,0.35)",
+                    padding: "2px 7px",
+                    borderRadius: "999px",
+                  }}>
+                    INSTANT
+                  </span>
+                </div>
+
+                {/* Card 2: Campus Wallet */}
+                <div
+                  className="auth-feature-card"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
+                    backdropFilter: "blur(16px)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "14px",
+                    padding: "11px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    boxShadow: "0 8px 24px -4px rgba(0,0,0,0.4)",
+                    animation: "authCard2 0.5s ease 0.1s both",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <div style={{
+                    width: "36px", height: "36px", borderRadius: "10px",
+                    background: "linear-gradient(135deg, rgba(16,185,129,0.3) 0%, rgba(5,150,105,0.15) 100%)",
+                    border: "1px solid rgba(16,185,129,0.4)",
+                    display: "grid", placeItems: "center", flexShrink: 0,
+                  }}>
+                    <Wallet style={{ width: "18px", height: "18px", color: "#6EE7B7" }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: "0.66rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "rgba(255,255,255,0.48)",
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}>
+                      Neo Wallet
+                    </div>
+                    <div style={{
+                      fontSize: "0.84rem",
+                      fontWeight: 600,
+                      color: "#FFFFFF",
+                      letterSpacing: "-0.01em",
+                      marginTop: "1px",
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}>
+                      ৳12,450 Available
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: "0.62rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.05em",
+                    color: "#6EE7B7",
+                    background: "rgba(16,185,129,0.22)",
+                    border: "1px solid rgba(16,185,129,0.35)",
+                    padding: "2px 7px",
+                    borderRadius: "999px",
+                  }}>
+                    ACTIVE
+                  </span>
+                </div>
+
+                {/* Card 3: AI Intelligence */}
+                <div
+                  className="auth-feature-card"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)",
+                    backdropFilter: "blur(16px)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "14px",
+                    padding: "11px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    boxShadow: "0 8px 24px -4px rgba(0,0,0,0.4)",
+                    animation: "authCard3 0.5s ease 0.2s both",
+                    transition: "all 0.25s ease",
+                  }}
+                >
+                  <div style={{
+                    width: "36px", height: "36px", borderRadius: "10px",
+                    background: "linear-gradient(135deg, rgba(245,158,11,0.3) 0%, rgba(217,119,6,0.15) 100%)",
+                    border: "1px solid rgba(245,158,11,0.4)",
+                    display: "grid", placeItems: "center", flexShrink: 0,
+                  }}>
+                    <Sparkles style={{ width: "18px", height: "18px", color: "#FCD34D" }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: "0.66rem",
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: "rgba(255,255,255,0.48)",
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}>
+                      AI Analytics
+                    </div>
+                    <div style={{
+                      fontSize: "0.84rem",
+                      fontWeight: 600,
+                      color: "#FFFFFF",
+                      letterSpacing: "-0.01em",
+                      marginTop: "1px",
+                      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                    }}>
+                      Real-time Insights
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: "0.62rem",
+                    fontWeight: 700,
+                    letterSpacing: "0.05em",
+                    color: "#FCD34D",
+                    background: "rgba(245,158,11,0.22)",
+                    border: "1px solid rgba(245,158,11,0.35)",
+                    padding: "2px 7px",
+                    borderRadius: "999px",
+                  }}>
+                    AI 2.0
+                  </span>
+                </div>
               </div>
 
-              {/* Bottom badge */}
+              {/* Bottom security badge */}
               <div style={{
                 display: "flex", alignItems: "center", gap: "8px",
                 background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                borderRadius: "999px", padding: "6px 14px",
-                fontSize: "0.72rem", color: "rgba(255,255,255,0.5)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: "999px", padding: "7px 16px",
+                fontSize: "0.74rem", color: "rgba(255,255,255,0.72)",
+                fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                backdropFilter: "blur(12px)",
               }}>
-                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10B981", boxShadow: "0 0 6px #10B981" }} />
-                {view === "signup" ? "Create your Neo Cash account" : "Secure login with encryption"}
+                <ShieldCheck style={{ width: "14px", height: "14px", color: "#34D399", flexShrink: 0 }} />
+                <span>256-Bit Bank-Grade Encryption</span>
               </div>
             </div>
 
             <style>{`
-              @keyframes authOrb1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-20px) scale(1.1)} }
-              @keyframes authOrb2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-15px,15px) scale(1.05)} }
-              @keyframes authOrb3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(10px,-10px)} 66%{transform:translate(-10px,5px)} }
-              @keyframes authLogo { 0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px rgba(124,58,237,0.7))} 50%{transform:scale(1.06);filter:drop-shadow(0 0 36px rgba(124,58,237,1))} }
-              @keyframes authCard1 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
-              @keyframes authCard2 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
-              @keyframes authCard3 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
-              @keyframes authPing { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+              @keyframes authOrb1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(18px,-18px) scale(1.1)} }
+              @keyframes authOrb2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-14px,14px) scale(1.05)} }
+              @keyframes authOrb3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(8px,-8px)} 66%{transform:translate(-8px,4px)} }
+              @keyframes authLogo { 0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px rgba(168,85,247,0.7))} 50%{transform:scale(1.05);filter:drop-shadow(0 0 34px rgba(168,85,247,0.95))} }
+              @keyframes authCard1 { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+              @keyframes authCard2 { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+              @keyframes authCard3 { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+              .auth-feature-card:hover {
+                transform: translateY(-2px);
+                border-color: rgba(255,255,255,0.24) !important;
+                box-shadow: 0 12px 28px -4px rgba(0,0,0,0.55) !important;
+              }
             `}</style>
           </aside>
         )}
