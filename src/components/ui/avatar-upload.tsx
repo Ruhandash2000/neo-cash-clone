@@ -51,8 +51,8 @@ export function AvatarUpload({ src, name, size = 64, onChanged, editable = true 
       <div
         style={{
           width: size, height: size, borderRadius: "50%",
-          background: displaySrc ? "transparent" : "linear-gradient(135deg, #7C3AED, #D35400)",
-          border: "2.5px solid rgba(124,58,237,0.35)",
+          background: displaySrc ? "transparent" : "linear-gradient(135deg, var(--theme-color-500), var(--theme-color-900))",
+          border: "2.5px solid var(--theme-glow)",
           overflow: "hidden",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: editable ? "pointer" : "default",
@@ -86,7 +86,7 @@ export function AvatarUpload({ src, name, size = 64, onChanged, editable = true 
             position: "absolute", bottom: 0, right: 0,
             width: size * 0.34, height: size * 0.34,
             borderRadius: "50%",
-            background: "linear-gradient(135deg, #7C3AED, #D35400)",
+            background: "linear-gradient(135deg, var(--theme-color-500), var(--theme-color-900))",
             border: "2px solid #FFF",
             display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer",
@@ -108,3 +108,4 @@ export function AvatarUpload({ src, name, size = 64, onChanged, editable = true 
     </div>
   );
 }
+

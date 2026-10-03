@@ -31,10 +31,10 @@ export interface ReceiptData {
 
 // ─── Colour palette (matches Neo Cashless design) ────────────────────────────
 
-const BRAND    = [211, 84,   0]  as [number, number, number];  // #D35400
+const BRAND    = [211, 84,   0]  as [number, number, number];  // var(--theme-color-900)
 const DARK     = [36,  26,  20]  as [number, number, number];  // #241A14
 const WARM     = [196, 154, 108] as [number, number, number];  // #C49A6C
-const LIGHT_BG = [253, 249, 243] as [number, number, number];  // #FDF9F3
+const LIGHT_BG = [253, 249, 243] as [number, number, number];  // var(--theme-color-50)
 const GREEN    = [4,   120, 87]  as [number, number, number];  // #047857
 
 // ─── Main generator ───────────────────────────────────────────────────────────
@@ -194,3 +194,5 @@ export function generatePaymentReceipt(data: ReceiptData): void {
   // ── Save ──────────────────────────────────────────────────────────────────────
   doc.save(`receipt-${data.receiptNumber}.pdf`);
 }
+
+

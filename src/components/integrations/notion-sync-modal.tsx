@@ -125,7 +125,7 @@ export function NotionSyncModal({ isOpen, onClose }: Props) {
             <div style={{
               width: "38px", height: "38px", borderRadius: "10px",
               background: "linear-gradient(135deg, #241A14, #3D2B1F)",
-              display: "grid", placeItems: "center", color: "#FF8C42",
+              display: "grid", placeItems: "center", color: "var(--theme-color-500)",
             }}>
               <Database size={20} />
             </div>
@@ -196,7 +196,7 @@ export function NotionSyncModal({ isOpen, onClose }: Props) {
           </span>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+            <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
                 <span style={{ fontSize: "1rem" }}>💳</span>
                 <strong style={{ color: "#241A14", fontSize: "0.84rem" }}>Fee & Transaction Ledger</strong>
@@ -209,7 +209,7 @@ export function NotionSyncModal({ isOpen, onClose }: Props) {
               </div>
             </div>
 
-            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+            <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
                 <span style={{ fontSize: "1rem" }}>📋</span>
                 <strong style={{ color: "#241A14", fontSize: "0.84rem" }}>Hardship Applications</strong>
@@ -217,7 +217,7 @@ export function NotionSyncModal({ isOpen, onClose }: Props) {
               <span style={{ fontSize: "0.74rem", color: "#66564A", display: "block" }}>
                 Partial payment requests, AI match scores & approvals.
               </span>
-              <div style={{ marginTop: "6px", fontSize: "0.72rem", color: "#D35400", fontWeight: 700 }}>
+              <div style={{ marginTop: "6px", fontSize: "0.72rem", color: "var(--theme-color-900)", fontWeight: 700 }}>
                 ● {store.partialApplications.length} applications ready
               </div>
             </div>
@@ -252,7 +252,7 @@ export function NotionSyncModal({ isOpen, onClose }: Props) {
             type="button"
             onClick={onClose}
             style={{
-              background: "#FDF9F3", color: "#241A14",
+              background: "var(--theme-color-50)", color: "#241A14",
               border: "1px solid rgba(196, 154, 108, 0.4)",
               borderRadius: "10px", padding: "10px 18px", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer",
               minHeight: "44px",
@@ -265,7 +265,7 @@ export function NotionSyncModal({ isOpen, onClose }: Props) {
             onClick={handleSyncAll}
             disabled={isSyncing}
             style={{
-              background: "linear-gradient(135deg, #D35400, #FF8C42)",
+              background: "linear-gradient(135deg, var(--theme-color-900), var(--theme-color-500))",
               color: "#FFFFFF",
               border: "none",
               borderRadius: "10px",
@@ -299,3 +299,5 @@ export function NotionSyncModal({ isOpen, onClose }: Props) {
     </div>
   );
 }
+
+

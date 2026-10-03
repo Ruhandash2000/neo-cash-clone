@@ -36,7 +36,7 @@ export function FinancialTable<T extends { id: string | number }>({
     >
       <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
         <thead>
-          <tr style={{ background: "#FDF9F3", borderBottom: "1px solid rgba(196, 154, 108, 0.25)" }}>
+          <tr style={{ background: "var(--theme-color-50)", borderBottom: "1px solid rgba(196, 154, 108, 0.25)" }}>
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -61,7 +61,7 @@ export function FinancialTable<T extends { id: string | number }>({
           {loading ? (
             <tr>
               <td colSpan={columns.length} style={{ padding: "32px", textAlign: "center", color: "#7A685A" }}>
-                <div style={{ width: "28px", height: "28px", border: "3px solid rgba(211, 84, 0, 0.2)", borderTopColor: "#D35400", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 10px" }} />
+                <div style={{ width: "28px", height: "28px", border: "3px solid rgba(211, 84, 0, 0.2)", borderTopColor: "var(--theme-color-900)", borderRadius: "50%", animation: "spin 1s linear infinite", margin: "0 auto 10px" }} />
                 Loading institutional records...
               </td>
             </tr>
@@ -104,3 +104,5 @@ export function FinancialTable<T extends { id: string | number }>({
     </div>
   );
 }
+
+

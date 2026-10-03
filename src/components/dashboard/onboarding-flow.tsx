@@ -182,10 +182,10 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         {/* HEADER & STEPPER PROGRESS */}
         <div style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "20px", marginBottom: "28px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-            <span style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "#D35400", fontWeight: 800 }}>
+            <span style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--theme-color-900)", fontWeight: 800 }}>
               NEO CASH AI • INSTITUTIONAL IDENTITY VERIFICATION
             </span>
-            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", background: "#FFF7E6", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", background: "var(--theme-color-50)", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
               Step {step} of 7
             </span>
           </div>
@@ -219,7 +219,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   flex: 1,
                   height: "6px",
                   borderRadius: "999px",
-                  background: s <= step ? "#D35400" : "#EAD9C6",
+                  background: s <= step ? "var(--theme-color-900)" : "#EAD9C6",
                   transition: "background 0.3s ease",
                 }}
               />
@@ -240,7 +240,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 style={{
                   width: "100%",
                   padding: "13px 16px 13px 46px",
-                  background: "#FFF7E6",
+                  background: "var(--theme-color-50)",
                   border: "1px solid rgba(196, 154, 108, 0.4)",
                   borderRadius: "12px",
                   fontSize: "0.95rem",
@@ -268,9 +268,9 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                     boxShadow: "0 2px 8px rgba(36, 26, 20, 0.04)",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = "#D35400";
+                    e.currentTarget.style.borderColor = "var(--theme-color-900)";
                     e.currentTarget.style.transform = "translateY(-1px)";
-                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(211, 84, 0, 0.12)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px var(--theme-transparent)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.borderColor = "rgba(196, 154, 108, 0.3)";
@@ -279,7 +279,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <span style={{ fontSize: "2rem", width: "48px", height: "48px", display: "grid", placeItems: "center", background: "#FFF7E6", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                    <span style={{ fontSize: "2rem", width: "48px", height: "48px", display: "grid", placeItems: "center", background: "var(--theme-color-50)", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
                       {inst.logo}
                     </span>
                     <div>
@@ -294,7 +294,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                       </p>
                     </div>
                   </div>
-                  <button type="button" style={{ border: "none", background: "#FFF7E6", color: "#D35400", padding: "8px 14px", borderRadius: "999px", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                  <button type="button" style={{ border: "none", background: "var(--theme-color-50)", color: "var(--theme-color-900)", padding: "8px 14px", borderRadius: "999px", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}>
                     Select <ArrowRight size={14} />
                   </button>
                 </div>
@@ -348,7 +348,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 { label: "Academic Session", value: "2024–2025" },
                 { label: "Institutional Email", value: instEmailInput },
               ].map((item, idx) => (
-                <div key={idx} style={{ background: "#FFF7E6", padding: "12px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", position: "relative" }}>
+                <div key={idx} style={{ background: "var(--theme-color-50)", padding: "12px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", position: "relative" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: "0.74rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#8C7A6A", fontWeight: 700 }}>
                       {item.label}
@@ -377,30 +377,30 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         {step === 4 && (
           <div>
             {/* Completion Progress Bar */}
-            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px 22px", marginBottom: "24px" }}>
+            <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "18px 22px", marginBottom: "24px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
                 <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#241A14" }}>
                   Profile Completion
                 </span>
-                <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#D35400" }}>
+                <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "var(--theme-color-900)" }}>
                   80% Complete
                 </span>
               </div>
               <div style={{ width: "100%", height: "8px", background: "#EAD9C6", borderRadius: "999px", overflow: "hidden", marginBottom: "10px" }}>
-                <div style={{ width: "80%", height: "100%", background: "#D35400", borderRadius: "999px" }} />
+                <div style={{ width: "80%", height: "100%", background: "var(--theme-color-900)", borderRadius: "999px" }} />
               </div>
               <p style={{ margin: 0, fontSize: "0.8rem", color: "#66564A", fontWeight: 600 }}>
-                Remaining: <span style={{ color: "#D35400" }}>Add profile photo • Confirm phone number</span>
+                Remaining: <span style={{ color: "var(--theme-color-900)" }}>Add profile photo • Confirm phone number</span>
               </p>
             </div>
 
             {/* Editable Profile Inputs */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
-              <div style={{ gridColumn: "span 2", display: "flex", alignItems: "center", gap: "16px", background: "#FFF7E6", padding: "14px 18px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+              <div style={{ gridColumn: "span 2", display: "flex", alignItems: "center", gap: "16px", background: "var(--theme-color-50)", padding: "14px 18px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
                 <img
                   src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${avatarSeed}`}
                   alt="Profile Avatar"
-                  style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#FFFFFF", border: "2px solid #D35400" }}
+                  style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#FFFFFF", border: "2px solid var(--theme-color-900)" }}
                 />
                 <div>
                   <h4 style={{ margin: "0 0 4px", fontSize: "0.95rem", fontWeight: 700, color: "#241A14" }}>Choose Profile Avatar</h4>
@@ -411,8 +411,8 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                         type="button"
                         onClick={() => setAvatarSeed(seed)}
                         style={{
-                          border: avatarSeed === seed ? "2px solid #D35400" : "1px solid rgba(196, 154, 108, 0.4)",
-                          background: avatarSeed === seed ? "#FFFFFF" : "#FFF7E6",
+                          border: avatarSeed === seed ? "2px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.4)",
+                          background: avatarSeed === seed ? "#FFFFFF" : "var(--theme-color-50)",
                           padding: "4px 10px",
                           borderRadius: "999px",
                           fontSize: "0.75rem",
@@ -495,7 +495,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                 <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 700, color: "#8C7A6A", marginBottom: "6px" }}>
                   Institutional Status (Locked)
                 </label>
-                <div style={{ background: "#FFF7E6", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.3)", fontSize: "0.88rem", fontWeight: 700, color: "#047857", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ background: "var(--theme-color-50)", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.3)", fontSize: "0.88rem", fontWeight: 700, color: "#047857", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span>Verified by {selectedInst.code}</span>
                   <Lock size={14} />
                 </div>
@@ -528,24 +528,24 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "28px", textAlign: "left" }}>
-              <div style={{ background: "#FFF7E6", padding: "16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+              <div style={{ background: "var(--theme-color-50)", padding: "16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
                 <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Available Balance</span>
                 <p style={{ margin: "4px 0 0", fontSize: "1.4rem", fontWeight: 800, color: "#241A14" }}>৳0</p>
               </div>
 
-              <div style={{ background: "#FFF7E6", padding: "16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+              <div style={{ background: "var(--theme-color-50)", padding: "16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
                 <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Wallet Status</span>
                 <p style={{ margin: "4px 0 0", fontSize: "1.1rem", fontWeight: 800, color: "#047857", display: "flex", alignItems: "center", gap: "6px" }}>
                   <CheckCircle2 size={16} /> Active
                 </p>
               </div>
 
-              <div style={{ background: "#FFF7E6", padding: "14px 16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+              <div style={{ background: "var(--theme-color-50)", padding: "14px 16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
                 <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Wallet ID</span>
                 <p style={{ margin: "4px 0 0", fontSize: "0.92rem", fontWeight: 700, color: "#241A14" }}>NEO-W-2026-8842</p>
               </div>
 
-              <div style={{ background: "#FFF7E6", padding: "14px 16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+              <div style={{ background: "var(--theme-color-50)", padding: "14px 16px", borderRadius: "14px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
                 <span style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Daily Transaction Limit</span>
                 <p style={{ margin: "4px 0 0", fontSize: "0.92rem", fontWeight: 700, color: "#241A14" }}>৳50,000 / day</p>
               </div>
@@ -597,13 +597,13 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                           pm.status === "Connected"
                             ? "rgba(4, 120, 87, 0.15)"
                             : pm.status === "Available"
-                            ? "rgba(211, 84, 0, 0.12)"
+                            ? "var(--theme-transparent)"
                             : "rgba(140, 122, 106, 0.12)",
                         color:
                           pm.status === "Connected"
                             ? "#047857"
                             : pm.status === "Available"
-                            ? "#D35400"
+                            ? "var(--theme-color-900)"
                             : "#8C7A6A",
                       }}
                     >
@@ -615,7 +615,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
                       onClick={() => togglePaymentMethod(pm.id)}
                       style={{
                         border: "1px solid rgba(196, 154, 108, 0.4)",
-                        background: "#FFF7E6",
+                        background: "var(--theme-color-50)",
                         color: "#241A14",
                         padding: "6px 14px",
                         borderRadius: "8px",
@@ -645,8 +645,8 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
         {/* STEP 7: SUCCESS STATE */}
         {step === 7 && (
           <div style={{ textAlign: "center", padding: "16px 0" }}>
-            <div style={{ width: "72px", height: "72px", background: "rgba(211, 84, 0, 0.1)", borderRadius: "50%", display: "grid", placeItems: "center", margin: "0 auto 16px", border: "2px solid #D35400" }}>
-              <Sparkles size={36} style={{ color: "#D35400" }} />
+            <div style={{ width: "72px", height: "72px", background: "rgba(211, 84, 0, 0.1)", borderRadius: "50%", display: "grid", placeItems: "center", margin: "0 auto 16px", border: "2px solid var(--theme-color-900)" }}>
+              <Sparkles size={36} style={{ color: "var(--theme-color-900)" }} />
             </div>
 
             <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "0 0 8px", fontFamily: "var(--font-display)", fontStyle: "italic" }}>
@@ -657,7 +657,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
             </p>
 
             {/* Summary Confirmation Card */}
-            <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "18px", padding: "20px 24px", textAlign: "left", marginBottom: "28px" }}>
+            <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "18px", padding: "20px 24px", textAlign: "left", marginBottom: "28px" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", borderBottom: "1px dashed rgba(196, 154, 108, 0.4)", paddingBottom: "10px" }}>
                 <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#047857" }}>
                   ✓ VERIFIED STUDENT IDENTITY
@@ -694,3 +694,5 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
     </div>
   );
 }
+
+

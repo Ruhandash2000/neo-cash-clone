@@ -20,7 +20,7 @@ interface BeforeInstallPromptEvent extends Event {
 export function PWAManager() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner]       = useState(false);
-  const [isOffline, setIsOffline]         = useState(!navigator.onLine);
+  const [isOffline, setIsOffline]         = useState(false); // Assume online initially for SSR
   const [swReady, setSwReady]             = useState(false);
 
   // ── Register Service Worker ────────────────────────────────────────────────
@@ -54,6 +54,9 @@ export function PWAManager() {
 
   // ── Online / Offline ───────────────────────────────────────────────────────
   useEffect(() => {
+    if (typeof navigator !== 'undefined' && 'onLine' in navigator) {
+      setIsOffline(!navigator.onLine);
+    }
     const goOnline  = () => setIsOffline(false);
     const goOffline = () => setIsOffline(true);
     window.addEventListener("online",  goOnline);
@@ -130,7 +133,7 @@ export function PWAManager() {
                 onClick={() => void handleInstall()}
                 style={{
                   flex: 1, padding: "9px 14px", borderRadius: "10px",
-                  background: "#D35400", color: "#fff", border: "none",
+                  background: "var(--theme-color-900)", color: "#fff", border: "none",
                   fontWeight: 800, fontSize: "0.8rem", cursor: "pointer",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
                 }}
@@ -180,10 +183,10 @@ export function PWAManager() {
           display: "flex", alignItems: "center", gap: "10px",
           animation: "slideUp 0.3s ease",
         }}>
-          <Smartphone size={20} style={{ color: "#D35400", flexShrink: 0 }} />
+          <Smartphone size={20} style={{ color: "var(--theme-color-900)", flexShrink: 0 }} />
           <span>
-            Tap <strong style={{ color: "#D35400" }}>Share ↑</strong> then{" "}
-            <strong style={{ color: "#D35400" }}>Add to Home Screen</strong> to install Neo Cashless.
+            Tap <strong style={{ color: "var(--theme-color-900)" }}>Share ↑</strong> then{" "}
+            <strong style={{ color: "var(--theme-color-900)" }}>Add to Home Screen</strong> to install Neo Cashless.
           </span>
         </div>
       )}
@@ -197,3 +200,4 @@ export function PWAManager() {
     </>
   );
 }
+

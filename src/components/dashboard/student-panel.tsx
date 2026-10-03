@@ -6,11 +6,11 @@
 
  * Strict Visual Hierarchy & Autumn Vibes Palette System:
 
- * - App Canvas Background: #FFF7E6 (Warm Ivory)
+ * - App Canvas Background: var(--theme-color-50) (Warm Ivory)
 
  * - Level 1 Surface: #FFFFFF (Clean White)
 
- * - Level 2 Subtle Surface: #FDF9F3 (Warm Beige)
+ * - Level 2 Subtle Surface: var(--theme-color-50) (Warm Beige)
 
  * - Primary Text: #241A14 (Dark Warm Charcoal - Headings, Numbers, Titles)
 
@@ -18,9 +18,9 @@
 
  * - Muted Text: #8C7A6A (Timestamps, Helper Notes)
 
- * - Primary Action / Brand: #D35400 (Burnt Orange)
+ * - Primary Action / Brand: var(--theme-color-900) (Burnt Orange)
 
- * - Secondary Accent: #FF8C42 (Warm Orange)
+ * - Secondary Accent: var(--theme-color-500) (Warm Orange)
 
  * - Special Attention / Highlight: #F7B733 (Golden Yellow)
 
@@ -803,13 +803,13 @@ export function StudentPanel({
 
   return (
 
-    <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* 1. OVERVIEW TAB */}
 
       {activeTab === "overview" && (
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
           
 
@@ -863,7 +863,7 @@ export function StudentPanel({
 
               onClick={() => setShowTopUpModal(true)}
 
-              style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
+              style={{ background: "var(--theme-color-900)", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
 
             >
 
@@ -887,7 +887,7 @@ export function StudentPanel({
 
                 background: "#FFFFFF",
 
-                border: "2px solid #D35400",
+                border: "2px solid var(--theme-color-900)",
 
                 borderRadius: "16px",
 
@@ -909,13 +909,13 @@ export function StudentPanel({
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 
-                <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "var(--theme-color-900)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
 
                   AVAILABLE BALANCE (PRIMARY)
 
                 </span>
 
-                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.05)", border: "1px solid rgba(211, 84, 0, 0.25)", color: "var(--theme-color-900)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
 
                   ACTIVE WALLET
 
@@ -957,13 +957,13 @@ export function StudentPanel({
 
                 background: "#FFFFFF",
 
-                border: "1px solid rgba(196, 154, 108, 0.3)",
+                border: "1px solid rgba(211, 84, 0, 0.2)",
 
                 borderRadius: "16px",
 
-                padding: "18px 20px",
+                padding: "20px 24px",
 
-                boxShadow: "0 3px 10px rgba(36, 26, 20, 0.03)",
+                boxShadow: "0 4px 12px rgba(211, 84, 0, 0.05)",
 
                 display: "flex",
 
@@ -1019,13 +1019,13 @@ export function StudentPanel({
 
                 background: "#FFFFFF",
 
-                border: "1px solid rgba(196, 154, 108, 0.3)",
+                border: "1px solid rgba(211, 84, 0, 0.2)",
 
                 borderRadius: "16px",
 
-                padding: "18px 20px",
+                padding: "20px 24px",
 
-                boxShadow: "0 3px 10px rgba(36, 26, 20, 0.03)",
+                boxShadow: "0 4px 12px rgba(211, 84, 0, 0.05)",
 
                 display: "flex",
 
@@ -1045,7 +1045,7 @@ export function StudentPanel({
 
                 </span>
 
-                <span style={{ fontSize: "0.72rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
+                <span style={{ fontSize: "0.72rem", background: "rgba(4, 120, 87, 0.05)", border: "1px solid rgba(4, 120, 87, 0.25)", color: "#047857", padding: "2px 8px", borderRadius: "999px", fontWeight: 700 }}>
 
                   SETTLED
 
@@ -1085,13 +1085,13 @@ export function StudentPanel({
 
                 background: "#FFFFFF",
 
-                border: "1px solid rgba(196, 154, 108, 0.3)",
+                border: "1px solid rgba(211, 84, 0, 0.2)",
 
                 borderRadius: "16px",
 
-                padding: "18px 20px",
+                padding: "20px 24px",
 
-                boxShadow: "0 3px 10px rgba(36, 26, 20, 0.03)",
+                boxShadow: "0 4px 12px rgba(211, 84, 0, 0.05)",
 
                 display: "flex",
 
@@ -1119,7 +1119,7 @@ export function StudentPanel({
 
               <div style={{ margin: "8px 0 4px" }}>
 
-                <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "#D35400", fontFeatureSettings: "'tnum'" }}>
+                <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--theme-color-900)", fontFeatureSettings: "'tnum'" }}>
 
                   {formatTaka(store.balances.pendingAmount || 2000, false)}
 
@@ -1143,9 +1143,9 @@ export function StudentPanel({
 
           {/* QUICK ACTIONS BAR */}
 
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(211, 84, 0, 0.2)", borderRadius: "16px", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "flex-start", flexWrap: "wrap", gap: "16px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.05)" }}>
 
-            <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <span style={{ fontSize: "0.85rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.05em", flexShrink: 0 }}>
 
               Quick Actions
 
@@ -1153,7 +1153,7 @@ export function StudentPanel({
 
 
 
-            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", flex: 1 }}>
 
               <button
 
@@ -1163,7 +1163,7 @@ export function StudentPanel({
 
                 style={{
 
-                  background: "#FFF7E6",
+                  background: "var(--theme-color-50)",
 
                   border: "1px solid rgba(196, 154, 108, 0.4)",
 
@@ -1189,7 +1189,7 @@ export function StudentPanel({
 
               >
 
-                <CreditCard size={15} style={{ color: "#D35400" }} /> Pay Fees
+                <CreditCard size={15} style={{ color: "var(--theme-color-900)" }} /> Pay Fees
 
               </button>
 
@@ -1203,7 +1203,7 @@ export function StudentPanel({
 
                 style={{
 
-                  background: "#FFF7E6",
+                  background: "var(--theme-color-50)",
 
                   border: "1px solid rgba(196, 154, 108, 0.4)",
 
@@ -1229,7 +1229,7 @@ export function StudentPanel({
 
               >
 
-                <Wallet size={15} style={{ color: "#D35400" }} /> Wallet
+                <Wallet size={15} style={{ color: "var(--theme-color-900)" }} /> Wallet
 
               </button>
 
@@ -1243,7 +1243,7 @@ export function StudentPanel({
 
                 style={{
 
-                  background: "#FFF7E6",
+                  background: "var(--theme-color-50)",
 
                   border: "1px solid rgba(196, 154, 108, 0.4)",
 
@@ -1269,7 +1269,7 @@ export function StudentPanel({
 
               >
 
-                <FileText size={15} style={{ color: "#D35400" }} /> Transactions
+                <FileText size={15} style={{ color: "var(--theme-color-900)" }} /> Transactions
 
               </button>
 
@@ -1285,11 +1285,11 @@ export function StudentPanel({
 
           <div>
 
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(211, 84, 0, 0.2)", borderRadius: "16px", padding: "16px 20px", display: "flex", flexDirection: "column", gap: "12px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.05)" }}>
 
               <div>
 
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
 
                   <h3 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 700, color: "#241A14" }}>
 
@@ -1303,11 +1303,11 @@ export function StudentPanel({
 
 
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 
                   {store.notifications.slice(0, 3).map((notif) => (
 
-                    <div key={notif.id} style={{ padding: "10px 12px", background: "#FFF7E6", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
+                    <div key={notif.id} style={{ padding: "10px 12px", background: "var(--theme-color-50)", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
 
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2px" }}>
 
@@ -1329,10 +1329,9 @@ export function StudentPanel({
 
 
 
-              <div style={{ marginTop: "14px", fontSize: "0.78rem", color: "#8C7A6A", textAlign: "right" }}>
-
-                Official Notices verified by {store.studentProfile.institution}
-
+              <div style={{ marginTop: "12px", fontSize: "0.78rem", color: "#8C7A6A", textAlign: "left", display: "flex", alignItems: "center", gap: "6px" }}>
+                <ShieldCheck size={14} style={{ color: "var(--theme-color-900)" }} />
+                <span>Official Notices verified by <strong style={{ color: "#66564A" }}>{store.studentProfile.institution}</strong></span>
               </div>
 
             </div>
@@ -1365,7 +1364,7 @@ export function StudentPanel({
 
                   onClick={() => setActiveTab("fees")}
 
-                  style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
 
                 >
 
@@ -1463,7 +1462,7 @@ export function StudentPanel({
 
                   onClick={() => setActiveTab("transactions")}
 
-                  style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
 
                 >
 
@@ -1521,7 +1520,7 @@ export function StudentPanel({
 
                           placeItems: "center",
 
-                          color: "#D35400",
+                          color: "var(--theme-color-900)",
 
                         }}
 
@@ -1565,7 +1564,7 @@ export function StudentPanel({
 
                         onClick={() => onOpenReceipt(txn)}
 
-                        style={{ background: "none", border: "none", color: "#D35400", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0, marginTop: "2px" }}
+                        style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0, marginTop: "2px" }}
 
                       >
 
@@ -1693,7 +1692,7 @@ export function StudentPanel({
 
         return (
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
 
             
 
@@ -1719,9 +1718,9 @@ export function StudentPanel({
 
 
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontSize: "0.82rem", color: "#66564A" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "8px 14px", borderRadius: "10px", fontSize: "0.82rem", color: "#66564A" }}>
 
-                <ShieldCheck size={16} style={{ color: "#D35400" }} />
+                <ShieldCheck size={16} style={{ color: "var(--theme-color-900)" }} />
 
                 <span>Fee Amounts Assigned by <strong>{store.studentProfile.institution}</strong></span>
 
@@ -1923,11 +1922,11 @@ export function StudentPanel({
 
                         style={{
 
-                          background: isActive ? "#D35400" : "#FDF9F3",
+                          background: isActive ? "var(--theme-color-900)" : "var(--theme-color-50)",
 
                           color: isActive ? "#FFFFFF" : "#241A14",
 
-                          border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
+                          border: isActive ? "1px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.3)",
 
                           padding: "6px 14px",
 
@@ -2001,7 +2000,7 @@ export function StudentPanel({
 
                         padding: "8px 12px",
 
-                        background: "#FDF9F3",
+                        background: "var(--theme-color-50)",
 
                         border: "1px solid rgba(196, 154, 108, 0.35)",
 
@@ -2061,7 +2060,7 @@ export function StudentPanel({
 
                         padding: "8px 12px 8px 34px",
 
-                        background: "#FDF9F3",
+                        background: "var(--theme-color-50)",
 
                         border: "1px solid rgba(196, 154, 108, 0.35)",
 
@@ -2179,7 +2178,7 @@ export function StudentPanel({
 
                             style={{
 
-                              background: "#FDF9F3",
+                              background: "var(--theme-color-50)",
 
                               border: "1px solid rgba(196, 154, 108, 0.25)",
 
@@ -2385,7 +2384,7 @@ export function StudentPanel({
 
                             style={{
 
-                              background: "#FDF9F3",
+                              background: "var(--theme-color-50)",
 
                               color: "#241A14",
 
@@ -2497,9 +2496,9 @@ export function StudentPanel({
 
                                   style={{
 
-                                    background: "#FDF9F3",
+                                    background: "var(--theme-color-50)",
 
-                                    color: "#D35400",
+                                    color: "var(--theme-color-900)",
 
                                     border: "1px solid rgba(211, 84, 0, 0.4)",
 
@@ -2535,7 +2534,7 @@ export function StudentPanel({
 
                                 style={{
 
-                                  background: "#D35400",
+                                  background: "var(--theme-color-900)",
 
                                   color: "#FFFFFF",
 
@@ -2599,7 +2598,7 @@ export function StudentPanel({
 
                   {store.partialApplications.map((app) => (
 
-                    <div key={app.id} style={{ padding: "14px", background: "#FDF9F3", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                    <div key={app.id} style={{ padding: "14px", background: "var(--theme-color-50)", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
 
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
 
@@ -2669,7 +2668,7 @@ export function StudentPanel({
 
                     <thead>
 
-                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <tr style={{ background: "var(--theme-color-50)", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
 
                         <th style={{ padding: "10px 14px", fontWeight: 700 }}>Fee Title</th>
 
@@ -2733,7 +2732,7 @@ export function StudentPanel({
 
                               }}
 
-                              style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", padding: 0 }}
+                              style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", padding: 0 }}
 
                             >
 
@@ -2771,7 +2770,7 @@ export function StudentPanel({
 
       {activeTab === "wallet" && (
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
 
           
 
@@ -2805,7 +2804,7 @@ export function StudentPanel({
 
                 onClick={() => setShowTopUpModal(true)}
 
-                style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
+                style={{ background: "var(--theme-color-900)", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700 }}
 
               >
 
@@ -2827,13 +2826,13 @@ export function StudentPanel({
 
             {/* HERO BALANCE CARD */}
 
-            <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "18px", padding: "24px", boxShadow: "0 8px 24px rgba(211, 84, 0, 0.08)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div style={{ background: "#FFFFFF", border: "2px solid var(--theme-color-900)", borderRadius: "18px", padding: "20px", boxShadow: "0 8px 24px rgba(211, 84, 0, 0.08)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
 
               <div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
 
-                  <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "var(--theme-color-900)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
 
                     TOTAL AVAILABLE BALANCE
 
@@ -2861,7 +2860,7 @@ export function StudentPanel({
 
 
 
-                <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "0.85rem" }}>
+                <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px 16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "0.85rem" }}>
 
                   <div>
 
@@ -2893,7 +2892,7 @@ export function StudentPanel({
 
                   onClick={() => setShowTopUpModal(true)}
 
-                  style={{ flex: 1, background: "#D35400", color: "#FFFFFF", border: "none", padding: "11px", borderRadius: "10px", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                  style={{ flex: 1, background: "var(--theme-color-900)", color: "#FFFFFF", border: "none", padding: "11px", borderRadius: "10px", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
 
                 >
 
@@ -2907,11 +2906,11 @@ export function StudentPanel({
 
                   onClick={() => setActiveTab("fees")}
 
-                  style={{ flex: 1, background: "#FFF7E6", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "11px", borderRadius: "10px", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                  style={{ flex: 1, background: "var(--theme-color-50)", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "11px", borderRadius: "10px", fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
 
                 >
 
-                  <CreditCard size={16} style={{ color: "#D35400" }} /> Pay Assigned Fees
+                  <CreditCard size={16} style={{ color: "var(--theme-color-900)" }} /> Pay Assigned Fees
 
                 </button>
 
@@ -2923,7 +2922,7 @@ export function StudentPanel({
 
             {/* WALLET IDENTITY & DAILY LIMIT CARD */}
 
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px", boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "20px", boxShadow: "0 4px 14px rgba(36, 26, 20, 0.03)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
 
               <div>
 
@@ -2947,7 +2946,7 @@ export function StudentPanel({
 
                     <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Wallet Account ID</span>
 
-                    <strong style={{ color: "#D35400", fontWeight: 800 }}>NEO-W-2026-8842</strong>
+                    <strong style={{ color: "var(--theme-color-900)", fontWeight: 800 }}>NEO-W-2026-8842</strong>
 
                   </div>
 
@@ -2981,7 +2980,7 @@ export function StudentPanel({
 
                 {/* Daily Spending Limit Bar */}
 
-                <div style={{ background: "#FFF7E6", padding: "14px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                <div style={{ background: "var(--theme-color-50)", padding: "14px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
 
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", fontWeight: 700, marginBottom: "6px", color: "#66564A" }}>
 
@@ -2993,7 +2992,7 @@ export function StudentPanel({
 
                   <div style={{ width: "100%", height: "6px", background: "#EAD9C6", borderRadius: "999px", overflow: "hidden" }}>
 
-                    <div style={{ width: "24%", height: "100%", background: "#D35400", borderRadius: "999px" }} />
+                    <div style={{ width: "24%", height: "100%", background: "var(--theme-color-900)", borderRadius: "999px" }} />
 
                   </div>
 
@@ -3005,7 +3004,7 @@ export function StudentPanel({
 
               {/* Subtle Security & Privacy Card */}
 
-              <div style={{ marginTop: "16px", background: "#FDF9F3", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", color: "#66564A" }}>
+              <div style={{ marginTop: "16px", background: "var(--theme-color-50)", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", color: "#66564A" }}>
 
                 <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
 
@@ -3027,7 +3026,7 @@ export function StudentPanel({
 
           {/* CONNECTED PAYMENT METHODS & MOBILE BANKING */}
 
-          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "24px" }}>
+          <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "18px", padding: "20px" }}>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
 
@@ -3049,7 +3048,7 @@ export function StudentPanel({
 
 
 
-              <span style={{ fontSize: "0.78rem", color: "#8C7A6A", background: "#FFF7E6", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)", fontWeight: 600 }}>
+              <span style={{ fontSize: "0.78rem", color: "#8C7A6A", background: "var(--theme-color-50)", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)", fontWeight: 600 }}>
 
                 {store.paymentMethods.length} Methods Configured
 
@@ -3069,7 +3068,7 @@ export function StudentPanel({
 
                   style={{
 
-                    background: "#FDF9F3",
+                    background: "var(--theme-color-50)",
 
                     border: "1px solid rgba(196, 154, 108, 0.3)",
 
@@ -3089,7 +3088,7 @@ export function StudentPanel({
 
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
 
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", display: "grid", placeItems: "center", fontSize: "1.2rem" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", display: "grid", placeItems: "center", fontSize: "1.2rem" }}>
 
                       {pm.type === "bkash" ? "📱" : pm.type === "rocket" ? "🚀" : pm.type === "visa" ? "💳" : "💳"}
 
@@ -3131,7 +3130,7 @@ export function StudentPanel({
 
                       }}
 
-                      style={{ background: "none", border: "none", color: "#D35400", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0 }}
+                      style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontSize: "0.78rem", fontWeight: 700, cursor: "pointer", padding: 0 }}
 
                     >
 
@@ -3169,7 +3168,7 @@ export function StudentPanel({
 
                 onClick={() => setActiveTab("transactions")}
 
-                style={{ background: "none", border: "none", color: "#D35400", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
+                style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }}
 
               >
 
@@ -3187,7 +3186,7 @@ export function StudentPanel({
 
                 <thead>
 
-                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <tr style={{ background: "var(--theme-color-50)", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
 
                     <th style={{ padding: "14px 18px", fontWeight: 700, whiteSpace: "nowrap" }}>Transaction ID</th>
 
@@ -3211,7 +3210,7 @@ export function StudentPanel({
 
                     <tr key={txn.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
 
-                      <td style={{ padding: "14px 18px", fontWeight: 700, color: "#D35400", whiteSpace: "nowrap" }}>{txn.id}</td>
+                      <td style={{ padding: "14px 18px", fontWeight: 700, color: "var(--theme-color-900)", whiteSpace: "nowrap" }}>{txn.id}</td>
 
                       <td style={{ padding: "14px 18px", fontWeight: 600, color: "#241A14", whiteSpace: "nowrap" }}>{txn.title}</td>
 
@@ -3229,7 +3228,7 @@ export function StudentPanel({
 
                           onClick={() => onOpenReceipt(txn)}
 
-                          style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "5px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                          style={{ background: "var(--theme-color-50)", color: "var(--theme-color-900)", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "5px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
 
                         >
 
@@ -3299,11 +3298,11 @@ export function StudentPanel({
 
 
 
-            <div className="mobile-impact-points" style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "14px", textAlign: "right" }}>
+            <div className="mobile-impact-points" style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "10px 18px", borderRadius: "14px", textAlign: "right" }}>
 
               <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontWeight: 700, textTransform: "uppercase" }}>My Impact Points</span>
 
-              <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#D35400", margin: "2px 0 0" }}>
+              <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--theme-color-900)", margin: "2px 0 0" }}>
 
                 {store.donations.points} Pts
 
@@ -3321,7 +3320,7 @@ export function StudentPanel({
 
             <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
 
-              <Award size={16} style={{ color: "#D35400" }} /> Institutional Impact Standing (5 Tiers)
+              <Award size={16} style={{ color: "var(--theme-color-900)" }} /> Institutional Impact Standing (5 Tiers)
 
             </div>
 
@@ -3329,19 +3328,19 @@ export function StudentPanel({
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
 
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
 
                 <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Class Rank</span>
 
                 <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankClass}</h3>
 
-                <span style={{ fontSize: "0.76rem", color: "#D35400", fontWeight: 700 }}>CSE 1st Year</span>
+                <span style={{ fontSize: "0.76rem", color: "var(--theme-color-900)", fontWeight: 700 }}>CSE 1st Year</span>
 
               </div>
 
 
 
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
 
                 <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Section Rank</span>
 
@@ -3353,7 +3352,7 @@ export function StudentPanel({
 
 
 
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
 
                 <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Department Rank</span>
 
@@ -3365,7 +3364,7 @@ export function StudentPanel({
 
 
 
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "12px", padding: "14px" }}>
 
                 <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Institution Rank</span>
 
@@ -3377,9 +3376,9 @@ export function StudentPanel({
 
 
 
-              <div style={{ background: "#FDF9F3", border: "1.5px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "14px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1.5px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "14px" }}>
 
-                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Nationwide Rank</span>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--theme-color-900)", textTransform: "uppercase" }}>Nationwide Rank</span>
 
                 <h3 style={{ fontSize: "1.6rem", fontWeight: 800, color: "#241A14", margin: "4px 0 2px" }}>#{store.donations.rankNational}</h3>
 
@@ -3399,7 +3398,7 @@ export function StudentPanel({
 
             {/* DONATION FORM & PRESET AMOUNTS */}
 
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px" }}>
 
               <h3 style={{ margin: "0 0 4px", fontSize: "1.1rem", fontWeight: 700, color: "#241A14" }}>
 
@@ -3455,11 +3454,11 @@ export function StudentPanel({
 
                         style={{
 
-                          background: donationAmount === preset ? "#D35400" : "#FDF9F3",
+                          background: donationAmount === preset ? "var(--theme-color-900)" : "var(--theme-color-50)",
 
                           color: donationAmount === preset ? "#FFFFFF" : "#241A14",
 
-                          border: donationAmount === preset ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.35)",
+                          border: donationAmount === preset ? "1px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.35)",
 
                           padding: "8px 16px",
 
@@ -3491,11 +3490,11 @@ export function StudentPanel({
 
                       style={{
 
-                        background: donationAmount > 1000 ? "#D35400" : "#FDF9F3",
+                        background: donationAmount > 1000 ? "var(--theme-color-900)" : "var(--theme-color-50)",
 
                         color: donationAmount > 1000 ? "#FFFFFF" : "#241A14",
 
-                        border: donationAmount > 1000 ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.35)",
+                        border: donationAmount > 1000 ? "1px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.35)",
 
                         padding: "8px 16px",
 
@@ -3543,13 +3542,13 @@ export function StudentPanel({
 
                     onChange={(e) => setDonationAmount(Number(e.target.value))}
 
-                    style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "1.1rem", fontWeight: 800 }}
+                    style={{ width: "100%", padding: "10px 14px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "1.1rem", fontWeight: 800 }}
 
                   />
 
                   <div style={{ fontSize: "0.78rem", color: "#66564A", marginTop: "4px", display: "flex", justifyContent: "space-between" }}>
 
-                    <span>Calculated Award: <strong style={{ color: "#D35400" }}>{Math.floor(donationAmount / 100)} Impact Points</strong></span>
+                    <span>Calculated Award: <strong style={{ color: "var(--theme-color-900)" }}>{Math.floor(donationAmount / 100)} Impact Points</strong></span>
 
                     <span>Ratio: ৳100 = 1 Point</span>
 
@@ -3575,7 +3574,7 @@ export function StudentPanel({
 
                     onChange={(e) => setDonationMethod(e.target.value)}
 
-                    style={{ width: "100%", padding: "10px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem", fontWeight: 600 }}
+                    style={{ width: "100%", padding: "10px 14px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.9rem", fontWeight: 600 }}
 
                   >
 
@@ -3593,7 +3592,7 @@ export function StudentPanel({
 
 
 
-                <button type="submit" className="ms-btn-primary" style={{ background: "#D35400", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontSize: "0.92rem", fontWeight: 700, marginTop: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <button type="submit" className="ms-btn-primary" style={{ background: "var(--theme-color-900)", color: "#FFFFFF", padding: "12px", borderRadius: "10px", fontSize: "0.92rem", fontWeight: 700, marginTop: "4px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
 
                   <HeartHandshake size={18} /> Confirm Contribution of {formatTaka(donationAmount, false)}
 
@@ -3607,7 +3606,7 @@ export function StudentPanel({
 
             {/* TOP CONTRIBUTORS LEADERBOARD */}
 
-            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "24px" }}>
+            <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px" }}>
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
 
@@ -3617,7 +3616,7 @@ export function StudentPanel({
 
                 </h3>
 
-                <span style={{ fontSize: "0.75rem", background: "#FFF7E6", color: "#D35400", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, border: "1px solid rgba(211, 84, 0, 0.3)" }}>
+                <span style={{ fontSize: "0.75rem", background: "var(--theme-color-50)", color: "var(--theme-color-900)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, border: "1px solid rgba(211, 84, 0, 0.3)" }}>
 
                   Dhaka City College CSE
 
@@ -3657,11 +3656,11 @@ export function StudentPanel({
 
                       padding: "12px 14px",
 
-                      background: user.rank === 3 ? "#FFF7E6" : "#FDF9F3",
+                      background: user.rank === 3 ? "var(--theme-color-50)" : "var(--theme-color-50)",
 
                       borderRadius: "10px",
 
-                      border: user.rank === 3 ? "1.5px solid #D35400" : "1px solid rgba(196, 154, 108, 0.2)",
+                      border: user.rank === 3 ? "1.5px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.2)",
 
                     }}
 
@@ -3681,7 +3680,7 @@ export function StudentPanel({
 
                     </div>
 
-                    <span style={{ fontWeight: 800, color: "#D35400", fontSize: "0.92rem" }}>{user.points} Impact Pts</span>
+                    <span style={{ fontWeight: 800, color: "var(--theme-color-900)", fontSize: "0.92rem" }}>{user.points} Impact Pts</span>
 
                   </div>
 
@@ -3811,7 +3810,7 @@ export function StudentPanel({
 
               <div style={{ display: "flex", gap: "10px" }}>
 
-                <span style={{ fontSize: "0.78rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "999px", fontWeight: 700, color: "#241A14", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                <span style={{ fontSize: "0.78rem", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "999px", fontWeight: 700, color: "#241A14", display: "inline-flex", alignItems: "center", gap: "6px" }}>
 
                   <ShieldCheck size={14} style={{ color: "#047857" }} /> Verified Audit Ledger
 
@@ -3851,7 +3850,7 @@ export function StudentPanel({
 
                 <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Total Refunded Amount</span>
 
-                <h3 style={{ margin: "4px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#D35400", fontFeatureSettings: "'tnum'" }}>{formatTaka(totalRefunded, false)}</h3>
+                <h3 style={{ margin: "4px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "var(--theme-color-900)", fontFeatureSettings: "'tnum'" }}>{formatTaka(totalRefunded, false)}</h3>
 
               </div>
 
@@ -3913,11 +3912,11 @@ export function StudentPanel({
 
                         style={{
 
-                          background: isActive ? "#D35400" : "#FDF9F3",
+                          background: isActive ? "var(--theme-color-900)" : "var(--theme-color-50)",
 
                           color: isActive ? "#FFFFFF" : "#241A14",
 
-                          border: isActive ? "1px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)",
+                          border: isActive ? "1px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.3)",
 
                           padding: "6px 14px",
 
@@ -3995,7 +3994,7 @@ export function StudentPanel({
 
                       padding: "8px 12px 8px 34px",
 
-                      background: "#FDF9F3",
+                      background: "var(--theme-color-50)",
 
                       border: "1px solid rgba(196, 154, 108, 0.35)",
 
@@ -4063,7 +4062,7 @@ export function StudentPanel({
 
                     <thead>
 
-                      <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <tr style={{ background: "var(--theme-color-50)", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
 
                         <th style={{ padding: "14px 18px", fontWeight: 700 }}>Transaction ID</th>
 
@@ -4105,7 +4104,7 @@ export function StudentPanel({
 
                             {/* Transaction ID */}
 
-                            <td style={{ padding: "14px 18px", fontWeight: 800, color: "#D35400" }}>
+                            <td style={{ padding: "14px 18px", fontWeight: 800, color: "var(--theme-color-900)" }}>
 
                               {txn.id}
 
@@ -4151,7 +4150,7 @@ export function StudentPanel({
 
                                 style={{
 
-                                  background: "#FFF7E6",
+                                  background: "var(--theme-color-50)",
 
                                   border: "1px solid rgba(196, 154, 108, 0.3)",
 
@@ -4229,7 +4228,7 @@ export function StudentPanel({
 
                                   style={{
 
-                                    background: "#FDF9F3",
+                                    background: "var(--theme-color-50)",
 
                                     color: "#241A14",
 
@@ -4350,7 +4349,7 @@ export function StudentPanel({
               <div>
                 <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.15rem", fontWeight: 800 }}>Apply for Partial Payment</h3>
                 <p style={{ margin: "3px 0 0", fontSize: "0.78rem", color: "#8C7A6A" }}>
-                  {selectedPartialFee.title} · Full amount: <strong style={{ color: "#D35400" }}>{formatTaka(selectedPartialFee.amount, false)}</strong>
+                  {selectedPartialFee.title} · Full amount: <strong style={{ color: "var(--theme-color-900)" }}>{formatTaka(selectedPartialFee.amount, false)}</strong>
                 </p>
               </div>
               <button
@@ -4387,12 +4386,12 @@ export function StudentPanel({
                     max={selectedPartialFee.amount - 100}
                     value={partialRequestedAmount}
                     onChange={(e) => setPartialRequestedAmount(Number(e.target.value))}
-                    style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontWeight: 700, boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "9px 12px", background: "var(--theme-color-50)", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontWeight: 700, boxSizing: "border-box" }}
                   />
                 </div>
                 <div>
                   <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Remaining (auto)</label>
-                  <div style={{ padding: "9px 12px", background: "rgba(211,84,0,0.06)", border: "1px solid rgba(211,84,0,0.2)", borderRadius: "10px", color: "#D35400", fontWeight: 700 }}>
+                  <div style={{ padding: "9px 12px", background: "rgba(211,84,0,0.06)", border: "1px solid rgba(211,84,0,0.2)", borderRadius: "10px", color: "var(--theme-color-900)", fontWeight: 700 }}>
                     {formatTaka(Math.max(0, selectedPartialFee.amount - partialRequestedAmount), false)}
                   </div>
                 </div>
@@ -4407,7 +4406,7 @@ export function StudentPanel({
                     value={guardianName}
                     onChange={(e) => setGuardianName(e.target.value)}
                     placeholder="Full name"
-                    style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "9px 12px", background: "var(--theme-color-50)", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", boxSizing: "border-box" }}
                   />
                 </div>
                 <div>
@@ -4417,20 +4416,20 @@ export function StudentPanel({
                     value={guardianPhone}
                     onChange={(e) => setGuardianPhone(e.target.value)}
                     placeholder="+880 1X-XXXXXXXX"
-                    style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "9px 12px", background: "var(--theme-color-50)", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", boxSizing: "border-box" }}
                   />
                 </div>
               </div>
 
               {/* Reason */}
               <div>
-                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Reason for Request <span style={{ color: "#D35400" }}>*</span></label>
+                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#241A14", display: "block", marginBottom: "5px" }}>Reason for Request <span style={{ color: "var(--theme-color-900)" }}>*</span></label>
                 <textarea
                   rows={2}
                   value={partialReason}
                   onChange={(e) => setPartialReason(e.target.value)}
                   placeholder="Describe your temporary financial situation clearly..."
-                  style={{ width: "100%", padding: "9px 12px", background: "#FDF9F3", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem", resize: "vertical", boxSizing: "border-box" }}
+                  style={{ width: "100%", padding: "9px 12px", background: "var(--theme-color-50)", border: "1px solid rgba(196,154,108,0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem", resize: "vertical", boxSizing: "border-box" }}
                 />
               </div>
 
@@ -4472,9 +4471,9 @@ export function StudentPanel({
                   display: "flex", alignItems: "flex-start", gap: "8px",
                   fontSize: "0.78rem", color: "#66564A",
                 }}>
-                  <AlertTriangle size={15} style={{ color: "#D35400", flexShrink: 0, marginTop: "2px" }} />
+                  <AlertTriangle size={15} style={{ color: "var(--theme-color-900)", flexShrink: 0, marginTop: "2px" }} />
                   <span>
-                    <strong style={{ color: "#D35400" }}>Required:</strong> Upload both documents above (Signed Application Form & ID Card) and run the AI signature check before you can submit your application.
+                    <strong style={{ color: "var(--theme-color-900)" }}>Required:</strong> Upload both documents above (Signed Application Form & ID Card) and run the AI signature check before you can submit your application.
                   </span>
                 </div>
               )}
@@ -4504,7 +4503,7 @@ export function StudentPanel({
                     setDocVerificationResult(null);
                   }}
                   style={{
-                    background: "#FDF9F3", color: "#241A14",
+                    background: "var(--theme-color-50)", color: "#241A14",
                     border: "1px solid rgba(196,154,108,0.3)", padding: "10px 18px",
                     borderRadius: "10px", fontWeight: 600, cursor: "pointer",
                   }}
@@ -4525,7 +4524,7 @@ export function StudentPanel({
                           ? "rgba(196,154,108,0.3)"
                           : isAutoApproved
                           ? "linear-gradient(135deg, #047857, #10B981)"
-                          : "linear-gradient(135deg, #D35400, #FF8C42)",
+                          : "linear-gradient(135deg, var(--theme-color-900), var(--theme-color-500))",
                         color: !verPassed ? "#8C7A6A" : "#FFFFFF",
                         padding: "11px 22px", borderRadius: "10px", fontWeight: 700, border: "none",
                         cursor: !verPassed ? "not-allowed" : "pointer",
@@ -4572,7 +4571,7 @@ export function StudentPanel({
 
 
 
-            <div style={{ background: "#FDF9F3", padding: "14px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", textAlign: "left", marginBottom: "20px", fontSize: "0.85rem" }}>
+            <div style={{ background: "var(--theme-color-50)", padding: "14px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", textAlign: "left", marginBottom: "20px", fontSize: "0.85rem" }}>
 
               <p style={{ margin: "0 0 4px", color: "#66564A" }}>Receipt #: <strong style={{ color: "#241A14" }}>{paySuccessTxn.receiptNumber}</strong></p>
 
@@ -4618,13 +4617,13 @@ export function StudentPanel({
 
                 }}
 
-                style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 700 }}>
+                style={{ background: "var(--theme-color-50)", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 700 }}>
 
                 ⬇️ Download PDF Receipt
 
               </button>
 
-              <button type="button" className="ms-btn-primary" onClick={() => setPaySuccessTxn(null)} style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
+              <button type="button" className="ms-btn-primary" onClick={() => setPaySuccessTxn(null)} style={{ background: "var(--theme-color-900)", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}>
 
                 Done
 
@@ -4731,7 +4730,7 @@ export function StudentPanel({
 
               {/* Financial Breakdown Card */}
 
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
 
                 <h4 style={{ margin: "0 0 10px", fontSize: "0.92rem", fontWeight: 700, color: "#241A14" }}>
 
@@ -4765,7 +4764,7 @@ export function StudentPanel({
 
                     <span style={{ color: "#241A14" }}>Current Payable Balance:</span>
 
-                    <span style={{ color: selectedDetailFee.status === "paid" ? "#047857" : "#D35400", fontSize: "1.1rem" }}>
+                    <span style={{ color: selectedDetailFee.status === "paid" ? "#047857" : "var(--theme-color-900)", fontSize: "1.1rem" }}>
 
                       {formatTaka(selectedDetailFee.status === "paid" ? 0 : selectedDetailFee.approvedPartialAmount || selectedDetailFee.amount, false)}
 
@@ -4807,7 +4806,7 @@ export function StudentPanel({
 
               <div style={{ background: "rgba(211, 84, 0, 0.08)", border: "1px solid rgba(211, 84, 0, 0.25)", padding: "12px", borderRadius: "10px", fontSize: "0.82rem", color: "#66564A", display: "flex", gap: "10px", alignItems: "flex-start" }}>
 
-                <Info size={18} style={{ color: "#D35400", flexShrink: 0, marginTop: "2px" }} />
+                <Info size={18} style={{ color: "var(--theme-color-900)", flexShrink: 0, marginTop: "2px" }} />
 
                 <div>
 
@@ -4831,7 +4830,7 @@ export function StudentPanel({
 
                   onClick={() => setSelectedDetailFee(null)}
 
-                  style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}
+                  style={{ background: "var(--theme-color-50)", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}
 
                 >
 
@@ -4905,7 +4904,7 @@ export function StudentPanel({
 
                     }}
 
-                    style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}
+                    style={{ background: "var(--theme-color-900)", color: "#FFFFFF", padding: "10px 20px", borderRadius: "10px", fontWeight: 700 }}
 
                   >
 
@@ -5003,7 +5002,7 @@ export function StudentPanel({
 
                 style={{
 
-                  background: "#FFF7E6",
+                  background: "var(--theme-color-50)",
 
                   border: "1.5px solid rgba(211, 84, 0, 0.3)",
 
@@ -5023,7 +5022,7 @@ export function StudentPanel({
 
                 <div>
 
-                  <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>
+                  <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--theme-color-900)", textTransform: "uppercase" }}>
 
                     TRANSACTION AMOUNT
 
@@ -5053,7 +5052,7 @@ export function StudentPanel({
 
               {/* Student Identity Dossier */}
 
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
 
                 <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#241A14", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
 
@@ -5103,7 +5102,7 @@ export function StudentPanel({
 
               {/* Payment Details Dossier */}
 
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px" }}>
 
                 <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "#241A14", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "0.04em" }}>
 
@@ -5125,7 +5124,7 @@ export function StudentPanel({
 
                     <span style={{ color: "#8C7A6A", fontSize: "0.75rem", display: "block" }}>Gateway Ref ID</span>
 
-                    <strong style={{ color: "#D35400", fontWeight: 700 }}>{selectedDetailTxn.referenceId}</strong>
+                    <strong style={{ color: "var(--theme-color-900)", fontWeight: 700 }}>{selectedDetailTxn.referenceId}</strong>
 
                   </div>
 
@@ -5153,7 +5152,7 @@ export function StudentPanel({
 
               {/* Security Seal Note */}
 
-              <div style={{ fontSize: "0.78rem", color: "#66564A", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ fontSize: "0.78rem", color: "#66564A", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "10px", display: "flex", alignItems: "center", gap: "8px" }}>
 
                 <ShieldCheck size={16} style={{ color: "#047857" }} />
 
@@ -5177,7 +5176,7 @@ export function StudentPanel({
 
                   onClick={() => setSelectedDetailTxn(null)}
 
-                  style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}
+                  style={{ background: "var(--theme-color-50)", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 18px", borderRadius: "10px", fontWeight: 600 }}
 
                 >
 
@@ -5230,4 +5229,6 @@ export function StudentPanel({
   );
 
 }
+
+
 

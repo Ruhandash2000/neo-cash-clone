@@ -1,4 +1,4 @@
-﻿import { Transaction, useNeoStore } from "@/lib/neo-cash-store";
+import { Transaction, useNeoStore } from "@/lib/neo-cash-store";
 import { Printer, X, ShieldCheck, Download } from "lucide-react";
 import purpleLogo from "@/assets/neo-purple-logo.png";
 import { generatePaymentReceipt } from "@/lib/receipt-generator";
@@ -18,8 +18,8 @@ export function ReceiptModal({
       receiptNumber:  transaction.receiptNumber ?? "N/A",
       transactionId:  transaction.id ?? "N/A",
       studentName:    store.currentSessionUser?.fullName ?? store.studentProfile.name ?? "Student",
-      studentId:      store.currentSessionUser?.id ?? "—",
-      institution:    store.currentSessionUser?.institutionName ?? store.studentProfile.institution ?? "—",
+      studentId:      store.currentSessionUser?.id ?? "�",
+      institution:    store.currentSessionUser?.institutionName ?? store.studentProfile.institution ?? "�",
       paymentFor:     transaction.title ?? "Payment",
       amount:         transaction.amount ?? 0,
       method:         transaction.method ?? "Online",
@@ -50,10 +50,10 @@ export function ReceiptModal({
 
         {/* Receipt Body */}
         <div style={{ display: "flex", flexDirection: "column", gap: "14px", fontSize: "0.9rem" }}>
-          <div style={{ background: "#FDF9F3", padding: "12px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ background: "var(--theme-color-50)", padding: "12px 16px", borderRadius: "12px", border: "1px solid rgba(196, 154, 108, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <span style={{ fontSize: "0.75rem", color: "#66564A", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700 }}>Receipt Number</span>
-              <p style={{ margin: 0, fontWeight: "800", color: "#D35400", fontSize: "1.15rem", fontFeatureSettings: "'tnum'" }}>{transaction.receiptNumber}</p>
+              <p style={{ margin: 0, fontWeight: "800", color: "var(--theme-color-900)", fontSize: "1.15rem", fontFeatureSettings: "'tnum'" }}>{transaction.receiptNumber}</p>
             </div>
             <span style={{ background: "rgba(16, 185, 129, 0.12)", color: "#047857", padding: "4px 12px", borderRadius: "999px", fontSize: "0.78rem", fontWeight: "700", display: "inline-flex", alignItems: "center", gap: "4px", border: "1px solid rgba(16, 185, 129, 0.3)" }}>
               <ShieldCheck size={14} /> VERIFIED & SEALED
@@ -105,11 +105,11 @@ export function ReceiptModal({
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "6px" }}>
             <span style={{ fontWeight: "800", fontSize: "1.1rem", color: "#241A14" }}>Total Amount Cleared:</span>
-            <span style={{ fontWeight: "900", fontSize: "1.65rem", color: "#D35400", fontFeatureSettings: "'tnum'" }}>৳{transaction.amount.toLocaleString()}</span>
+            <span style={{ fontWeight: "900", fontSize: "1.65rem", color: "var(--theme-color-900)", fontFeatureSettings: "'tnum'" }}>?{transaction.amount.toLocaleString()}</span>
           </div>
 
-          <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "12px", textAlign: "center", fontSize: "0.76rem", color: "#66564A", marginTop: "10px" }}>
-            🔒 Authenticated and cryptographically timestamped by Neo Cash AI Financial System.
+          <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "10px 14px", borderRadius: "12px", textAlign: "center", fontSize: "0.76rem", color: "#66564A", marginTop: "10px" }}>
+            ?? Authenticated and cryptographically timestamped by Neo Cash AI Financial System.
           </div>
         </div>
 
@@ -118,14 +118,14 @@ export function ReceiptModal({
           <button
             type="button"
             onClick={handlePrint}
-            style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196,154,108,0.3)", padding: "10px 16px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "0.85rem" }}
+            style={{ background: "var(--theme-color-50)", color: "#241A14", border: "1px solid rgba(196,154,108,0.3)", padding: "10px 16px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "0.85rem" }}
           >
             <Printer size={15} /> Print
           </button>
           <button
             type="button"
             onClick={handleDownloadPDF}
-            style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 18px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "0.85rem" }}
+            style={{ background: "var(--theme-color-900)", color: "#FFFFFF", border: "none", padding: "10px 18px", borderRadius: "12px", fontWeight: "700", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "8px", fontSize: "0.85rem" }}
           >
             <Download size={15} /> Download PDF Receipt
           </button>
@@ -134,3 +134,5 @@ export function ReceiptModal({
     </div>
   );
 }
+
+

@@ -58,7 +58,7 @@ export function DesignShowcase() {
       key: "id",
       header: "Transaction ID",
       render: (item) => (
-        <div style={{ fontWeight: 700, color: "#D35400" }}>
+        <div style={{ fontWeight: 700, color: "var(--theme-color-900)" }}>
           {item.id}
         </div>
       ),
@@ -100,7 +100,7 @@ export function DesignShowcase() {
       {/* HEADER BANNER */}
       <div
         style={{
-          background: "linear-gradient(135deg, #FDF9F3 0%, #F5EBDF 100%)",
+          background: "linear-gradient(135deg, var(--theme-color-50) 0%, #F5EBDF 100%)",
           border: "1px solid rgba(196, 154, 108, 0.4)",
           borderRadius: "14px",
           padding: "24px 28px",
@@ -111,7 +111,7 @@ export function DesignShowcase() {
         }}
       >
         <div>
-          <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--theme-color-900)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             Phase 1 • Autumn Vibes Institutional Design System
           </span>
           <h2 style={{ fontSize: "1.6rem", margin: "6px 0 4px", color: "#1C140E", fontWeight: 800 }}>
@@ -130,7 +130,7 @@ export function DesignShowcase() {
       {/* 1. COLOR SYSTEM */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <Palette size={20} style={{ color: "#D35400" }} />
+          <Palette size={20} style={{ color: "var(--theme-color-900)" }} />
           <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
             1. Official "Autumn Vibes" Color System
           </h3>
@@ -138,12 +138,12 @@ export function DesignShowcase() {
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "14px" }}>
           {[
-            { label: "Primary Burnt Orange", hex: "#D35400", bg: "#D35400", textDark: false },
-            { label: "Warm Orange", hex: "#FF8C42", bg: "#FF8C42", textDark: false },
+            { label: "Primary Burnt Orange", hex: "var(--theme-color-900)", bg: "var(--theme-color-900)", textDark: false },
+            { label: "Warm Orange", hex: "var(--theme-color-500)", bg: "var(--theme-color-500)", textDark: false },
             { label: "Golden Yellow", hex: "#F7B733", bg: "#F7B733", textDark: true },
             { label: "Warm Taupe", hex: "#C49A6C", bg: "#C49A6C", textDark: false },
             { label: "Soft Beige", hex: "#EAD9C6", bg: "#EAD9C6", textDark: true },
-            { label: "Warm Ivory", hex: "#FFF7E6", bg: "#FFF7E6", border: "1px solid rgba(196,154,108,0.4)", textDark: true },
+            { label: "Warm Ivory", hex: "var(--theme-color-50)", bg: "var(--theme-color-50)", border: "1px solid rgba(196,154,108,0.4)", textDark: true },
           ].map((c) => (
             <div
               key={c.hex}
@@ -168,7 +168,7 @@ export function DesignShowcase() {
                   placeItems: "center",
                   fontWeight: 700,
                   fontSize: "0.82rem",
-                  color: c.textDark ? "#1C140E" : "#FFF7E6",
+                  color: c.textDark ? "#1C140E" : "var(--theme-color-50)",
                 }}
               >
                 {c.hex}
@@ -182,7 +182,7 @@ export function DesignShowcase() {
       {/* 2. TYPOGRAPHY SYSTEM */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <Type size={20} style={{ color: "#D35400" }} />
+          <Type size={20} style={{ color: "var(--theme-color-900)" }} />
           <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
             2. Typography & Financial Currency Scale
           </h3>
@@ -201,7 +201,7 @@ export function DesignShowcase() {
           </div>
           <div>
             <span style={{ fontSize: "0.75rem", color: "#7A685A", textTransform: "uppercase" }}>Section Header (17–21px Semibold)</span>
-            <div style={{ fontSize: "1.1875rem", fontWeight: 600, color: "#D35400" }}>Pending Fee Adjustments & Waiver Applications</div>
+            <div style={{ fontSize: "1.1875rem", fontWeight: 600, color: "var(--theme-color-900)" }}>Pending Fee Adjustments & Waiver Applications</div>
           </div>
           <div>
             <span style={{ fontSize: "0.75rem", color: "#7A685A", textTransform: "uppercase" }}>Body & Metadata (14px / 12px)</span>
@@ -215,7 +215,7 @@ export function DesignShowcase() {
       {/* 3. BUTTONS & FORM CONTROLS */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <Layers size={20} style={{ color: "#D35400" }} />
+          <Layers size={20} style={{ color: "var(--theme-color-900)" }} />
           <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
             3. Button System & Form Controls
           </h3>
@@ -250,7 +250,7 @@ export function DesignShowcase() {
       {/* 4. STATUS SYSTEM */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <CheckCircle2 size={20} style={{ color: "#D35400" }} />
+          <CheckCircle2 size={20} style={{ color: "var(--theme-color-900)" }} />
           <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
             4. 10 Standardized Institutional Status Badges
           </h3>
@@ -266,7 +266,7 @@ export function DesignShowcase() {
       {/* 5. FINANCIAL KPI CARDS GRID */}
       <section>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <LayoutGrid size={20} style={{ color: "#D35400" }} />
+          <LayoutGrid size={20} style={{ color: "var(--theme-color-900)" }} />
           <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
             5. Financial Summary KPI Cards (4-Column Layout)
           </h3>
@@ -314,7 +314,7 @@ export function DesignShowcase() {
       <section>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Clock size={20} style={{ color: "#D35400" }} />
+            <Clock size={20} style={{ color: "var(--theme-color-900)" }} />
             <h3 style={{ margin: 0, fontSize: "1.15rem", color: "#1C140E", fontWeight: 700 }}>
               6. High-Density Financial Data Table
             </h3>
@@ -331,7 +331,7 @@ export function DesignShowcase() {
                   fontSize: "0.78rem",
                   fontWeight: 600,
                   borderRadius: "6px",
-                  background: selectedStatus === st ? "#D35400" : "#FDF9F3",
+                  background: selectedStatus === st ? "var(--theme-color-900)" : "var(--theme-color-50)",
                   color: selectedStatus === st ? "#FFFFFF" : "#7A685A",
                   border: "1px solid rgba(196, 154, 108, 0.35)",
                   cursor: "pointer",
@@ -368,7 +368,7 @@ export function DesignShowcase() {
           <p style={{ margin: "0 0 12px" }}>
             This modal dialog demonstrates backdrop blur, controlled 14px border radius, 1px subtle taupe borders, clean Burnt Orange action buttons, and keyboard escape handling.
           </p>
-          <div style={{ background: "#FDF9F3", padding: "14px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.35)" }}>
+          <div style={{ background: "var(--theme-color-50)", padding: "14px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.35)" }}>
             <span style={{ color: "#047857", fontWeight: 700 }}>✓ Design System Status: Verified & Production Ready</span>
           </div>
         </div>
@@ -376,3 +376,5 @@ export function DesignShowcase() {
     </div>
   );
 }
+
+

@@ -89,10 +89,10 @@ export function SessionVerificationGate({ onVerified }: { onVerified: () => void
         {/* HEADER */}
         <div style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "20px", marginBottom: "28px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-            <span style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "#D35400", fontWeight: 800 }}>
+            <span style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--theme-color-900)", fontWeight: 800 }}>
               NEO CASH AI • SESSION IDENTITY VERIFICATION
             </span>
-            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", background: "#FFF7E6", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#66564A", background: "var(--theme-color-50)", padding: "4px 12px", borderRadius: "999px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
               Required Each Login
             </span>
           </div>
@@ -111,7 +111,7 @@ export function SessionVerificationGate({ onVerified }: { onVerified: () => void
         </div>
 
         {/* INSTITUTION BADGE (always visible) */}
-        <div style={{ background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)", padding: "14px 18px", borderRadius: "14px", marginBottom: "22px", display: "flex", alignItems: "center", gap: "14px" }}>
+        <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)", padding: "14px 18px", borderRadius: "14px", marginBottom: "22px", display: "flex", alignItems: "center", gap: "14px" }}>
           <span style={{ fontSize: "2rem", width: "44px", height: "44px", display: "grid", placeItems: "center", background: "#FFFFFF", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
             {institution.logo}
           </span>
@@ -128,7 +128,7 @@ export function SessionVerificationGate({ onVerified }: { onVerified: () => void
         {phase === "credentials" && (
           <>
             <div style={{ background: "rgba(211, 84, 0, 0.05)", border: "1px solid rgba(211, 84, 0, 0.2)", borderRadius: "12px", padding: "12px 16px", marginBottom: "22px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <ShieldCheck size={20} style={{ color: "#D35400", flexShrink: 0 }} />
+              <ShieldCheck size={20} style={{ color: "var(--theme-color-900)", flexShrink: 0 }} />
               <p style={{ margin: 0, fontSize: "0.83rem", color: "#241A14" }}>
                 <strong>Session Security:</strong> Your institutional identity must be re-verified each time you log in for your protection.
               </p>
@@ -184,13 +184,13 @@ export function SessionVerificationGate({ onVerified }: { onVerified: () => void
 
         {/* VERIFYING PHASE (animated) */}
         {phase === "verifying" && (
-          <div style={{ background: "#FFF7E6", padding: "32px", borderRadius: "16px", textAlign: "center", border: "1px solid rgba(196, 154, 108, 0.4)" }}>
+          <div style={{ background: "var(--theme-color-50)", padding: "32px", borderRadius: "16px", textAlign: "center", border: "1px solid rgba(196, 154, 108, 0.4)" }}>
             <div
               style={{
                 width: "44px",
                 height: "44px",
                 border: "4px solid rgba(211, 84, 0, 0.2)",
-                borderTopColor: "#D35400",
+                borderTopColor: "var(--theme-color-900)",
                 borderRadius: "50%",
                 animation: "spin 0.9s linear infinite",
                 margin: "0 auto 16px",
@@ -222,7 +222,7 @@ export function SessionVerificationGate({ onVerified }: { onVerified: () => void
                 { label: "Email", value: instEmailInput },
                 { label: "Session", value: new Date().toLocaleDateString() },
               ].map((item, idx) => (
-                <div key={idx} style={{ background: "#FFF7E6", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
+                <div key={idx} style={{ background: "var(--theme-color-50)", padding: "10px 14px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "#8C7A6A", fontWeight: 700 }}>
                       {item.label}
@@ -245,3 +245,5 @@ export function SessionVerificationGate({ onVerified }: { onVerified: () => void
     </div>
   );
 }
+
+

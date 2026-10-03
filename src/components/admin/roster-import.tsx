@@ -196,8 +196,8 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
           style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             padding: "8px 16px", borderRadius: "10px",
-            background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)",
-            color: "#D35400", fontSize: "0.83rem", fontWeight: 700, cursor: "pointer",
+            background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)",
+            color: "var(--theme-color-900)", fontSize: "0.83rem", fontWeight: 700, cursor: "pointer",
             whiteSpace: "nowrap",
           }}
         >
@@ -229,7 +229,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
           onDragLeave={() => setDragOver(false)}
           onClick={() => fileRef.current?.click()}
           style={{
-            border: `2px dashed ${isDragOver ? "#D35400" : "rgba(196, 154, 108, 0.5)"}`,
+            border: `2px dashed ${isDragOver ? "var(--theme-color-900)" : "rgba(196, 154, 108, 0.5)"}`,
             borderRadius: "16px",
             padding: "52px 24px",
             textAlign: "center",
@@ -238,7 +238,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
             transition: "all 0.2s",
           }}
         >
-          <Upload size={36} style={{ color: "#D35400", margin: "0 auto 16px", display: "block" }} />
+          <Upload size={36} style={{ color: "var(--theme-color-900)", margin: "0 auto 16px", display: "block" }} />
           <h3 style={{ margin: "0 0 8px", fontSize: "1.05rem", fontWeight: 700, color: "#241A14" }}>
             {isDragOver ? "Drop your CSV here" : "Drag & drop your CSV file"}
           </h3>
@@ -254,7 +254,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
           />
           <span style={{
             display: "inline-block", padding: "9px 22px",
-            background: "#D35400", color: "#FFF",
+            background: "var(--theme-color-900)", color: "#FFF",
             borderRadius: "10px", fontSize: "0.85rem", fontWeight: 700,
           }}>
             Browse File
@@ -265,7 +265,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
       {/* ── PARSING ──────────────────────────────────────────── */}
       {phase === "parsing" && (
         <div style={{ ...sectionStyle, textAlign: "center", padding: "48px" }}>
-          <Loader2 size={36} style={{ color: "#D35400", animation: "spin 1s linear infinite", display: "block", margin: "0 auto 16px" }} />
+          <Loader2 size={36} style={{ color: "var(--theme-color-900)", animation: "spin 1s linear infinite", display: "block", margin: "0 auto 16px" }} />
           <p style={{ margin: 0, fontWeight: 700, color: "#241A14" }}>Parsing your CSV file…</p>
         </div>
       )}
@@ -273,7 +273,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
       {/* ── UPLOADING ─────────────────────────────────────────── */}
       {phase === "uploading" && (
         <div style={{ ...sectionStyle, textAlign: "center", padding: "48px" }}>
-          <Loader2 size={36} style={{ color: "#D35400", animation: "spin 1s linear infinite", display: "block", margin: "0 auto 16px" }} />
+          <Loader2 size={36} style={{ color: "var(--theme-color-900)", animation: "spin 1s linear infinite", display: "block", margin: "0 auto 16px" }} />
           <p style={{ margin: "0 0 6px", fontWeight: 700, color: "#241A14" }}>
             Importing {parsed?.rows.length.toLocaleString()} students…
           </p>
@@ -291,7 +291,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
                 width: "44px", height: "44px", borderRadius: "10px",
                 background: "rgba(211, 84, 0, 0.1)", display: "grid", placeItems: "center",
               }}>
-                <FileText size={20} style={{ color: "#D35400" }} />
+                <FileText size={20} style={{ color: "var(--theme-color-900)" }} />
               </div>
               <div>
                 <p style={{ margin: "0 0 3px", fontWeight: 700, color: "#241A14" }}>{parsed.fileName}</p>
@@ -333,7 +333,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
                 <thead>
-                  <tr style={{ background: "#FFF7E6" }}>
+                  <tr style={{ background: "var(--theme-color-50)" }}>
                     {["Student ID", "Full Name", "Email", "Department", "Year", "Section"].map((h) => (
                       <th key={h} style={{ padding: "9px 12px", textAlign: "left", color: "#66564A", fontWeight: 700, whiteSpace: "nowrap", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
                         {h}
@@ -372,7 +372,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
               onClick={() => void handleUpload()}
               style={{
                 display: "inline-flex", alignItems: "center", gap: "8px",
-                background: "#D35400", color: "#FFF", border: "none",
+                background: "var(--theme-color-900)", color: "#FFF", border: "none",
                 borderRadius: "10px", padding: "11px 24px",
                 fontSize: "0.88rem", fontWeight: 700, cursor: "pointer",
               }}
@@ -414,7 +414,7 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
             </div>
           )}
           <button type="button" onClick={reset} style={{
-            background: "#D35400", color: "#FFF", border: "none",
+            background: "var(--theme-color-900)", color: "#FFF", border: "none",
             borderRadius: "10px", padding: "10px 22px",
             fontSize: "0.85rem", fontWeight: 700, cursor: "pointer",
           }}>
@@ -496,3 +496,5 @@ export function AdminRosterImport({ institutionId, institutionName }: Props) {
     </div>
   );
 }
+
+

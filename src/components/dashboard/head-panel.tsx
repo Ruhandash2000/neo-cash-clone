@@ -3,7 +3,7 @@
  * 
  * Executive Information Architecture Guidelines:
  * - High-Level Authority: Final institutional approval authority (NOT an admin).
- * - Calm, Executive Palette: #FFF7E6 (Warm Ivory), #FFFFFF (Surface), #241A14 (Text), #D35400 (Accent), #047857 (Success).
+ * - Calm, Executive Palette: var(--theme-color-50) (Warm Ivory), #FFFFFF (Surface), #241A14 (Text), var(--theme-color-900) (Accent), #047857 (Success).
  * - Primary Focus: Immediate understanding of pending decisions, past decisions, financial health, and audit logs.
  * - Strict Governance: READ-ONLY access to student directory, audit logs, and fee structures. Operational editing disabled.
  */
@@ -90,17 +90,17 @@ export function HeadPanel({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       
       {/* 1. EXECUTIVE COMMAND CENTER OVERVIEW */}
       {activeTab === "overview" && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* LEVEL 1: HERO & INSTITUTIONAL AUTHORIZATION BANNER */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                <span style={{ fontSize: "0.74rem", background: "var(--theme-transparent)", color: "var(--theme-color-900)", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
                   ⚖️ Executive Approval Authority & Final Sign-Off
                 </span>
                 <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
@@ -117,14 +117,14 @@ export function HeadPanel({
               <button
                 type="button"
                 onClick={() => setShowNotionSyncModal(true)}
-                style={{ background: "#FFF7E6", color: "#D35400", border: "1.5px solid rgba(211, 84, 0, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px rgba(211, 84, 0, 0.12)" }}
+                style={{ background: "var(--theme-color-50)", color: "var(--theme-color-900)", border: "1.5px solid rgba(211, 84, 0, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px var(--theme-transparent)" }}
               >
-                <Zap size={16} color="#D35400" /> Notion Sync ⚡
+                <Zap size={16} color="var(--theme-color-900)" /> Notion Sync ⚡
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("trophy")}
-                style={{ background: "#FFF7E6", color: "#D35400", border: "1.5px solid rgba(211, 84, 0, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px rgba(211, 84, 0, 0.12)" }}
+                style={{ background: "var(--theme-color-50)", color: "var(--theme-color-900)", border: "1.5px solid rgba(211, 84, 0, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px var(--theme-transparent)" }}
               >
                 <Trophy size={18} color="#FBBF24" /> Institution Impact 🏆
               </button>
@@ -132,7 +132,7 @@ export function HeadPanel({
                 type="button"
                 className="ms-btn-primary"
                 onClick={() => setActiveTab("approvals")}
-                style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)" }}
+                style={{ background: "var(--theme-color-900)", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)" }}
               >
                 <ShieldCheck size={18} /> Review Approvals ({pendingHeadApps.length})
               </button>
@@ -143,20 +143,20 @@ export function HeadPanel({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "16px" }}>
             
             {/* CARD 1: PENDING DECISIONS */}
-            <div style={{ background: "#FFFFFF", border: pendingHeadApps.length > 0 ? "2px solid #D35400" : "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+            <div style={{ background: "#FFFFFF", border: pendingHeadApps.length > 0 ? "2px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#66564A", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                   Awaiting My Decision
                 </span>
-                <Clock size={18} color="#D35400" />
+                <Clock size={18} color="var(--theme-color-900)" />
               </div>
               <div style={{ margin: "14px 0 8px" }}>
-                <span style={{ fontSize: "2.2rem", fontWeight: 800, color: pendingHeadApps.length > 0 ? "#D35400" : "#241A14" }}>
+                <span style={{ fontSize: "2.2rem", fontWeight: 800, color: pendingHeadApps.length > 0 ? "var(--theme-color-900)" : "#241A14" }}>
                   {pendingHeadApps.length}
                 </span>
                 <span style={{ fontSize: "0.85rem", color: "#66564A", marginLeft: "6px" }}>Applications</span>
               </div>
-              <span style={{ fontSize: "0.78rem", color: pendingHeadApps.length > 0 ? "#D35400" : "#047857", fontWeight: 700 }}>
+              <span style={{ fontSize: "0.78rem", color: pendingHeadApps.length > 0 ? "var(--theme-color-900)" : "#047857", fontWeight: 700 }}>
                 {pendingHeadApps.length > 0 ? "● Action Required Immediately" : "✓ All Applications Cleared"}
               </span>
             </div>
@@ -220,10 +220,10 @@ export function HeadPanel({
           </div>
 
           {/* IMPORTANT ALERTS & NOTICE BANNER */}
-          <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "flex-start", gap: "14px" }}>
-            <AlertTriangle size={24} color="#D35400" style={{ flexShrink: 0, marginTop: "2px" }} />
+          <div style={{ background: "var(--theme-color-50)", border: "1.5px solid var(--theme-color-900)", borderRadius: "16px", padding: "20px", display: "flex", alignItems: "flex-start", gap: "14px" }}>
+            <AlertTriangle size={24} color="var(--theme-color-900)" style={{ flexShrink: 0, marginTop: "2px" }} />
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <strong style={{ fontSize: "0.95rem", color: "#D35400", fontWeight: 800 }}>
+              <strong style={{ fontSize: "0.95rem", color: "var(--theme-color-900)", fontWeight: 800 }}>
                 INSTITUTION EXECUTIVE NOTICE: {pendingHeadApps.length} PARTIAL PAYMENT DOSSIERS AWAITING SIGN-OFF
               </strong>
               <p style={{ margin: 0, fontSize: "0.86rem", color: "#241A14", lineHeight: 1.4 }}>
@@ -236,7 +236,7 @@ export function HeadPanel({
           <div className="mobile-executive-stream" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
             
             {/* PENDING APPROVAL QUEUE CARD */}
-            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
@@ -249,14 +249,14 @@ export function HeadPanel({
                 <button
                   type="button"
                   onClick={() => setActiveTab("approvals")}
-                  style={{ background: "none", border: "none", color: "#D35400", fontSize: "0.82rem", fontWeight: 800, cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontSize: "0.82rem", fontWeight: 800, cursor: "pointer" }}
                 >
                   View All →
                 </button>
               </div>
 
               {pendingHeadApps.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "36px 20px", background: "#FDF9F3", borderRadius: "12px", border: "1px dashed rgba(196, 154, 108, 0.3)" }}>
+                <div style={{ textAlign: "center", padding: "36px 20px", background: "var(--theme-color-50)", borderRadius: "12px", border: "1px dashed rgba(196, 154, 108, 0.3)" }}>
                   <CheckCircle2 size={36} color="#047857" style={{ margin: "0 auto 8px" }} />
                   <strong style={{ color: "#241A14", display: "block" }}>All Applications Cleared</strong>
                   <span style={{ fontSize: "0.82rem", color: "#66564A" }}>There are no pending applications awaiting your decision.</span>
@@ -264,13 +264,13 @@ export function HeadPanel({
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {pendingHeadApps.slice(0, 3).map((app) => (
-                    <div key={app.id} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div key={app.id} style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px", display: "flex", flexDirection: "column", gap: "8px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                         <div>
                           <strong style={{ color: "#241A14", fontSize: "0.92rem", display: "block" }}>{app.studentName}</strong>
                           <span style={{ fontSize: "0.78rem", color: "#8C7A6A", fontFamily: "monospace" }}>ID: {app.studentId} • {app.feeTitle}</span>
                         </div>
-                        <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", padding: "2px 8px", borderRadius: "6px", fontWeight: 700 }}>
+                        <span style={{ fontSize: "0.74rem", background: "var(--theme-transparent)", color: "var(--theme-color-900)", padding: "2px 8px", borderRadius: "6px", fontWeight: 700 }}>
                           AI Match: {app.aiMatchScore}%
                         </span>
                       </div>
@@ -283,7 +283,7 @@ export function HeadPanel({
                         <button
                           type="button"
                           onClick={() => setExecApp(app)}
-                          style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "6px 14px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 800, cursor: "pointer" }}
+                          style={{ background: "var(--theme-color-900)", color: "#FFFFFF", border: "none", padding: "6px 14px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 800, cursor: "pointer" }}
                         >
                           Review & Decide →
                         </button>
@@ -295,7 +295,7 @@ export function HeadPanel({
             </div>
 
             {/* RECENT DECISIONS & AUDIT FEED CARD */}
-            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
@@ -308,7 +308,7 @@ export function HeadPanel({
                 <button
                   type="button"
                   onClick={() => setActiveTab("audit")}
-                  style={{ background: "none", border: "none", color: "#D35400", fontSize: "0.82rem", fontWeight: 800, cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "var(--theme-color-900)", fontSize: "0.82rem", fontWeight: 800, cursor: "pointer" }}
                 >
                   Full Trail →
                 </button>
@@ -316,9 +316,9 @@ export function HeadPanel({
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {store.auditLogs.slice(0, 4).map((log) => (
-                  <div key={log.id} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div key={log.id} style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "0.76rem", fontWeight: 800, color: "#D35400" }}>{log.actor} ({log.role})</span>
+                      <span style={{ fontSize: "0.76rem", fontWeight: 800, color: "var(--theme-color-900)" }}>{log.actor} ({log.role})</span>
                       <span style={{ fontSize: "0.74rem", color: "#8C7A6A", fontFeatureSettings: "'tnum'" }}>{log.timestamp}</span>
                     </div>
                     <strong style={{ fontSize: "0.86rem", color: "#241A14" }}>{log.action}</strong>
@@ -338,10 +338,10 @@ export function HeadPanel({
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* APPROVAL CENTER HEADER */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                <span style={{ fontSize: "0.74rem", background: "var(--theme-transparent)", color: "var(--theme-color-900)", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
                   🛡️ Institutional Authority Sign-Off Center
                 </span>
                 <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
@@ -356,7 +356,7 @@ export function HeadPanel({
           </div>
 
           {/* SUB-TAB FILTER BUTTONS */}
-          <div style={{ display: "flex", gap: "8px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "6px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "8px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "6px", flexWrap: "wrap" }}>
             {[
               { id: "pending", label: `Awaiting Head Approval (${pendingHeadApps.length})` },
               { id: "all", label: `All Dossiers (${store.partialApplications.length})` },
@@ -373,7 +373,7 @@ export function HeadPanel({
                   background: approvalSubTab === tab.id ? "#FFFFFF" : "transparent",
                   border: approvalSubTab === tab.id ? "1px solid rgba(196, 154, 108, 0.4)" : "none",
                   borderRadius: "8px",
-                  color: approvalSubTab === tab.id ? "#D35400" : "#66564A",
+                  color: approvalSubTab === tab.id ? "var(--theme-color-900)" : "#66564A",
                   fontWeight: approvalSubTab === tab.id ? 800 : 600,
                   fontSize: "0.84rem",
                   cursor: "pointer",
@@ -395,13 +395,13 @@ export function HeadPanel({
                 return true;
               })
               .map((app) => (
-                <div key={app.id} style={{ background: "#FFFFFF", border: app.status === "forwarded_head" ? "2px solid #D35400" : "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+                <div key={app.id} style={{ background: "#FFFFFF", border: app.status === "forwarded_head" ? "2px solid var(--theme-color-900)" : "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxWidth: "600px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
                       <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 800, color: "#241A14" }}>
                         {app.studentName}
                       </h3>
-                      <span style={{ fontSize: "0.8rem", color: "#D35400", fontFamily: "monospace", fontWeight: 700, background: "rgba(211, 84, 0, 0.1)", padding: "2px 8px", borderRadius: "6px" }}>
+                      <span style={{ fontSize: "0.8rem", color: "var(--theme-color-900)", fontFamily: "monospace", fontWeight: 700, background: "rgba(211, 84, 0, 0.1)", padding: "2px 8px", borderRadius: "6px" }}>
                         {app.studentId}
                       </span>
                       <StatusBadge
@@ -425,7 +425,7 @@ export function HeadPanel({
                     </div>
 
                     {app.adminNotes && (
-                      <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", padding: "8px 12px", fontSize: "0.8rem", color: "#66564A", marginTop: "4px" }}>
+                      <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", padding: "8px 12px", fontSize: "0.8rem", color: "#66564A", marginTop: "4px" }}>
                         <strong>Admin Review Note:</strong> "{app.adminNotes}"
                       </div>
                     )}
@@ -445,12 +445,12 @@ export function HeadPanel({
                       <button
                         type="button"
                         onClick={() => setExecApp(app)}
-                        style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "10px 20px", borderRadius: "10px", fontSize: "0.86rem", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)", display: "inline-flex", alignItems: "center", gap: "6px" }}
+                        style={{ background: "var(--theme-color-900)", color: "#FFFFFF", border: "none", padding: "10px 20px", borderRadius: "10px", fontSize: "0.86rem", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.25)", display: "inline-flex", alignItems: "center", gap: "6px" }}
                       >
                         <ShieldCheck size={16} /> Executive Sign-Off →
                       </button>
                     ) : (
-                      <span style={{ fontSize: "0.82rem", color: "#8C7A6A", fontWeight: 700, background: "#FDF9F3", padding: "6px 12px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                      <span style={{ fontSize: "0.82rem", color: "#8C7A6A", fontWeight: 700, background: "var(--theme-color-50)", padding: "6px 12px", borderRadius: "8px", border: "1px solid rgba(196, 154, 108, 0.3)" }}>
                         ✓ Final Decision Rendered
                       </span>
                     )}
@@ -467,7 +467,7 @@ export function HeadPanel({
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* HEADER BANNER */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
                 <span style={{ fontSize: "0.74rem", background: "rgba(4, 120, 87, 0.12)", color: "#047857", border: "1px solid rgba(4, 120, 87, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
@@ -485,10 +485,10 @@ export function HeadPanel({
           </div>
 
           {/* READ-ONLY GOVERNANCE RESTRICTION BANNER */}
-          <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "14px", padding: "14px 18px", fontSize: "0.85rem", color: "#241A14", display: "flex", alignItems: "center", gap: "12px" }}>
-            <Lock size={20} color="#D35400" style={{ flexShrink: 0 }} />
+          <div style={{ background: "var(--theme-color-50)", border: "1.5px solid var(--theme-color-900)", borderRadius: "14px", padding: "14px 18px", fontSize: "0.85rem", color: "#241A14", display: "flex", alignItems: "center", gap: "12px" }}>
+            <Lock size={20} color="var(--theme-color-900)" style={{ flexShrink: 0 }} />
             <div>
-              <strong style={{ color: "#D35400", display: "block" }}>READ-ONLY EXECUTIVE SCOPE ENFORCED:</strong>
+              <strong style={{ color: "var(--theme-color-900)", display: "block" }}>READ-ONLY EXECUTIVE SCOPE ENFORCED:</strong>
               As Head of Institution, operational editing, student deletions, fee reassignment, and section transfers are restricted to Administrative Staff.
             </div>
           </div>
@@ -502,14 +502,14 @@ export function HeadPanel({
                 placeholder="Search student by name, student ID, or roll..."
                 value={headStudentSearch}
                 onChange={(e) => setHeadStudentSearch(e.target.value)}
-                style={{ width: "100%", padding: "9px 12px 9px 36px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
+                style={{ width: "100%", padding: "9px 12px 9px 36px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
               />
             </div>
 
             <select
               value={headDeptFilter}
               onChange={(e) => setHeadDeptFilter(e.target.value)}
-              style={{ padding: "9px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14", fontWeight: 700 }}
+              style={{ padding: "9px 14px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14", fontWeight: 700 }}
             >
               <option value="all">All Departments</option>
               <option value="CSE">Computer Science & Eng (CSE)</option>
@@ -523,7 +523,7 @@ export function HeadPanel({
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
                 <thead>
-                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <tr style={{ background: "var(--theme-color-50)", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Department</th>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Class & Section</th>
@@ -543,7 +543,7 @@ export function HeadPanel({
                       <tr key={student.id} style={{ borderBottom: "1px solid rgba(196, 154, 108, 0.2)" }}>
                         <td style={{ padding: "14px 16px" }}>
                           <strong style={{ color: "#241A14", display: "block" }}>{student.name}</strong>
-                          <span style={{ fontSize: "0.78rem", color: "#D35400", fontFamily: "monospace" }}>ID: {student.studentId}</span>
+                          <span style={{ fontSize: "0.78rem", color: "var(--theme-color-900)", fontFamily: "monospace" }}>ID: {student.studentId}</span>
                         </td>
                         <td style={{ padding: "14px 16px", color: "#66564A" }}>
                           {student.department}
@@ -561,7 +561,7 @@ export function HeadPanel({
                           <button
                             type="button"
                             onClick={() => setSelectedStudentHead(student)}
-                            style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#D35400", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", color: "var(--theme-color-900)", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
                           >
                             <Eye size={14} /> View Record
                           </button>
@@ -581,10 +581,10 @@ export function HeadPanel({
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* HEADER BANNER */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                <span style={{ fontSize: "0.74rem", background: "var(--theme-transparent)", color: "var(--theme-color-900)", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
                   📈 Phase 21 • Executive Institutional Reporting
                 </span>
                 <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
@@ -600,7 +600,7 @@ export function HeadPanel({
             <button
               type="button"
               onClick={() => setActiveTab("trophy")}
-              style={{ background: "#FFF7E6", border: "1.5px solid #D35400", color: "#D35400", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
+              style={{ background: "var(--theme-color-50)", border: "1.5px solid var(--theme-color-900)", color: "var(--theme-color-900)", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "6px" }}
             >
               <Trophy size={18} color="#FBBF24" /> View Institution Impact 🏆
             </button>
@@ -634,7 +634,7 @@ export function HeadPanel({
 
             {/* 3. OUTSTANDING DUES */}
             <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em" }}>Outstanding Dues</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--theme-color-900)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Outstanding Dues</span>
               <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
                 {formatTaka(1250000, false)}
               </h2>
@@ -652,7 +652,7 @@ export function HeadPanel({
 
             {/* 5. PARTIAL PAYMENT DECISIONS */}
             <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
-              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em" }}>Partial Payment Decisions</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 800, color: "var(--theme-color-900)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Partial Payment Decisions</span>
               <h2 style={{ margin: "6px 0 2px", fontSize: "1.9rem", fontWeight: 800, color: "#241A14" }}>
                 {approvedHeadApps.length + rejectedHeadApps.length + pendingHeadApps.length} Requests
               </h2>
@@ -664,7 +664,7 @@ export function HeadPanel({
           </div>
 
           {/* PARTIAL PAYMENT DECISIONS REPORTING CARD */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
@@ -680,7 +680,7 @@ export function HeadPanel({
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
-              <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", padding: "14px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "10px", padding: "14px" }}>
                 <span style={{ fontSize: "0.74rem", color: "#66564A", fontWeight: 700 }}>Total Applications</span>
                 <strong style={{ display: "block", fontSize: "1.4rem", color: "#241A14", marginTop: "2px" }}>
                   {store.partialApplications.length}
@@ -695,12 +695,12 @@ export function HeadPanel({
                 <span style={{ fontSize: "0.72rem", color: "#047857" }}>{formatTaka(184000, false)} Unlocked</span>
               </div>
 
-              <div style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.3)", borderRadius: "10px", padding: "14px" }}>
-                <span style={{ fontSize: "0.74rem", color: "#D35400", fontWeight: 700 }}>Awaiting Head Decision</span>
-                <strong style={{ display: "block", fontSize: "1.4rem", color: "#D35400", marginTop: "2px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(211, 84, 0, 0.3)", borderRadius: "10px", padding: "14px" }}>
+                <span style={{ fontSize: "0.74rem", color: "var(--theme-color-900)", fontWeight: 700 }}>Awaiting Head Decision</span>
+                <strong style={{ display: "block", fontSize: "1.4rem", color: "var(--theme-color-900)", marginTop: "2px" }}>
                   {pendingHeadApps.length}
                 </strong>
-                <span style={{ fontSize: "0.72rem", color: "#D35400" }}>Action Required</span>
+                <span style={{ fontSize: "0.72rem", color: "var(--theme-color-900)" }}>Action Required</span>
               </div>
 
               <div style={{ background: "rgba(190, 18, 60, 0.08)", border: "1px solid rgba(190, 18, 60, 0.25)", borderRadius: "10px", padding: "14px" }}>
@@ -717,19 +717,19 @@ export function HeadPanel({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
             
             {/* PAYMENT METHOD CHANNELS */}
-            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
               <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
                 Payment Method Channel Breakdown
               </h3>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
-                  { channel: "bKash Mobile Banking", percent: 64, amount: 3084800, color: "#D35400" },
+                  { channel: "bKash Mobile Banking", percent: 64, amount: 3084800, color: "var(--theme-color-900)" },
                   { channel: "City Bank Visa / Mastercard", percent: 22, amount: 1060400, color: "#047857" },
                   { channel: "Nagad Mobile Wallet", percent: 10, amount: 482000, color: "#D97706" },
                   { channel: "Dutch-Bangla Rocket", percent: 4, amount: 192800, color: "#8C7A6A" },
                 ].map((item, idx) => (
-                  <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div key={idx} style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <strong style={{ fontSize: "0.88rem", color: "#241A14" }}>{item.channel}</strong>
                       <span style={{ fontSize: "0.85rem", fontWeight: 800, color: item.color }}>{item.percent}% ({formatTaka(item.amount, false)})</span>
@@ -743,7 +743,7 @@ export function HeadPanel({
             </div>
 
             {/* MONTHLY COLLECTION TRENDS */}
-            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "22px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}>
               <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
                 Payment Trends & Term Collection Growth
               </h3>
@@ -755,7 +755,7 @@ export function HeadPanel({
                   { month: "July 2026", collected: "৳3,960,000", growth: "+5.2%", status: "Completed" },
                   { month: "June 2026", collected: "৳3,750,000", growth: "+3.8%", status: "Completed" },
                 ].map((row, idx) => (
-                  <div key={idx} style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={idx} style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.25)", borderRadius: "10px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
                       <strong style={{ fontSize: "0.88rem", color: "#241A14", display: "block" }}>{row.month}</strong>
                       <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700 }}>Growth: {row.growth}</span>
@@ -779,10 +779,10 @@ export function HeadPanel({
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* HEADER BANNER */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
+                <span style={{ fontSize: "0.74rem", background: "var(--theme-transparent)", color: "var(--theme-color-900)", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700 }}>
                   📜 Institutional Operations Audit Trail
                 </span>
                 <span style={{ fontSize: "0.82rem", color: "#66564A", fontWeight: 600 }}>Dhaka City College</span>
@@ -805,14 +805,14 @@ export function HeadPanel({
                 placeholder="Search audit trail by actor, action, or details..."
                 value={headAuditSearch}
                 onChange={(e) => setHeadAuditSearch(e.target.value)}
-                style={{ width: "100%", padding: "9px 12px 9px 36px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
+                style={{ width: "100%", padding: "9px 12px 9px 36px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14" }}
               />
             </div>
 
             <select
               value={headAuditRoleFilter}
               onChange={(e) => setHeadAuditRoleFilter(e.target.value)}
-              style={{ padding: "9px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14", fontWeight: 700 }}
+              style={{ padding: "9px 14px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "#241A14", fontWeight: 700 }}
             >
               <option value="all">All Roles</option>
               <option value="Admin">Admin</option>
@@ -826,7 +826,7 @@ export function HeadPanel({
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
                 <thead>
-                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <tr style={{ background: "var(--theme-color-50)", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Actor</th>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Role</th>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Action Performed</th>
@@ -848,7 +848,7 @@ export function HeadPanel({
                           {log.actor}
                         </td>
                         <td style={{ padding: "14px 16px" }}>
-                          <span style={{ fontSize: "0.76rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "2px 8px", borderRadius: "4px", fontWeight: 700 }}>
+                          <span style={{ fontSize: "0.76rem", background: "rgba(211, 84, 0, 0.1)", color: "var(--theme-color-900)", padding: "2px 8px", borderRadius: "4px", fontWeight: 700 }}>
                             {log.role}
                           </span>
                         </td>
@@ -865,7 +865,7 @@ export function HeadPanel({
                           <button
                             type="button"
                             onClick={() => setSelectedAuditLogHead(log)}
-                            style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", color: "#D35400", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", color: "var(--theme-color-900)", padding: "6px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
                           >
                             <Eye size={14} /> View Event
                           </button>
@@ -885,18 +885,18 @@ export function HeadPanel({
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
           {/* DEMONSTRATION FEATURE NOTICE BANNER */}
-          <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "14px", padding: "14px 18px", fontSize: "0.85rem", color: "#241A14", display: "flex", alignItems: "center", gap: "12px" }}>
-            <Sparkles size={20} color="#D35400" style={{ flexShrink: 0 }} />
+          <div style={{ background: "var(--theme-color-50)", border: "1.5px solid var(--theme-color-900)", borderRadius: "14px", padding: "14px 18px", fontSize: "0.85rem", color: "#241A14", display: "flex", alignItems: "center", gap: "12px" }}>
+            <Sparkles size={20} color="var(--theme-color-900)" style={{ flexShrink: 0 }} />
             <div>
-              <strong style={{ color: "#D35400", display: "block" }}>DEMONSTRATION FEATURE NOTICE:</strong>
+              <strong style={{ color: "var(--theme-color-900)", display: "block" }}>DEMONSTRATION FEATURE NOTICE:</strong>
               This Institution Impact module is a social welfare demonstration feature designed to showcase student peer support, impact rankings, and donation points (৳100 = 1 Point). It is not a full general-ledger accounting system.
             </div>
           </div>
 
           {/* HEADER WITH SMALL TROPHY ICON */}
-          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "18px", padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <div style={{ width: "52px", height: "52px", background: "rgba(211, 84, 0, 0.12)", border: "1.5px solid #D35400", borderRadius: "14px", display: "grid", placeItems: "center", color: "#D35400", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.2)" }}>
+              <div style={{ width: "52px", height: "52px", background: "var(--theme-transparent)", border: "1.5px solid var(--theme-color-900)", borderRadius: "14px", display: "grid", placeItems: "center", color: "var(--theme-color-900)", boxShadow: "0 4px 12px rgba(211, 84, 0, 0.2)" }}>
                 <Trophy size={28} color="#FBBF24" />
               </div>
               <div>
@@ -904,7 +904,7 @@ export function HeadPanel({
                   <h1 style={{ margin: 0, fontSize: "1.7rem", fontWeight: 800, color: "#241A14", letterSpacing: "-0.01em" }}>
                     Institution Impact & Welfare Fund 🏆
                   </h1>
-                  <span style={{ fontSize: "0.74rem", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, color: "#D35400" }}>
+                  <span style={{ fontSize: "0.74rem", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "3px 10px", borderRadius: "999px", fontWeight: 700, color: "var(--theme-color-900)" }}>
                     Dhaka City College
                   </span>
                 </div>
@@ -917,7 +917,7 @@ export function HeadPanel({
             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
               <div style={{ textAlign: "right" }}>
                 <span style={{ fontSize: "0.74rem", textTransform: "uppercase", color: "#8C7A6A", fontWeight: 700 }}>Nationwide Position</span>
-                <h2 style={{ margin: "2px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "#D35400" }}>#18 Nationwide</h2>
+                <h2 style={{ margin: "2px 0 0", fontSize: "1.6rem", fontWeight: 800, color: "var(--theme-color-900)" }}>#18 Nationwide</h2>
               </div>
             </div>
           </div>
@@ -926,8 +926,8 @@ export function HeadPanel({
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px" }}>
             
             {/* 1. TOTAL DEMO DONATIONS */}
-            <div style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "14px", padding: "20px" }}>
-              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#D35400", textTransform: "uppercase" }}>Total Demo Donations</span>
+            <div style={{ background: "#FFFFFF", border: "2px solid var(--theme-color-900)", borderRadius: "14px", padding: "20px" }}>
+              <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "var(--theme-color-900)", textTransform: "uppercase" }}>Total Demo Donations</span>
               <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "#241A14", fontFeatureSettings: "'tnum'" }}>
                 {formatTaka(84500, false)}
               </h2>
@@ -950,7 +950,7 @@ export function HeadPanel({
             {/* 3. DEPARTMENT RANKING */}
             <div style={{ background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "14px", padding: "20px" }}>
               <span style={{ fontSize: "0.74rem", fontWeight: 700, color: "#8C7A6A", textTransform: "uppercase" }}>Top Department</span>
-              <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "#D35400" }}>
+              <h2 style={{ margin: "4px 0 0", fontSize: "1.9rem", fontWeight: 800, color: "var(--theme-color-900)" }}>
                 #1 CSE Dept
               </h2>
               <span style={{ fontSize: "0.78rem", color: "#047857", fontWeight: 700, marginTop: "2px", display: "block" }}>
@@ -986,7 +986,7 @@ export function HeadPanel({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
             
             {/* TOP CONTRIBUTORS LEADERBOARD (SHOW WHO DONATED & HOW MUCH) */}
-            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
@@ -996,7 +996,7 @@ export function HeadPanel({
                     Showing who donated and how much (Demo Fund Tracker)
                   </span>
                 </div>
-                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.1)", color: "#D35400", padding: "2px 8px", borderRadius: "6px", fontWeight: 700 }}>
+                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.1)", color: "var(--theme-color-900)", padding: "2px 8px", borderRadius: "6px", fontWeight: 700 }}>
                   142 Donors
                 </span>
               </div>
@@ -1018,7 +1018,7 @@ export function HeadPanel({
                       justifyContent: "space-between",
                       alignItems: "center",
                       padding: "12px 14px",
-                      background: st.rank <= 3 ? "#FFF7E6" : "#FDF9F3",
+                      background: st.rank <= 3 ? "var(--theme-color-50)" : "var(--theme-color-50)",
                       borderRadius: "10px",
                       border: st.rank <= 3 ? "1px solid rgba(211, 84, 0, 0.3)" : "1px solid rgba(196, 154, 108, 0.2)",
                     }}
@@ -1035,7 +1035,7 @@ export function HeadPanel({
                       <strong style={{ fontWeight: 800, color: "#047857", fontSize: "0.95rem", display: "block" }}>
                         {formatTaka(st.amount, false)}
                       </strong>
-                      <span style={{ fontSize: "0.76rem", color: "#D35400", fontWeight: 700 }}>
+                      <span style={{ fontSize: "0.76rem", color: "var(--theme-color-900)", fontWeight: 700 }}>
                         {st.points} Pts
                       </span>
                     </div>
@@ -1048,7 +1048,7 @@ export function HeadPanel({
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               
               {/* DEPARTMENT RANKINGS */}
-              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "24px" }}>
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
                 <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
                   Department Ranking Breakdown
                 </h3>
@@ -1059,33 +1059,33 @@ export function HeadPanel({
                     { rank: "#3", dept: "Electrical & Electronic Eng", amount: 16000, points: 160, donors: 24, icon: "⚡" },
                     { rank: "#4", dept: "Economics & Humanities", amount: 8500, points: 85, donors: 14, icon: "📚" },
                   ].map((item, idx) => (
-                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: "#FDF9F3", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 14px", background: "var(--theme-color-50)", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.2)" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ fontWeight: 800, color: "#D35400", fontSize: "0.9rem" }}>{item.rank}</span>
+                        <span style={{ fontWeight: 800, color: "var(--theme-color-900)", fontSize: "0.9rem" }}>{item.rank}</span>
                         <span style={{ fontSize: "1.1rem" }}>{item.icon}</span>
                         <div>
                           <h4 style={{ margin: 0, color: "#241A14", fontSize: "0.88rem", fontWeight: 700 }}>{item.dept}</h4>
                           <span style={{ fontSize: "0.76rem", color: "#66564A" }}>{item.donors} Active Donors • {item.points} Pts</span>
                         </div>
                       </div>
-                      <strong style={{ color: "#D35400", fontSize: "0.95rem" }}>{formatTaka(item.amount, false)}</strong>
+                      <strong style={{ color: "var(--theme-color-900)", fontSize: "0.95rem" }}>{formatTaka(item.amount, false)}</strong>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* INSTITUTION RANKING & NATIONWIDE POSITION */}
-              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "24px" }}>
+              <div style={{ background: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.35)", borderRadius: "16px", padding: "20px" }}>
                 <h3 style={{ margin: "0 0 14px", fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
                   Institution Ranking & Nationwide Position
                 </h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <div style={{ padding: "14px", background: "#FFF7E6", borderRadius: "12px", border: "1px solid rgba(211, 84, 0, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ padding: "14px", background: "var(--theme-color-50)", borderRadius: "12px", border: "1px solid rgba(211, 84, 0, 0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <strong style={{ color: "#D35400", fontSize: "0.92rem", display: "block" }}>Regional Institution Ranking</strong>
+                      <strong style={{ color: "var(--theme-color-900)", fontSize: "0.92rem", display: "block" }}>Regional Institution Ranking</strong>
                       <span style={{ fontSize: "0.8rem", color: "#66564A" }}>Ranked #3 in Dhaka Division Higher Education Category</span>
                     </div>
-                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "#D35400" }}>#3 Regional</span>
+                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--theme-color-900)" }}>#3 Regional</span>
                   </div>
 
                   <div style={{ padding: "14px", background: "rgba(4, 120, 87, 0.08)", borderRadius: "12px", border: "1px solid rgba(4, 120, 87, 0.25)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -1112,7 +1112,7 @@ export function HeadPanel({
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "0.72rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
+                <span style={{ fontSize: "0.72rem", background: "var(--theme-transparent)", color: "var(--theme-color-900)", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
                   EXECUTIVE VIEW • READ-ONLY AUDIT
                 </span>
               </div>
@@ -1125,7 +1125,7 @@ export function HeadPanel({
             </div>
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               <span style={{ fontSize: "0.82rem", background: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "6px 14px", borderRadius: "8px", fontWeight: 700, color: "#66564A" }}>
-                Total Enrolled Students: <strong style={{ color: "#D35400" }}>{store.students.length}</strong>
+                Total Enrolled Students: <strong style={{ color: "var(--theme-color-900)" }}>{store.students.length}</strong>
               </span>
             </div>
           </div>
@@ -1138,13 +1138,13 @@ export function HeadPanel({
                 placeholder="Search by student name, ID, or email..."
                 value={headStudentSearch}
                 onChange={(e) => setHeadStudentSearch(e.target.value)}
-                style={{ width: "100%", padding: "9px 14px 9px 40px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem" }}
+                style={{ width: "100%", padding: "9px 14px 9px 40px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", outline: "none", fontSize: "0.88rem" }}
               />
             </div>
             <select
               value={headDeptFilter}
               onChange={(e) => setHeadDeptFilter(e.target.value)}
-              style={{ padding: "9px 14px", background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", fontWeight: 700, fontSize: "0.84rem", outline: "none" }}
+              style={{ padding: "9px 14px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)", borderRadius: "10px", color: "#241A14", fontWeight: 700, fontSize: "0.84rem", outline: "none" }}
             >
               <option value="all">All Departments</option>
               <option value="CSE">CSE</option>
@@ -1158,7 +1158,7 @@ export function HeadPanel({
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem" }}>
                 <thead>
-                  <tr style={{ background: "#FDF9F3", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
+                  <tr style={{ background: "var(--theme-color-50)", textAlign: "left", color: "#66564A", borderBottom: "1px solid rgba(196, 154, 108, 0.3)" }}>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student Dossier</th>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Student ID</th>
                     <th style={{ padding: "12px 16px", fontWeight: 700 }}>Department</th>
@@ -1181,7 +1181,7 @@ export function HeadPanel({
                           <span style={{ fontSize: "0.76rem", color: "#8C7A6A" }}>{student.email}</span>
                         </td>
                         <td style={{ padding: "12px 16px" }}>
-                          <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#D35400", background: "rgba(211, 84, 0, 0.08)", padding: "2px 6px", borderRadius: "4px" }}>
+                          <span style={{ fontFamily: "monospace", fontWeight: 700, color: "var(--theme-color-900)", background: "rgba(211, 84, 0, 0.08)", padding: "2px 6px", borderRadius: "4px" }}>
                             {student.studentId}
                           </span>
                         </td>
@@ -1197,7 +1197,7 @@ export function HeadPanel({
                           <button
                             type="button"
                             onClick={() => setSelectedStudentHead(student)}
-                            style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.3)", color: "#D35400", padding: "5px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            style={{ background: "var(--theme-color-50)", border: "1px solid rgba(211, 84, 0, 0.3)", color: "var(--theme-color-900)", padding: "5px 12px", borderRadius: "8px", fontSize: "0.78rem", fontWeight: 800, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}
                           >
                             <Eye size={14} /> View Record
                           </button>
@@ -1222,12 +1222,12 @@ export function HeadPanel({
             {/* MODAL HEADER */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid rgba(196, 154, 108, 0.3)", paddingBottom: "12px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "rgba(211, 84, 0, 0.12)", border: "1px solid rgba(211, 84, 0, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "#D35400" }}>
+                <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: "var(--theme-transparent)", border: "1px solid rgba(211, 84, 0, 0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--theme-color-900)" }}>
                   <ShieldCheck size={24} />
                 </div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ fontSize: "0.74rem", background: "#FFF7E6", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
+                    <span style={{ fontSize: "0.74rem", background: "var(--theme-color-50)", color: "var(--theme-color-900)", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
                       PHASE 20 • FINAL EXECUTIVE SIGN-OFF
                     </span>
                     <span style={{ fontSize: "0.78rem", color: "#8C7A6A", fontFamily: "monospace" }}>
@@ -1242,7 +1242,7 @@ export function HeadPanel({
               <button
                 type="button"
                 onClick={() => setExecApp(null)}
-                style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", color: "#66564A", cursor: "pointer" }}
+                style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "8px", minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", color: "#66564A", cursor: "pointer" }}
                 aria-label="Close dossier"
               >
                 <X size={20} />
@@ -1256,14 +1256,14 @@ export function HeadPanel({
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 
                 {/* 1. STUDENT */}
-                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
                   <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
                     1. Student Identity Dossier
                   </span>
                   <strong style={{ fontSize: "1rem", color: "#241A14", display: "block" }}>
                     {execApp.studentName}
                   </strong>
-                  <span style={{ fontSize: "0.82rem", color: "#D35400", fontFamily: "monospace", fontWeight: 700, display: "block" }}>
+                  <span style={{ fontSize: "0.82rem", color: "var(--theme-color-900)", fontFamily: "monospace", fontWeight: 700, display: "block" }}>
                     ID: {execApp.studentId}
                   </span>
                   <span style={{ fontSize: "0.78rem", color: "#66564A", display: "block", marginTop: "2px" }}>
@@ -1272,7 +1272,7 @@ export function HeadPanel({
                 </div>
 
                 {/* 2. INSTITUTION */}
-                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "14px" }}>
                   <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
                     2. Institutional Jurisdiction
                   </span>
@@ -1306,7 +1306,7 @@ export function HeadPanel({
                 </div>
 
                 {/* 4. TOTAL AMOUNT */}
-                <div style={{ background: "#FDF9F3", padding: "10px 12px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
+                <div style={{ background: "var(--theme-color-50)", padding: "10px 12px", borderRadius: "10px", border: "1px solid rgba(196, 154, 108, 0.25)" }}>
                   <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block" }}>
                     4. Total Fee Amount
                   </span>
@@ -1328,8 +1328,8 @@ export function HeadPanel({
               </div>
 
               {/* ROW 3: REASON & HARDSHIP STATEMENT */}
-              <div style={{ background: "#FFF7E6", border: "1px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "14px" }}>
-                <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#D35400", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
+              <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(211, 84, 0, 0.3)", borderRadius: "12px", padding: "14px" }}>
+                <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--theme-color-900)", textTransform: "uppercase", letterSpacing: "0.04em", display: "block", marginBottom: "4px" }}>
                   6. Stated Hardship Reason & Declaration
                 </span>
                 <p style={{ margin: "0 0 6px", fontSize: "0.88rem", color: "#241A14", fontWeight: 600, lineHeight: 1.4 }}>
@@ -1350,7 +1350,7 @@ export function HeadPanel({
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "12px" }}>
                 
                 {/* 7. DOCUMENTS */}
-                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
                   <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
                     7. Uploaded Documents
                   </span>
@@ -1368,7 +1368,7 @@ export function HeadPanel({
                 </div>
 
                 {/* 8. FORENSIC AI VERIFICATION & VECTORS */}
-                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                     <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase" }}>
                       8. Forensic Signature Analysis
@@ -1379,7 +1379,7 @@ export function HeadPanel({
                       style={{
                         fontSize: "0.68rem", fontWeight: 700,
                         background: isHeadOverridden ? "#047857" : "rgba(211,84,0,0.12)",
-                        color: isHeadOverridden ? "#FFF" : "#D35400",
+                        color: isHeadOverridden ? "#FFF" : "var(--theme-color-900)",
                         border: "none", padding: "2px 6px", borderRadius: "4px", cursor: "pointer",
                       }}
                     >
@@ -1401,7 +1401,7 @@ export function HeadPanel({
                 </div>
 
                 {/* 9. PAYMENT HISTORY */}
-                <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+                <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
                   <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#8C7A6A", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>
                     9. Payment Track Record
                   </span>
@@ -1428,10 +1428,10 @@ export function HeadPanel({
             </div>
 
             {/* EXECUTIVE AUTHORIZATION & DECISION CONTROLS */}
-            <div style={{ background: "#FFF7E6", border: "1.5px solid #D35400", borderRadius: "14px", padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div style={{ background: "var(--theme-color-50)", border: "1.5px solid var(--theme-color-900)", borderRadius: "14px", padding: "18px", display: "flex", flexDirection: "column", gap: "14px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <Lock size={16} color="#D35400" />
-                <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 800, color: "#D35400" }}>
+                <Lock size={16} color="var(--theme-color-900)" />
+                <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 800, color: "var(--theme-color-900)" }}>
                   Executive Decisioning (Head Authority Sign-Off)
                 </h4>
               </div>
@@ -1502,7 +1502,7 @@ export function HeadPanel({
                   <button
                     type="button"
                     onClick={() => handleExecutiveRequestChanges(execApp.id)}
-                    style={{ color: "#D35400", background: "#FFFFFF", border: "1.5px solid #D35400", padding: "9px 14px", borderRadius: "8px", fontWeight: 800, fontSize: "0.82rem", cursor: "pointer", whiteSpace: "nowrap" }}
+                    style={{ color: "var(--theme-color-900)", background: "#FFFFFF", border: "1.5px solid var(--theme-color-900)", padding: "9px 14px", borderRadius: "8px", fontWeight: 800, fontSize: "0.82rem", cursor: "pointer", whiteSpace: "nowrap" }}
                   >
                     Request Changes
                   </button>
@@ -1541,19 +1541,19 @@ export function HeadPanel({
           style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setSelectedStudentHead(null); }}
         >
-          <div className="ms-modal" style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "680px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
+          <div className="ms-modal" style={{ background: "#FFFFFF", border: "2px solid var(--theme-color-900)", borderRadius: "20px", width: "100%", maxWidth: "680px", maxHeight: "90vh", overflowY: "auto", padding: "20px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "18px" }}>
             
             {/* HEADER */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "#D35400", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "var(--theme-color-900)", color: "#FFFFFF", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "1.1rem" }}>
                   {selectedStudentHead.name.charAt(0)}
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: "#241A14" }}>
                     {selectedStudentHead.name}
                   </h3>
-                  <span style={{ fontSize: "0.82rem", color: "#D35400", fontFamily: "monospace", fontWeight: 700 }}>
+                  <span style={{ fontSize: "0.82rem", color: "var(--theme-color-900)", fontFamily: "monospace", fontWeight: 700 }}>
                     ID: {selectedStudentHead.studentId} • {selectedStudentHead.department}
                   </span>
                 </div>
@@ -1562,20 +1562,20 @@ export function HeadPanel({
               <button
                 type="button"
                 onClick={() => setSelectedStudentHead(null)}
-                style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               >
                 <X size={16} />
               </button>
             </div>
 
             {/* RESTRICTION NOTICE */}
-            <div style={{ background: "#FFF7E6", border: "1px solid #D35400", borderRadius: "10px", padding: "10px 14px", fontSize: "0.78rem", color: "#241A14", display: "flex", alignItems: "center", gap: "8px" }}>
-              <Lock size={16} color="#D35400" />
+            <div style={{ background: "var(--theme-color-50)", border: "1px solid var(--theme-color-900)", borderRadius: "10px", padding: "10px 14px", fontSize: "0.78rem", color: "#241A14", display: "flex", alignItems: "center", gap: "8px" }}>
+              <Lock size={16} color="var(--theme-color-900)" />
               <span><strong>EXECUTIVE READ-ONLY MODE:</strong> You are viewing this record as Head of Institution. Student details cannot be edited from this interface.</span>
             </div>
 
             {/* STUDENT DETAILS GRID */}
-            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "0.85rem" }}>
+            <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "0.85rem" }}>
               <div><strong>Roll Number:</strong> {selectedStudentHead.roll || "2401"}</div>
               <div><strong>Class / Year:</strong> {selectedStudentHead.classYear} ({selectedStudentHead.section})</div>
               <div><strong>Email:</strong> {selectedStudentHead.email}</div>
@@ -1588,7 +1588,7 @@ export function HeadPanel({
               <button
                 type="button"
                 onClick={() => setSelectedStudentHead(null)}
-                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "8px 18px", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 800, cursor: "pointer" }}
+                style={{ background: "var(--theme-color-900)", color: "#FFFFFF", border: "none", padding: "8px 18px", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 800, cursor: "pointer" }}
               >
                 Close Record
               </button>
@@ -1604,11 +1604,11 @@ export function HeadPanel({
           style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setSelectedAuditLogHead(null); }}
         >
-          <div className="ms-modal" style={{ background: "#FFFFFF", border: "2px solid #D35400", borderRadius: "20px", width: "100%", maxWidth: "640px", maxHeight: "90vh", overflowY: "auto", padding: "24px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div className="ms-modal" style={{ background: "#FFFFFF", border: "2px solid var(--theme-color-900)", borderRadius: "20px", width: "100%", maxWidth: "640px", maxHeight: "90vh", overflowY: "auto", padding: "20px", boxShadow: "0 24px 48px rgba(36, 26, 20, 0.3)", display: "flex", flexDirection: "column", gap: "16px" }}>
             
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
-                <span style={{ fontSize: "0.74rem", background: "rgba(211, 84, 0, 0.12)", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
+                <span style={{ fontSize: "0.74rem", background: "var(--theme-transparent)", color: "var(--theme-color-900)", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "2px 8px", borderRadius: "6px", fontWeight: 800 }}>
                   AUDIT EVENT DOSSIER #{selectedAuditLogHead.id.toUpperCase()}
                 </span>
                 <h3 style={{ margin: "4px 0 0", fontSize: "1.2rem", fontWeight: 800, color: "#241A14" }}>
@@ -1619,13 +1619,13 @@ export function HeadPanel({
               <button
                 type="button"
                 onClick={() => setSelectedAuditLogHead(null)}
-                style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
               >
                 <X size={16} />
               </button>
             </div>
 
-            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.85rem" }}>
+            <div style={{ background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", gap: "8px", fontSize: "0.85rem" }}>
               <div><strong>Performing Actor:</strong> {selectedAuditLogHead.actor} ({selectedAuditLogHead.role})</div>
               <div><strong>Logged Time:</strong> {selectedAuditLogHead.timestamp}</div>
               <div><strong>Details:</strong> {selectedAuditLogHead.details}</div>
@@ -1640,7 +1640,7 @@ export function HeadPanel({
               <button
                 type="button"
                 onClick={() => setSelectedAuditLogHead(null)}
-                style={{ background: "#D35400", color: "#FFFFFF", border: "none", padding: "8px 18px", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 800, cursor: "pointer" }}
+                style={{ background: "var(--theme-color-900)", color: "#FFFFFF", border: "none", padding: "8px 18px", borderRadius: "8px", fontSize: "0.84rem", fontWeight: 800, cursor: "pointer" }}
               >
                 Close Audit Dossier
               </button>
@@ -1659,3 +1659,5 @@ export function HeadPanel({
     </div>
   );
 }
+
+

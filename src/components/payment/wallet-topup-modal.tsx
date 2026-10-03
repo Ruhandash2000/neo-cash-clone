@@ -83,14 +83,14 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
               width: "42px", height: "42px", borderRadius: "12px",
               background: "rgba(211, 84, 0, 0.1)", display: "grid", placeItems: "center",
             }}>
-              <Wallet size={20} style={{ color: "#D35400" }} />
+              <Wallet size={20} style={{ color: "var(--theme-color-900)" }} />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
                 Add Money
               </h2>
               <p style={{ margin: 0, fontSize: "0.78rem", color: "#8C7A6A" }}>
-                Current balance: <strong style={{ color: "#D35400" }}>{amountFmt(currentBalance)}</strong>
+                Current balance: <strong style={{ color: "var(--theme-color-900)" }}>{amountFmt(currentBalance)}</strong>
               </p>
             </div>
           </div>
@@ -123,10 +123,10 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
                   padding: "12px 8px",
                   borderRadius: "12px",
                   border: selected === p && !custom
-                    ? "2px solid #D35400"
+                    ? "2px solid var(--theme-color-900)"
                     : "1.5px solid rgba(196, 154, 108, 0.4)",
-                  background: selected === p && !custom ? "rgba(211, 84, 0, 0.06)" : "#FFF7E6",
-                  color: selected === p && !custom ? "#D35400" : "#241A14",
+                  background: selected === p && !custom ? "rgba(211, 84, 0, 0.06)" : "var(--theme-color-50)",
+                  color: selected === p && !custom ? "var(--theme-color-900)" : "#241A14",
                   fontWeight: 700,
                   fontSize: "0.95rem",
                   cursor: "pointer",
@@ -160,9 +160,9 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
                 style={{
                   width: "100%", boxSizing: "border-box",
                   padding: "12px 14px 12px 34px",
-                  border: `1.5px solid ${custom && !isNaN(parseFloat(custom)) && parseFloat(custom) > 0 ? "#D35400" : "rgba(196, 154, 108, 0.4)"}`,
+                  border: `1.5px solid ${custom && !isNaN(parseFloat(custom)) && parseFloat(custom) > 0 ? "var(--theme-color-900)" : "rgba(196, 154, 108, 0.4)"}`,
                   borderRadius: "12px", fontSize: "1rem", color: "#241A14",
-                  background: "#FFF7E6", outline: "none",
+                  background: "var(--theme-color-50)", outline: "none",
                 }}
               />
             </div>
@@ -187,7 +187,7 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
                 paddingTop: "8px", borderTop: "1px dashed rgba(196, 154, 108, 0.4)",
               }}>
                 <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#241A14" }}>New balance</span>
-                <span style={{ fontWeight: 800, color: "#D35400", fontSize: "1rem" }}>
+                <span style={{ fontWeight: 800, color: "var(--theme-color-900)", fontSize: "1rem" }}>
                   {amountFmt(currentBalance + amount)}
                 </span>
               </div>
@@ -212,7 +212,7 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
             <span style={{ fontSize: "0.75rem", color: "#8C7A6A" }}>Pay via:</span>
             {["bKash", "Nagad", "Rocket", "Visa", "Mastercard", "DBBL Nexus"].map((m) => (
               <span key={m} style={{
-                padding: "3px 10px", background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)",
+                padding: "3px 10px", background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)",
                 borderRadius: "6px", fontSize: "0.72rem", fontWeight: 700, color: "#66564A",
               }}>
                 {m}
@@ -240,7 +240,7 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
             style={{
               width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
               padding: "13px",
-              background: !isValid || busy ? "rgba(211, 84, 0, 0.4)" : "#D35400",
+              background: !isValid || busy ? "rgba(211, 84, 0, 0.4)" : "var(--theme-color-900)",
               color: "#FFF", border: "none", borderRadius: "12px",
               fontSize: "0.95rem", fontWeight: 800, cursor: !isValid || busy ? "not-allowed" : "pointer",
               transition: "background 0.2s",
@@ -261,3 +261,5 @@ export function WalletTopUpModal({ institutionId, currentBalance, onClose }: Pro
     </div>
   );
 }
+
+

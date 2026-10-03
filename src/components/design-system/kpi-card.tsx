@@ -25,20 +25,20 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     switch (variant) {
       case "primary":
         return {
-          background: "linear-gradient(135deg, #D35400 0%, #B84700 100%)",
-          border: "1px solid #D35400",
-          titleColor: "#FFF7E6",
+          background: "linear-gradient(135deg, var(--theme-color-900) 0%, #B84700 100%)",
+          border: "1px solid var(--theme-color-900)",
+          titleColor: "var(--theme-color-50)",
           valueColor: "#FFFFFF",
           subtitleColor: "#EAD9C6",
           iconBg: "rgba(255, 247, 230, 0.2)",
-          iconColor: "#FFF7E6",
+          iconColor: "var(--theme-color-50)",
         };
       case "accent":
         return {
-          background: "#FDF9F3",
+          background: "var(--theme-color-50)",
           border: "1px solid rgba(247, 183, 51, 0.4)",
           titleColor: "#7A685A",
-          valueColor: "#D35400",
+          valueColor: "var(--theme-color-900)",
           subtitleColor: "#8A7667",
           iconBg: "rgba(247, 183, 51, 0.2)",
           iconColor: "#B45309",
@@ -51,7 +51,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
           valueColor: "#1C140E",
           subtitleColor: "#8A7667",
           iconBg: "rgba(196, 154, 108, 0.15)",
-          iconColor: "#D35400",
+          iconColor: "var(--theme-color-900)",
         };
     }
   };
@@ -128,7 +128,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                     : "rgba(196, 154, 108, 0.15)",
                 color:
                   variant === "primary"
-                    ? "#FFF7E6"
+                    ? "var(--theme-color-50)"
                     : trend === "up"
                     ? "#047857"
                     : trend === "down"
@@ -147,3 +147,5 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     </div>
   );
 };
+
+

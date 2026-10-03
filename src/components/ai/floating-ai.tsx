@@ -2,7 +2,7 @@
  * FloatingAI — Global AI Financial Assistant
  *
  * Design:
- *   • Burnt orange (#D35400) color scheme — matching the app brand
+ *   • Burnt orange (var(--theme-color-900)) color scheme — matching the app brand
  *   • Positioned BOTTOM-RIGHT (desktop & mobile)
  *   • Chat-bubble shape: border-radius top-left + bottom corners = round, bottom-right = sharp
  *   • Carries ALL AI features from the dashboard:
@@ -13,10 +13,11 @@
  *       - Typing indicator + smooth scroll
  */
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Sparkles, Minimize2, ChevronDown } from "lucide-react";
+import { X, Send, Minimize2, ChevronDown } from "lucide-react";
 import { useNeoStore, Fee } from "@/lib/neo-cash-store";
 import { formatTaka } from "@/components/design-system/tokens";
 import purpleLogo from "@/assets/neo-purple-logo.png";
+import chatBoxIcon from "@/assets/chatboxicon.png";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ActionBtn {
@@ -249,17 +250,17 @@ export function FloatingAI() {
     }]);
   };
 
-  // Orange color constants
-  const O = "#D35400";
-  const OLight = "rgba(211,84,0,0.12)";
-  const OBorder = "rgba(211,84,0,0.3)";
+  // Theme color constants
+  const O = "var(--theme-color-900)";
+  const OLight = "var(--theme-transparent)";
+  const OBorder = "var(--theme-glow)";
 
   return (
     <>
       {/* ── FLOATING BUTTON ─────────────────────────────────────────── */}
       <button
         type="button"
-        onClick={() => setIsOpen(o => !o)}
+        onClick={() => setIsOpen(true)}
         aria-label="Open Neo AI Assistant"
         title="Ask Neo AI"
         style={{
@@ -268,33 +269,35 @@ export function FloatingAI() {
           right: "16px",
           left: "auto",
           zIndex: 999,
-          width: "52px",
-          height: "48px",
-          // Chat-bubble: sharp corner bottom-right
-          borderRadius: "16px 16px 4px 16px",
-          background: `linear-gradient(135deg, ${O} 0%, #B84A00 100%)`,
-          border: `1.5px solid rgba(255,140,66,0.4)`,
-          cursor: "pointer",
+          width: "56px",
+          height: "56px",
+          background: "transparent",
+          border: "none",
+          cursor: isOpen ? "default" : "pointer",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: `0 4px 20px rgba(211,84,0,0.4), 0 0 0 1px rgba(211,84,0,0.15)`,
-          transition: "transform 0.2s, box-shadow 0.2s",
+          boxShadow: "none",
+          
+          // Smooth bidirectional transform out of the way when open
+          opacity: isOpen ? 0 : 1,
+          transformOrigin: "bottom right",
+          transform: isOpen ? "scale(0) translateY(20px)" : "scale(1) translateY(0)",
+          pointerEvents: isOpen ? "none" : "auto",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          
           animation: pulse && !isOpen ? "neo-ai-orb-pulse 2.4s ease infinite" : "none",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.08)";
-          e.currentTarget.style.boxShadow = `0 6px 28px rgba(211,84,0,0.55), 0 0 0 2px rgba(211,84,0,0.2)`;
+          if (isOpen) return;
+          e.currentTarget.style.transform = "scale(1.08) translateY(0)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = `0 4px 20px rgba(211,84,0,0.4), 0 0 0 1px rgba(211,84,0,0.15)`;
+          if (isOpen) return;
+          e.currentTarget.style.transform = "scale(1) translateY(0)";
         }}
       >
-        {isOpen
-          ? <ChevronDown size={20} color="#FFF" />
-          : <Sparkles size={20} color="#FFF" />
-        }
+        <img src={chatBoxIcon} alt="AI" style={{ width: "48px", height: "48px", objectFit: "contain" }} />
         {/* Unread badge */}
         {!isOpen && unread > 0 && (
           <div style={{
@@ -309,29 +312,35 @@ export function FloatingAI() {
       </button>
 
       {/* ── CHAT PANEL ──────────────────────────────────────────────── */}
-      {isOpen && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "calc(72px + 8px + env(safe-area-inset-bottom, 0px))",
-            right: "12px",
-            left: "auto",
-            zIndex: 1001,
-            width: "clamp(300px, 92vw, 370px)",
-            borderRadius: "16px 16px 4px 16px",   // chat-bubble: sharp bottom-right
-            boxShadow: "0 16px 64px rgba(0,0,0,0.45), 0 0 0 1px rgba(211,84,0,0.2)",
-            border: `1px solid ${OBorder}`,
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-            maxHeight: isMinimized ? "56px" : "min(520px, 72vh)",
-            transition: "max-height 0.3s cubic-bezier(0.4,0,0.2,1)",
-            background: "#1A0E06",
-          }}
-        >
+      <div
+        style={{
+          position: "fixed",
+          bottom: "calc(72px + 8px + env(safe-area-inset-bottom, 0px))",
+          right: "16px", // Align right with the button
+          left: "auto",
+          zIndex: 1001,
+          width: "clamp(320px, 95vw, 420px)",
+          borderRadius: "16px 16px 4px 16px",   // chat-bubble: sharp bottom-right
+          boxShadow: "0 16px 64px rgba(0,0,0,0.45), 0 0 0 1px var(--theme-transparent)",
+          border: `1px solid ${OBorder}`,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          background: "var(--theme-color-50)",
+          
+          // Animate in from the bottom right corner (where the button was)
+          maxHeight: isMinimized ? "56px" : "min(580px, 80vh)",
+          transformOrigin: "bottom right",
+          opacity: isOpen ? 1 : 0,
+          transform: isOpen ? "scale(1) translateY(0)" : "scale(0.85) translateY(30px)",
+          pointerEvents: isOpen ? "auto" : "none",
+          visibility: isOpen ? "visible" : "hidden",
+          transition: "all 0.35s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.3s cubic-bezier(0.4,0,0.2,1)",
+        }}
+      >
           {/* HEADER */}
           <div style={{
-            background: `linear-gradient(135deg, ${O} 0%, #9E3D00 100%)`,
+            background: `linear-gradient(135deg, var(--theme-color-500) 0%, var(--theme-color-900) 100%)`,
             padding: "11px 14px",
             display: "flex",
             alignItems: "center",
@@ -369,7 +378,7 @@ export function FloatingAI() {
               <div className="neo-ai-scroll" style={{
                 flex: 1, overflowY: "auto", padding: "12px 10px",
                 display: "flex", flexDirection: "column", gap: "10px",
-                background: "#1A0E06",
+                background: "var(--theme-color-50)",
               }}>
                 {messages.map((msg) => (
                   <div key={msg.id} style={{
@@ -382,12 +391,12 @@ export function FloatingAI() {
                     <div style={{
                       maxWidth: "85%",
                       background: msg.role === "user"
-                        ? `linear-gradient(135deg, ${O}, #9E3D00)`
-                        : "rgba(255,255,255,0.06)",
-                      color: msg.role === "user" ? "#FFF" : "#E8D5C4",
+                        ? `linear-gradient(135deg, var(--theme-color-500), var(--theme-color-900))`
+                        : "var(--theme-color-50)",
+                      color: msg.role === "user" ? "#FFF" : "var(--ms-text)",
                       border: msg.role === "user"
-                        ? "1px solid rgba(255,140,66,0.3)"
-                        : "1px solid rgba(255,255,255,0.07)",
+                        ? `1px solid var(--theme-glow)`
+                        : `1px solid var(--theme-transparent)`,
                       padding: "9px 13px",
                       borderRadius: msg.role === "user"
                         ? "14px 14px 4px 14px"
@@ -418,12 +427,12 @@ export function FloatingAI() {
                               borderRadius: "8px",
                               padding: "5px 10px",
                               fontSize: "0.74rem",
-                              color: "#FF9F5A",
+                              color: "var(--theme-color-900)",
                               cursor: "pointer",
                               fontWeight: 700,
                               transition: "background 0.15s",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(211,84,0,0.22)")}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "var(--theme-glow)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = OLight)}
                           >
                             {action.label}
@@ -450,10 +459,11 @@ export function FloatingAI() {
               </div>
 
               {/* QUICK CHIPS */}
-              <div style={{
-                display: "flex", gap: "5px", padding: "7px 10px 0",
+              <div className="neo-ai-chips-scroll" style={{
+                display: "flex", gap: "6px", padding: "10px 12px 12px",
                 overflowX: "auto", flexShrink: 0,
-                background: "rgba(0,0,0,0.25)",
+                background: "var(--theme-color-50)",
+                borderTop: "1px solid var(--theme-transparent)",
               }}>
                 {QUICK_CHIPS.map((chip) => (
                   <button
@@ -466,12 +476,12 @@ export function FloatingAI() {
                       borderRadius: "999px",
                       padding: "3px 9px",
                       fontSize: "0.71rem",
-                      color: "#FF9F5A",
+                      color: "var(--theme-color-900)",
                       cursor: "pointer",
                       fontWeight: 600,
                       whiteSpace: "nowrap",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(211,84,0,0.22)")}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--theme-glow)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = OLight)}
                   >
                     {chip}
@@ -481,14 +491,15 @@ export function FloatingAI() {
 
               {/* INPUT */}
               <div style={{
-                display: "flex", gap: "6px", padding: "8px 10px",
-                background: "rgba(0,0,0,0.3)",
-                borderTop: `1px solid rgba(211,84,0,0.12)`,
+                display: "flex", gap: "8px", padding: "12px",
+                background: "var(--theme-color-50)",
+                borderTop: `1px solid var(--theme-transparent)`,
                 flexShrink: 0,
               }}>
                 <input
                   ref={inputRef}
                   type="text"
+                  className="neo-ai-input"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && send()}
@@ -497,11 +508,11 @@ export function FloatingAI() {
                     flex: 1,
                     border: `1px solid ${OBorder}`,
                     borderRadius: "12px",
-                    padding: "8px 11px",
-                    fontSize: "0.82rem",
+                    padding: "10px 14px",
+                    fontSize: "0.86rem",
                     outline: "none",
-                    background: "rgba(211,84,0,0.06)",
-                    color: "#E8D5C4",
+                    background: "var(--theme-transparent)",
+                    color: "var(--ms-text)",
                   }}
                 />
                 <button
@@ -509,7 +520,7 @@ export function FloatingAI() {
                   onClick={() => send()}
                   disabled={!input.trim()}
                   style={{
-                    background: input.trim() ? `linear-gradient(135deg, ${O}, #9E3D00)` : "rgba(255,255,255,0.05)",
+                    background: input.trim() ? `linear-gradient(135deg, var(--theme-color-500), var(--theme-color-900))` : "var(--theme-transparent)",
                     border: `1px solid ${input.trim() ? OBorder : "rgba(255,255,255,0.08)"}`,
                     borderRadius: "12px",
                     width: "38px", height: "38px",
@@ -525,12 +536,11 @@ export function FloatingAI() {
             </>
           )}
         </div>
-      )}
 
       <style>{`
         @keyframes neo-ai-orb-pulse {
-          0%, 100% { box-shadow: 0 4px 16px rgba(211,84,0,0.4), 0 0 0 1px rgba(211,84,0,0.15); }
-          50%       { box-shadow: 0 4px 28px rgba(211,84,0,0.65), 0 0 0 5px rgba(211,84,0,0.12); transform: scale(1.06); }
+          0%, 100% { box-shadow: 0 4px 16px var(--theme-transparent), 0 0 0 1px var(--theme-transparent); }
+          50%       { box-shadow: 0 4px 28px var(--theme-glow), 0 0 0 5px var(--theme-transparent); transform: scale(1.06); }
         }
         @keyframes neo-ai-bounce {
           0%, 100% { transform: translateY(0); opacity: 0.5; }
@@ -538,7 +548,22 @@ export function FloatingAI() {
         }
         .neo-ai-scroll::-webkit-scrollbar { width: 3px; }
         .neo-ai-scroll::-webkit-scrollbar-track { background: transparent; }
-        .neo-ai-scroll::-webkit-scrollbar-thumb { background: rgba(211,84,0,0.3); border-radius: 3px; }
+        .neo-ai-scroll::-webkit-scrollbar-thumb { background: var(--theme-glow); border-radius: 3px; }
+        
+        .neo-ai-chips-scroll { 
+          scrollbar-width: thin; 
+          scrollbar-color: var(--theme-glow) transparent; 
+        }
+        .neo-ai-chips-scroll::-webkit-scrollbar { height: 4px; }
+        .neo-ai-chips-scroll::-webkit-scrollbar-track { background: transparent; }
+        .neo-ai-chips-scroll::-webkit-scrollbar-thumb { background: var(--theme-glow); border-radius: 4px; }
+        
+        .neo-ai-input:focus {
+          outline: none !important;
+          box-shadow: 0 0 0 2px var(--theme-glow) !important;
+          border-color: var(--theme-color-900) !important;
+        }
+
         @media (min-width: 768px) {
           /* On desktop, lift above the "fixed footer" area */
           .floating-ai-btn { bottom: 24px !important; }
@@ -547,3 +572,4 @@ export function FloatingAI() {
     </>
   );
 }
+

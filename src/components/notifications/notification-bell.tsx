@@ -55,7 +55,7 @@ function notifDot(type: string): string {
   if (type === "success" || type.includes("approved")) return "#047857";
   if (type === "error"   || type.includes("rejected")) return "#DC2626";
   if (type === "warning" || type.includes("pending"))  return "#D97706";
-  return "#D35400";
+  return "var(--theme-color-900)";
 }
 
 // Map local NotificationItem → UnifiedNotif
@@ -193,12 +193,12 @@ export function NotificationBell({ userId }: Props) {
         }}
         aria-label={`Notifications (${unreadCount} unread)`}
       >
-        <Bell size={18} style={{ color: open ? "#D35400" : "#66564A" }} />
+        <Bell size={18} style={{ color: open ? "var(--theme-color-900)" : "#66564A" }} />
         {unreadCount > 0 && (
           <span style={{
             position: "absolute", top: 4, right: 4,
             minWidth: 16, height: 16, borderRadius: "8px",
-            background: "#D35400", color: "#fff",
+            background: "var(--theme-color-900)", color: "#fff",
             fontSize: "0.58rem", fontWeight: 800,
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "0 3px",
@@ -235,7 +235,7 @@ export function NotificationBell({ userId }: Props) {
               <span style={{ fontWeight: 800, fontSize: "0.95rem", color: "#1C140E" }}>Notifications</span>
               {unreadCount > 0 && (
                 <span style={{
-                  marginLeft: "8px", background: "#D35400", color: "#fff",
+                  marginLeft: "8px", background: "var(--theme-color-900)", color: "#fff",
                   borderRadius: "999px", padding: "1px 7px",
                   fontSize: "0.65rem", fontWeight: 700,
                 }}>{unreadCount} new</span>
@@ -340,3 +340,4 @@ export function NotificationBell({ userId }: Props) {
     </div>
   );
 }
+

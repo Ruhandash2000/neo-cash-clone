@@ -22,8 +22,10 @@ import { AdminPanel }       from "./admin-panel";
 import { HeadPanel }        from "./head-panel";
 import { ReceiptModal }     from "./receipt-modal";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { ThemePaletteSelector } from "./theme-palette-selector";
 import { FloatingAI }       from "@/components/ai/floating-ai";
 import { AvatarUpload }     from "@/components/ui/avatar-upload";
+import { useTheme }         from "@/lib/theme-provider";
 import purpleLogo           from "@/assets/neo-purple-logo.png";
 import {
   LayoutDashboard, CreditCard, FileText, HeartHandshake,
@@ -74,14 +76,14 @@ function headNav(store: any): NavItem[] {
 
 /* ─────────── role badge colors ─────────────────────────────────── */
 const ROLE_COLORS: { [key: string]: string } = {
-  student: "rgba(124,58,237,0.15)",
-  admin:   "rgba(211,84,0,0.15)",
-  head:    "rgba(234,179,8,0.15)",
+  student: "rgba(211,84,0,0.15)", // Burnt Orange
+  admin:   "rgba(180,83,9,0.15)", // Dark Bronze
+  head:    "rgba(247,183,51,0.15)", // Gold
 };
 const ROLE_TEXT: { [key: string]: string } = {
-  student: "#7C3AED",
-  admin:   "#D35400",
-  head:    "#B45309",
+  student: "var(--theme-color-900)", // Burnt Orange
+  admin:   "#B45309", // Dark Bronze
+  head:    "#D97706", // Dark Gold
 };
 
 /* ─────────── component ──────────────────────────────────────────── */
@@ -99,15 +101,14 @@ export function DashboardShell({
   const [store, actions] = useNeoStore();
   const [activeTab, setActiveTab]     = useState("overview");
   const [receiptTxn, setReceiptTxn]   = useState<Transaction | null>(null);
-  const [isDarkMode, setIsDarkMode]   = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [avatarSrc, setAvatarSrc]     = useState<string>("");
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("neo_cash_theme");
-    setIsDarkMode(saved === "dark");
-    document.documentElement.classList.toggle("dark", saved === "dark");
     try {
       const av = localStorage.getItem("neo_cash_avatar");
       if (av) setAvatarSrc(av);
@@ -116,12 +117,6 @@ export function DashboardShell({
 
   useEffect(() => { setActiveTab("overview"); }, [store.role]);
 
-  const toggleTheme = () => {
-    const next = !isDarkMode;
-    setIsDarkMode(next);
-    document.documentElement.classList.toggle("dark", next);
-    window.localStorage.setItem("neo_cash_theme", next ? "dark" : "light");
-  };
 
   const handleRestartOnboarding = () => {
     actions.setIsOnboarded(false);
@@ -192,7 +187,7 @@ export function DashboardShell({
           {!sidebarExpanded && (item.badge ?? 0) > 0 && (
             <div style={{
               position: "absolute", top: "-4px", right: "-4px",
-              background: "#D35400", color: "#FFF",
+              background: "var(--theme-color-900)", color: "#FFF",
               fontSize: "0.55rem", fontWeight: 800,
               width: "14px", height: "14px",
               borderRadius: "50%",
@@ -209,7 +204,7 @@ export function DashboardShell({
             <span style={{ flex: 1 }}>{item.label}</span>
             {(item.badge ?? 0) > 0 && (
               <span style={{
-                background: "#D35400", color: "#FFF",
+                background: "var(--theme-color-900)", color: "#FFF",
                 fontSize: "0.65rem", fontWeight: 800,
                 padding: "1px 6px", borderRadius: "999px",
               }}>
@@ -248,7 +243,7 @@ export function DashboardShell({
                   padding: "1px 8px", borderRadius: "999px", fontSize: "0.7rem",
                   fontWeight: 700, cursor: "pointer",
                   background: store.currentSessionUser?.id === acc.id ? "rgba(211,84,0,0.2)" : "rgba(255,255,255,0.06)",
-                  color: store.currentSessionUser?.id === acc.id ? "#FF8C42" : "#8C7A6A",
+                  color: store.currentSessionUser?.id === acc.id ? "var(--theme-color-500)" : "#8C7A6A",
                   border: store.currentSessionUser?.id === acc.id ? "1px solid rgba(211,84,0,0.4)" : "1px solid rgba(255,255,255,0.1)",
                 }}
               >
@@ -334,7 +329,7 @@ export function DashboardShell({
                 alignItems: "center",
                 gap: sidebarExpanded ? "10px" : "0",
                 justifyContent: sidebarExpanded ? "flex-start" : "center",
-                background: "rgba(0,0,0,0.03)",
+                background: "transparent",
                 border: "none",
                 borderRadius: "10px",
                 padding: "8px",
@@ -342,8 +337,8 @@ export function DashboardShell({
                 marginBottom: "4px",
                 transition: "background 0.15s",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.07)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.03)")}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.04)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               <AvatarUpload
                 src={avatarSrc || store.studentProfile.avatar}
@@ -424,9 +419,10 @@ export function DashboardShell({
             <img src={purpleLogo} alt="Neo Cash" className="mobile-only-logo" style={{ height: "28px", width: "28px", objectFit: "contain", flexShrink: 0 }} />
 
             {/* Page title */}
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "#1C140E" }}>{currentNavLabel}</span>
-              <span style={{ marginLeft: "8px", fontSize: "0.72rem", color: "#9CA3AF" }}>
+              <span style={{ color: "#D1D5DB", fontSize: "0.8rem" }}>/</span>
+              <span style={{ fontSize: "0.72rem", color: "#9CA3AF", fontWeight: 500 }}>
                 {store.selectedInstitution?.name ?? "Neo Cash"}
               </span>
             </div>
@@ -436,9 +432,10 @@ export function DashboardShell({
               {/* Theme (mobile only — desktop has it in sidebar) */}
               <button type="button" onClick={toggleTheme} className="mobile-only-btn"
                 style={{ background: "rgba(0,0,0,0.04)", border: "none", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                {isDarkMode ? <Sun size={16} color="#D35400" /> : <Moon size={16} color="#6B7280" />}
+                {isDarkMode ? <Sun size={16} color="var(--theme-color-900)" /> : <Moon size={16} color="#6B7280" />}
               </button>
 
+              <ThemePaletteSelector />
               <NotificationBell userId={store.currentSessionUser?.id ?? ""} />
 
               {/* Avatar */}
@@ -456,7 +453,7 @@ export function DashboardShell({
 
           {/* PANEL CONTENT */}
           <main style={{ flex: 1, overflow: "hidden", position: "relative" }}>
-            <div style={{ height: "100%", overflowY: "auto", paddingBottom: "calc(64px * var(--show-bottom-nav, 0))" }} id="main-scroll">
+            <div className="hide-scrollbar" style={{ height: "100%", overflowY: "auto", padding: "24px 28px", paddingBottom: "calc(64px * var(--show-bottom-nav, 0))" }} id="main-scroll">
               {store.role === "student" && (
                 <StudentPanel activeTab={activeTab} setActiveTab={setActiveTab} onOpenReceipt={(txn) => setReceiptTxn(txn)} />
               )}
@@ -503,7 +500,7 @@ export function DashboardShell({
                 background: "none",
                 cursor: "pointer",
                 position: "relative",
-                color: isActive ? "#7C3AED" : "#9CA3AF",
+                color: isActive ? "var(--theme-color-500)" : "#9CA3AF",
                 transition: "color 0.15s",
                 paddingBottom: "2px",
               }}
@@ -512,14 +509,14 @@ export function DashboardShell({
                 <div style={{
                   position: "absolute", top: 0, left: "20%", right: "20%",
                   height: "3px",
-                  background: "linear-gradient(90deg, #7C3AED, #D35400)",
+                  background: "linear-gradient(90deg, var(--theme-color-500), var(--theme-color-900))",
                   borderRadius: "0 0 3px 3px",
                 }} />
               )}
               {(item.badge ?? 0) > 0 && (
                 <div style={{
                   position: "absolute", top: "6px", right: "calc(50% - 18px)",
-                  background: "#D35400", color: "#FFF",
+                  background: "var(--theme-color-900)", color: "#FFF",
                   fontSize: "0.6rem", fontWeight: 800,
                   minWidth: "16px", height: "16px",
                   borderRadius: "999px", padding: "0 3px",
@@ -554,11 +551,11 @@ export function DashboardShell({
             animation: "slideUp 0.25s ease",
           }}>
             <div style={{ display: "flex", justifyContent: "center", padding: "12px" }}>
-              <div style={{ width: "36px", height: "4px", background: "#E5E7EB", borderRadius: "2px" }} />
+              <div style={{ width: "36px", height: "4px", background: "rgba(156, 163, 175, 0.4)", borderRadius: "2px" }} />
             </div>
 
             {/* Profile header */}
-            <div style={{ display: "flex", alignItems: "center", gap: "16px", padding: "0 20px 16px", borderBottom: "1px solid #F3F4F6" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", padding: "0 20px 16px", borderBottom: "1px solid rgba(156, 163, 175, 0.2)" }}>
               <AvatarUpload
                 src={avatarSrc || store.studentProfile.avatar}
                 name={displayName}
@@ -581,7 +578,7 @@ export function DashboardShell({
             {store.role === "student" && (
               <div style={{
                 margin: "12px 16px",
-                background: "linear-gradient(135deg, #7C3AED 0%, #D35400 100%)",
+                background: "linear-gradient(135deg, var(--theme-color-500) 0%, var(--theme-color-900) 100%)",
                 borderRadius: "14px", padding: "14px 16px",
                 display: "flex", alignItems: "center", justifyContent: "space-between",
               }}>
@@ -598,41 +595,41 @@ export function DashboardShell({
             {/* Menu items */}
             <div style={{ padding: "4px 8px" }}>
               {[
-                { icon: <UserCircle size={19} color={ROLE_TEXT["student"]} />, label: "Profile", sub: "Edit your info", bg: ROLE_COLORS["student"], action: () => { setActiveTab("overview"); setShowProfile(false); } },
-                { icon: <Bell size={19} color={ROLE_TEXT["admin"]} />, label: "Notifications", sub: `${unreadCount} unread`, bg: ROLE_COLORS["admin"], action: () => setShowProfile(false) },
-                { icon: isDarkMode ? <Sun size={19} color="#6B7280" /> : <Moon size={19} color="#6B7280" />, label: isDarkMode ? "Light Mode" : "Dark Mode", sub: "Toggle appearance", bg: "rgba(107,114,128,0.1)", action: () => { toggleTheme(); setShowProfile(false); } },
-                { icon: <Settings size={19} color="#6B7280" />, label: "Settings", sub: "Preferences & security", bg: "rgba(107,114,128,0.1)", action: () => setShowProfile(false) },
+                { icon: <UserCircle size={19} color="var(--theme-color-900)" />, label: "Profile", sub: "Edit your info", bg: "var(--theme-transparent)", action: () => { setActiveTab("overview"); setShowProfile(false); } },
+                { icon: <Bell size={19} color="var(--theme-color-900)" />, label: "Notifications", sub: `${unreadCount} unread`, bg: "var(--theme-transparent)", action: () => setShowProfile(false) },
+                { icon: isDarkMode ? <Sun size={19} color="#9CA3AF" /> : <Moon size={19} color="#6B7280" />, label: isDarkMode ? "Light Mode" : "Dark Mode", sub: "Toggle appearance", bg: "rgba(107, 114, 128, 0.1)", action: () => { toggleTheme(); setShowProfile(false); } },
+                { icon: <Settings size={19} color="#9CA3AF" />, label: "Settings", sub: "Preferences & security", bg: "rgba(107, 114, 128, 0.1)", action: () => setShowProfile(false) },
               ].map((item) => (
                 <button key={item.label} type="button" onClick={item.action}
                   style={{ width: "100%", display: "flex", alignItems: "center", gap: "12px", padding: "11px 10px", background: "none", border: "none", cursor: "pointer", borderRadius: "12px", textAlign: "left", transition: "background 0.15s" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#F9FAFB")}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(124, 124, 124, 0.1)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
                 >
                   <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: item.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     {item.icon}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "#1C140E" }}>{item.label}</div>
+                    <div style={{ fontWeight: 600, fontSize: "0.88rem", color: isDarkMode ? "#FFFFFF" : "#1C140E" }}>{item.label}</div>
                     <div style={{ fontSize: "0.74rem", color: "#9CA3AF", marginTop: "1px" }}>{item.sub}</div>
                   </div>
-                  <ChevronRight size={15} color="#D1D5DB" />
+                  <ChevronRight size={15} color="#9CA3AF" />
                 </button>
               ))}
 
               {/* Sign out */}
               <button type="button" onClick={() => { setShowProfile(false); onSignOut(); }}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: "12px", padding: "11px 10px", background: "none", border: "none", cursor: "pointer", borderRadius: "12px", textAlign: "left", marginTop: "4px", transition: "background 0.15s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#FEF2F2")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(239, 68, 68, 0.1)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "none")}
               >
-                <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "rgba(239, 68, 68, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <LogOut size={19} color="#EF4444" />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "#EF4444" }}>Sign Out</div>
                   <div style={{ fontSize: "0.74rem", color: "#9CA3AF", marginTop: "1px" }}>End your session</div>
                 </div>
-                <ChevronRight size={15} color="#FCA5A5" />
+                <ChevronRight size={15} color="#EF4444" />
               </button>
             </div>
           </div>
@@ -773,11 +770,11 @@ export function DashboardShell({
           .mobile-bottom-nav { display: none !important; }
           .mobile-only-logo  { display: none !important; }
           .mobile-only-btn   { display: none !important; }
-          #main-scroll       { --show-bottom-nav: 0; padding-bottom: 0 !important; }
+          #main-scroll       { --show-bottom-nav: 0; padding-bottom: 90px !important; padding-left: 28px !important; padding-right: 28px !important; }
         }
         @media (max-width: 767px) {
           .desktop-sidebar   { display: none !important; }
-          #main-scroll       { --show-bottom-nav: 1; padding-bottom: 64px; }
+          #main-scroll       { --show-bottom-nav: 1; padding-bottom: 120px !important; padding-left: 14px !important; padding-right: 14px !important; }
         }
 
         /* ── Animations ── */
@@ -796,14 +793,26 @@ export function DashboardShell({
           animation: orbPulse 2s ease infinite;
         }
         @keyframes orbPulse {
-          0%, 100% { box-shadow: 0 4px 20px rgba(124,58,237,0.5); transform: scale(1); }
-          50%       { box-shadow: 0 4px 32px rgba(124,58,237,0.8); transform: scale(1.07); }
+          0%, 100% { box-shadow: 0 4px 20px rgba(211,84,0,0.5); transform: scale(1); }
+          50%       { box-shadow: 0 4px 32px rgba(211,84,0,0.8); transform: scale(1.07); }
         }
-        /* Thin scrollbar */
-        #main-scroll::-webkit-scrollbar { width: 4px; }
-        #main-scroll::-webkit-scrollbar-track { background: transparent; }
-        #main-scroll::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.2); border-radius: 4px; }
+        /* Hidden scrollbar as requested */
+        #main-scroll {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        #main-scroll::-webkit-scrollbar { 
+          display: none; 
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
       `}</style>
     </div>
   );
 }
+

@@ -43,14 +43,14 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
       case "primary":
         return {
           ...base,
-          background: "linear-gradient(135deg, #D35400 0%, #B84700 100%)",
+          background: "linear-gradient(135deg, var(--theme-color-900) 0%, #B84700 100%)",
           color: "#FFFFFF",
           boxShadow: "0 2px 10px rgba(211, 84, 0, 0.25)",
         };
       case "secondary":
         return {
           ...base,
-          background: "#FDF9F3",
+          background: "var(--theme-color-50)",
           color: "#241A14",
           border: "1px solid rgba(196, 154, 108, 0.4)",
         };
@@ -58,7 +58,7 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
         return {
           ...base,
           background: "transparent",
-          color: "#D35400",
+          color: "var(--theme-color-900)",
           border: "1px solid rgba(211, 84, 0, 0.45)",
         };
       case "danger":
@@ -175,7 +175,7 @@ export const NeoModal: React.FC<NeoModalProps> = ({
     >
       <div
         style={{
-          background: "#FFF7E6",
+          background: "var(--theme-color-50)",
           border: "1px solid rgba(196, 154, 108, 0.4)",
           borderRadius: "20px",
           maxWidth,
@@ -211,3 +211,5 @@ export const NeoModal: React.FC<NeoModalProps> = ({
     </div>
   );
 };
+
+

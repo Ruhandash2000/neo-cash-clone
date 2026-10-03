@@ -111,7 +111,7 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
               width: "42px", height: "42px", borderRadius: "12px",
               background: "rgba(211, 84, 0, 0.1)", display: "grid", placeItems: "center",
             }}>
-              <Receipt size={20} style={{ color: "#D35400" }} />
+              <Receipt size={20} style={{ color: "var(--theme-color-900)" }} />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#241A14" }}>
@@ -139,7 +139,7 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
         <div style={{ padding: "24px" }}>
           {/* Fee details card */}
           <div style={{
-            background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)",
+            background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)",
             borderRadius: "14px", padding: "18px", marginBottom: "20px",
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
@@ -186,14 +186,14 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
                   onClick={() => setPayMode("partial")}
                   style={{
                     padding: "14px 10px", borderRadius: "12px", cursor: "pointer",
-                    border: payMode === "partial" ? "2px solid #D35400" : "1.5px solid rgba(196, 154, 108, 0.4)",
-                    background: payMode === "partial" ? "rgba(211, 84, 0, 0.06)" : "#FFF7E6",
+                    border: payMode === "partial" ? "2px solid var(--theme-color-900)" : "1.5px solid rgba(196, 154, 108, 0.4)",
+                    background: payMode === "partial" ? "rgba(211, 84, 0, 0.06)" : "var(--theme-color-50)",
                     textAlign: "left",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
-                    <Clock size={14} style={{ color: "#D35400" }} />
-                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "#D35400" }}>Partial</span>
+                    <Clock size={14} style={{ color: "var(--theme-color-900)" }} />
+                    <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--theme-color-900)" }}>Partial</span>
                   </div>
                   <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#241A14" }}>
                     {amountFmt(fee.approved_partial_amt!)}
@@ -205,8 +205,8 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
                   onClick={() => setPayMode("full")}
                   style={{
                     padding: "14px 10px", borderRadius: "12px", cursor: "pointer",
-                    border: payMode === "full" ? "2px solid #D35400" : "1.5px solid rgba(196, 154, 108, 0.4)",
-                    background: payMode === "full" ? "rgba(211, 84, 0, 0.06)" : "#FFF7E6",
+                    border: payMode === "full" ? "2px solid var(--theme-color-900)" : "1.5px solid rgba(196, 154, 108, 0.4)",
+                    background: payMode === "full" ? "rgba(211, 84, 0, 0.06)" : "var(--theme-color-50)",
                     textAlign: "left",
                   }}
                 >
@@ -248,7 +248,7 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
                 paddingTop: "8px", borderTop: "1px dashed rgba(196, 154, 108, 0.4)",
               }}>
                 <span style={{ fontSize: "0.83rem", color: "#66564A" }}>Wallet balance after</span>
-                <span style={{ fontWeight: 700, color: "#D35400" }}>{amountFmt(walletBalance - payAmount)}</span>
+                <span style={{ fontWeight: 700, color: "var(--theme-color-900)" }}>{amountFmt(walletBalance - payAmount)}</span>
               </div>
             )}
           </div>
@@ -309,7 +309,7 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
               width: "100%", display: "flex", alignItems: "center",
               justifyContent: "center", gap: "8px",
               padding: "13px",
-              background: busy ? "rgba(211, 84, 0, 0.5)" : "#D35400",
+              background: busy ? "rgba(211, 84, 0, 0.5)" : "var(--theme-color-900)",
               color: "#FFF", border: "none", borderRadius: "12px",
               fontSize: "0.95rem", fontWeight: 800,
               cursor: busy ? "not-allowed" : "pointer",
@@ -331,3 +331,5 @@ export function FeePaymentModal({ fee, institutionId, walletBalance, onClose }: 
     </div>
   );
 }
+
+

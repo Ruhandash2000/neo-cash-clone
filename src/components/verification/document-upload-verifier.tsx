@@ -172,7 +172,7 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
         : "2px dashed rgba(196, 154, 108, 0.5)",
       borderRadius: "14px",
       padding: "16px",
-      background: state.uploaded ? "rgba(4, 120, 87, 0.04)" : "#FDF9F3",
+      background: state.uploaded ? "rgba(4, 120, 87, 0.04)" : "var(--theme-color-50)",
       cursor: "pointer",
       transition: "all 0.2s",
     }}
@@ -224,8 +224,8 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
 
       <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "6px" }}>
         {state.uploading && (
-          <><Loader2 size={13} style={{ color: "#D35400" }} />
-          <span style={{ fontSize: "0.75rem", color: "#D35400", fontWeight: 600 }}>Uploading…</span></>
+          <><Loader2 size={13} style={{ color: "var(--theme-color-900)" }} />
+          <span style={{ fontSize: "0.75rem", color: "var(--theme-color-900)", fontWeight: 600 }}>Uploading…</span></>
         )}
         {state.uploaded && (
           <><CheckCircle2 size={13} style={{ color: "#047857" }} />
@@ -324,12 +324,12 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
         {/* AI reasoning */}
         {result.reasoning && (
           <div style={{
-            background: "#FDF9F3", borderRadius: "10px", padding: "12px",
+            background: "var(--theme-color-50)", borderRadius: "10px", padding: "12px",
             fontSize: "0.82rem", color: "#66564A", lineHeight: 1.5,
             borderLeft: `3px solid ${color}`,
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
-              <Eye size={13} style={{ color: "#D35400" }} />
+              <Eye size={13} style={{ color: "var(--theme-color-900)" }} />
               <span style={{ fontWeight: 700, color: "#241A14", fontSize: "0.78rem" }}>AI Analysis</span>
             </div>
             {result.reasoning}
@@ -351,7 +351,7 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
         borderRadius: "12px",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <ShieldCheck size={20} style={{ color: "#FF8C42" }} />
+          <ShieldCheck size={20} style={{ color: "var(--theme-color-500)" }} />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 800, color: "#FFFFFF" }}>
@@ -442,3 +442,5 @@ export function DocumentUploadVerifier({ studentId, partialAppId, onVerified }: 
     </div>
   );
 }
+
+

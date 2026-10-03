@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { PWAManager } from "@/components/pwa/pwa-manager";
+import { ThemeProvider } from "@/lib/theme-provider";
 
 
 /**
@@ -88,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "Intelligent cashless financial ecosystem for educational institutions." },
       { name: "author", content: "Neo Cashless" },
       // PWA
-      { name: "theme-color", content: "#D35400" },
+      { name: "theme-color", content: "var(--theme-color-900)" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
@@ -137,9 +138,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PWAManager />
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <ThemeProvider>
+        <PWAManager />
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
+

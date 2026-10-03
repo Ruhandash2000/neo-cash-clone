@@ -128,7 +128,7 @@ export function StudentVerificationFlow({ userEmail, onVerified, onSkip }: Props
 
   const typeColor = (type: string) => {
     if (type === "university") return { bg: "rgba(124,58,237,0.1)", text: "#7C3AED" };
-    if (type === "college") return { bg: "rgba(211,84,0,0.1)", text: "#D35400" };
+    if (type === "college") return { bg: "rgba(211,84,0,0.1)", text: "var(--theme-color-900)" };
     return { bg: "rgba(16,185,129,0.1)", text: "#047857" };
   };
 
@@ -154,7 +154,7 @@ export function StudentVerificationFlow({ userEmail, onVerified, onSkip }: Props
       }}>
         {/* Header */}
         <div style={{
-          background: "linear-gradient(135deg, #7C3AED 0%, #D35400 100%)",
+          background: "linear-gradient(135deg, #7C3AED 0%, var(--theme-color-900) 100%)",
           padding: "24px 24px 20px",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -397,7 +397,7 @@ export function StudentVerificationFlow({ userEmail, onVerified, onSkip }: Props
                   type="submit"
                   style={{
                     width: "100%", padding: "12px", marginTop: "4px",
-                    background: "linear-gradient(135deg, #7C3AED, #D35400)",
+                    background: "linear-gradient(135deg, #7C3AED, var(--theme-color-900))",
                     color: "#FFF", border: "none", borderRadius: "12px",
                     fontWeight: 800, fontSize: "0.92rem", cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
@@ -432,7 +432,7 @@ export function StudentVerificationFlow({ userEmail, onVerified, onSkip }: Props
                 <div style={{
                   height: "100%", borderRadius: "6px",
                   width: `${verifyProgress}%`,
-                  background: "linear-gradient(90deg, #7C3AED, #D35400)",
+                  background: "linear-gradient(90deg, #7C3AED, var(--theme-color-900))",
                   transition: "width 0.5s ease",
                 }} />
               </div>
@@ -536,3 +536,4 @@ export function StudentVerificationFlow({ userEmail, onVerified, onSkip }: Props
     </div>
   );
 }
+

@@ -74,13 +74,13 @@ interface AuditEntry {
 const tk = (n: number | null | undefined) =>
   `৳${(n ?? 0).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
-const PALETTE = ["#D35400", "#FF8C42", "#FF6B2B", "#C0392B", "#E67E22", "#F39C12"];
+const PALETTE = ["var(--theme-color-900)", "var(--theme-color-500)", "#FF6B2B", "#C0392B", "#E67E22", "#F39C12"];
 const GREEN   = "#047857";
 const RED     = "#DC2626";
 const AMBER   = "#D97706";
 
 function StatCard({
-  icon: Icon, label, value, sub, trend, color = "#D35400",
+  icon: Icon, label, value, sub, trend, color = "var(--theme-color-900)",
 }: {
   icon: React.ElementType; label: string; value: string; sub?: string;
   trend?: "up" | "down"; color?: string;
@@ -188,7 +188,7 @@ export function AdminAnalyticsDashboard() {
   if (loading) {
     return (
       <div style={{ padding: "40px", textAlign: "center", color: "#8C7A6A" }}>
-        <Activity size={32} style={{ margin: "0 auto 12px", display: "block", color: "#D35400" }} />
+        <Activity size={32} style={{ margin: "0 auto 12px", display: "block", color: "var(--theme-color-900)" }} />
         <p>Loading analytics…</p>
       </div>
     );
@@ -216,7 +216,7 @@ export function AdminAnalyticsDashboard() {
             display: "flex", alignItems: "center", gap: "6px",
             padding: "8px 14px", borderRadius: "10px",
             background: "transparent", border: "1px solid rgba(196, 154, 108, 0.4)",
-            color: "#D35400", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer",
+            color: "var(--theme-color-900)", fontWeight: 700, fontSize: "0.8rem", cursor: "pointer",
           }}
         >
           <RefreshCw size={14} /> Refresh
@@ -244,8 +244,8 @@ export function AdminAnalyticsDashboard() {
               <AreaChart data={dailyTx}>
                 <defs>
                   <linearGradient id="creditGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#D35400" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#D35400" stopOpacity={0} />
+                    <stop offset="5%"  stopColor="var(--theme-color-900)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--theme-color-900)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(196,154,108,0.2)" />
@@ -255,7 +255,7 @@ export function AdminAnalyticsDashboard() {
                   contentStyle={{ background: "#241A14", border: "none", borderRadius: "10px", color: "#fff" }}
                   formatter={(v: number) => [`৳${v.toLocaleString()}`, ""]}
                 />
-                <Area type="monotone" dataKey="credit_amount" stroke="#D35400" fill="url(#creditGrad)" name="Credits" strokeWidth={2} />
+                <Area type="monotone" dataKey="credit_amount" stroke="var(--theme-color-900)" fill="url(#creditGrad)" name="Credits" strokeWidth={2} />
                 <Area type="monotone" dataKey="debit_amount"  stroke="#8C7A6A" fill="none" name="Debits"  strokeWidth={1.5} strokeDasharray="4 2" />
               </AreaChart>
             </ResponsiveContainer>
@@ -349,7 +349,7 @@ export function AdminAnalyticsDashboard() {
               <div key={entry.id} style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
                 padding: "8px 12px",
-                background: "#FDF9F3", borderRadius: "10px",
+                background: "var(--theme-color-50)", borderRadius: "10px",
                 fontSize: "0.78rem",
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
@@ -382,7 +382,7 @@ export function AdminAnalyticsDashboard() {
         border: "1px solid rgba(211,84,0,0.2)", borderRadius: "14px",
         display: "flex", alignItems: "center", gap: "12px",
       }}>
-        <AlertTriangle size={18} style={{ color: "#D35400", flexShrink: 0 }} />
+        <AlertTriangle size={18} style={{ color: "var(--theme-color-900)", flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
           <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 700, color: "#241A14" }}>
             Rate Limiting Active
@@ -406,3 +406,5 @@ export function AdminAnalyticsDashboard() {
     </div>
   );
 }
+
+

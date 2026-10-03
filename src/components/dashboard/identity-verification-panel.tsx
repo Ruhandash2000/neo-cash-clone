@@ -181,9 +181,9 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
     borderRadius: "999px",
     fontSize: "0.75rem",
     fontWeight: 700,
-    border: active ? "1.5px solid #D35400" : "1px solid rgba(196, 154, 108, 0.4)",
-    background: active ? "rgba(211, 84, 0, 0.06)" : "#FFF7E6",
-    color: active ? "#D35400" : "#66564A",
+    border: active ? "1.5px solid var(--theme-color-900)" : "1px solid rgba(196, 154, 108, 0.4)",
+    background: active ? "rgba(211, 84, 0, 0.06)" : "var(--theme-color-50)",
+    color: active ? "var(--theme-color-900)" : "#66564A",
   } as const);
 
   // ─── Render ────────────────────────────────────────────────────────────────
@@ -209,7 +209,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
               Identity Gateway
             </span>
             {isDemoInstitution && (
-              <span style={{ ...pill(), background: "#211710", color: "#FF8C42", border: "none" }}>
+              <span style={{ ...pill(), background: "#211710", color: "var(--theme-color-500)", border: "none" }}>
                 DEMO
               </span>
             )}
@@ -225,7 +225,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
         }}>
           <span>Neo Cash AI</span>
           <ChevronRight size={13} />
-          <span style={{ color: "#D35400" }}>{institution.code} Auth Server</span>
+          <span style={{ color: "var(--theme-color-900)" }}>{institution.code} Auth Server</span>
           <ChevronRight size={13} />
           <span>Identity Token</span>
           <ChevronRight size={13} />
@@ -239,7 +239,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
         background: "rgba(211, 84, 0, 0.05)", border: "1px solid rgba(211, 84, 0, 0.2)",
         borderRadius: "12px", padding: "12px 16px", marginBottom: "20px",
       }}>
-        <Lock size={16} style={{ color: "#D35400", flexShrink: 0, marginTop: "1px" }} />
+        <Lock size={16} style={{ color: "var(--theme-color-900)", flexShrink: 0, marginTop: "1px" }} />
         <p style={{ margin: 0, fontSize: "0.8rem", color: "#241A14", lineHeight: 1.5 }}>
           <strong>Security Guarantee:</strong> Neo Cash never requests or stores your institutional password.
           Verification is handled via token handshake only.
@@ -265,10 +265,10 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
       {/* ── PENDING (spinner) ────────────────────────────────── */}
       {phase === "pending" && (
         <div style={{
-          background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.4)",
+          background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.4)",
           borderRadius: "16px", padding: "40px 24px", textAlign: "center",
         }}>
-          <Loader2 size={40} style={{ color: "#D35400", animation: "spin 1s linear infinite", margin: "0 auto 16px", display: "block" }} />
+          <Loader2 size={40} style={{ color: "var(--theme-color-900)", animation: "spin 1s linear infinite", margin: "0 auto 16px", display: "block" }} />
           <h4 style={{ margin: "0 0 6px", fontSize: "1.05rem", fontWeight: 700, color: "#241A14" }}>
             Verifying Your Identity…
           </h4>
@@ -319,7 +319,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
             style={{
               ...card,
               cursor: "pointer",
-              border: mode === "email" ? "1.5px solid #D35400" : card.border,
+              border: mode === "email" ? "1.5px solid var(--theme-color-900)" : card.border,
               background: mode === "email" ? "rgba(211, 84, 0, 0.03)" : "#FFFFFF",
               transition: "all 0.2s",
             }}
@@ -330,7 +330,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
                 width: "40px", height: "40px", borderRadius: "10px",
                 background: "rgba(211, 84, 0, 0.1)", display: "grid", placeItems: "center", flexShrink: 0,
               }}>
-                <Mail size={18} style={{ color: "#D35400" }} />
+                <Mail size={18} style={{ color: "var(--theme-color-900)" }} />
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -346,7 +346,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
                 {mode === "email" && (
                   <div style={{ marginTop: "16px" }}>
                     <div style={{
-                      background: "#FFF7E6", border: "1px solid rgba(196, 154, 108, 0.35)",
+                      background: "var(--theme-color-50)", border: "1px solid rgba(196, 154, 108, 0.35)",
                       borderRadius: "10px", padding: "11px 14px",
                       fontSize: "0.9rem", color: "#241A14", display: "flex", alignItems: "center", gap: "8px",
                     }}>
@@ -373,7 +373,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
             style={{
               ...card,
               cursor: "pointer",
-              border: mode === "roster" ? "1.5px solid #D35400" : card.border,
+              border: mode === "roster" ? "1.5px solid var(--theme-color-900)" : card.border,
               background: mode === "roster" ? "rgba(211, 84, 0, 0.03)" : "#FFFFFF",
               transition: "all 0.2s",
             }}
@@ -410,7 +410,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
                           width: "100%", padding: "10px 13px",
                           border: "1px solid rgba(196, 154, 108, 0.4)",
                           borderRadius: "10px", fontSize: "0.9rem", color: "#241A14",
-                          background: "#FFF7E6", outline: "none", boxSizing: "border-box",
+                          background: "var(--theme-color-50)", outline: "none", boxSizing: "border-box",
                         }}
                       />
                     </div>
@@ -428,7 +428,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
                           width: "100%", padding: "10px 13px",
                           border: "1px solid rgba(196, 154, 108, 0.4)",
                           borderRadius: "10px", fontSize: "0.9rem", color: "#241A14",
-                          background: "#FFF7E6", outline: "none", boxSizing: "border-box",
+                          background: "var(--theme-color-50)", outline: "none", boxSizing: "border-box",
                         }}
                       />
                     </div>
@@ -489,7 +489,7 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
 
       {/* Auto-mode: institutional email detected — show one-click verify */}
       {mode === "auto" && phase === "select" && (
-        <div style={{ ...card, border: "1.5px solid #D35400", background: "rgba(211, 84, 0, 0.03)" }}>
+        <div style={{ ...card, border: "1.5px solid var(--theme-color-900)", background: "rgba(211, 84, 0, 0.03)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
             <CheckCircle2 size={20} style={{ color: "#047857" }} />
             <div>
@@ -538,3 +538,5 @@ export function IdentityVerificationPanel({ institution, userEmail, onVerified, 
     </div>
   );
 }
+
+
