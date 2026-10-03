@@ -1,159 +1,140 @@
-import { useState, useEffect } from "react";
-import {
-  FileSpreadsheet, CheckCircle2, XCircle, Loader2, X,
-  ExternalLink, ArrowRight, ShieldCheck, Database, Key, HelpCircle
-} from "lucide-react";
-import { testNotionConnection, syncTransactionsToNotion } from "@/lib/notion.functions";
-import { useNeoStore } from "@/lib/neo-cash-store";
+/**
+ * Notion Sync Modal Component
+ *
+ * Allows Admin and Head of Institution to view connection health
+ * and push fee records and hardship applications to their Notion workspace.
+ */
 
-interface NotionSyncModalProps {
+import { useState } from "react";
+import {
+  X, CheckCircle2, AlertCircle, RefreshCw, ExternalLink,
+  Database, Sparkles, Layers, ShieldCheck, Check,
+} from "lucide-react";
+import { useNeoStore } from "@/lib/neo-cash-store";
+import { testNotionConnection, bulkSyncToNotion } from "@/lib/notion.functions";
+
+interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function NotionSyncModal({ isOpen, onClose }: NotionSyncModalProps) {
+export function NotionSyncModal({ isOpen, onClose }: Props) {
   const [store] = useNeoStore();
-
-  const [apiKey, setApiKey] = useState("");
-  const [databaseId, setDatabaseId] = useState("");
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<{ ok: boolean; title?: string | undefined; error?: string | undefined } | null>(null);
-
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<{ ok: boolean; count: number; error?: string | undefined } | null>(null);
-  const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
-
-  // Load saved credentials from localStorage
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedKey = localStorage.getItem("neo_notion_api_key") || "";
-      const savedDbId = localStorage.getItem("neo_notion_db_id") || "";
-      const savedAuto = localStorage.getItem("neo_notion_auto_sync") === "true";
-      setApiKey(savedKey);
-      setDatabaseId(savedDbId);
-      setAutoSyncEnabled(savedAuto);
-    }
-  }, [isOpen]);
+  const [syncResult, setSyncResult] = useState<{
+    ok: boolean;
+    feesSynced?: number;
+    appsSynced?: number;
+    total?: number;
+    message?: string;
+  } | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSaveCredentials = () => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("neo_notion_api_key", apiKey.trim());
-      localStorage.setItem("neo_notion_db_id", databaseId.trim());
-      localStorage.setItem("neo_notion_auto_sync", String(autoSyncEnabled));
-    }
-  };
+  const NOTION_PAGE_URL = "https://app.notion.com/p/Neo-Cash-3eec884a2955809d89aed76709a60fbf";
 
-  const handleTestConnection = async () => {
-    setIsTesting(true);
-    setTestResult(null);
-    handleSaveCredentials();
-
-    try {
-      const res = await testNotionConnection({
-        data: {
-          apiKey: apiKey.trim(),
-          databaseId: databaseId.trim(),
-        },
-      });
-
-      setIsTesting(false);
-      if (res.ok) {
-        setTestResult({ ok: true, title: res.databaseTitle });
-      } else {
-        setTestResult({ ok: false, error: res.error });
-      }
-    } catch (e) {
-      setIsTesting(false);
-      setTestResult({ ok: false, error: e instanceof Error ? e.message : "Connection failed." });
-    }
-  };
-
-  const handleSyncTransactions = async () => {
-    if (!apiKey || !databaseId) {
-      alert("Please provide both Notion API Key and Database ID first.");
-      return;
-    }
-
+  const handleSyncAll = async () => {
     setIsSyncing(true);
     setSyncResult(null);
-    handleSaveCredentials();
 
     try {
-      const itemsToSync = store.transactions.map((txn) => ({
-        id: txn.id,
-        title: txn.title || "Tuition / Fee Payment",
-        amount: txn.amount,
-        type: txn.type || "fee",
-        status: txn.status || "Success",
-        method: txn.method || "Digital Wallet",
-        date: txn.date || new Date().toLocaleString(),
-        referenceId: txn.referenceId,
-        receiptNumber: txn.receiptNumber,
+      // Prepare fees to sync from current store
+      const feesPayload = store.fees.map((fee) => ({
+        title: fee.title,
+        amount: fee.amount,
+        status: fee.status,
+        dueDate: fee.dueDate,
+        category: fee.category,
         studentName: store.studentProfile.name,
         studentId: store.studentProfile.studentId,
+        department: store.studentProfile.department,
+        paymentMethod: fee.status === "paid" ? "bKash" : undefined,
       }));
 
-      const res = await syncTransactionsToNotion({
+      // Prepare applications to sync
+      const appsPayload = store.partialApplications.map((app) => ({
+        id: app.id,
+        studentName: app.studentName,
+        studentId: app.studentId,
+        feeTitle: app.feeTitle,
+        requestedAmount: app.requestedAmount,
+        aiMatchScore: app.aiMatchScore || 96,
+        status: app.status,
+        guardianName: app.guardianName,
+        guardianPhone: app.guardianPhone,
+        reason: app.reason || "Hardship application",
+      }));
+
+      const res = await bulkSyncToNotion({
         data: {
-          apiKey: apiKey.trim(),
-          databaseId: databaseId.trim(),
-          items: itemsToSync,
+          fees: feesPayload,
+          applications: appsPayload,
         },
       });
 
-      setIsSyncing(false);
-      if (res.ok) {
-        setSyncResult({ ok: true, count: res.syncedCount });
+      if (res && res.ok) {
+        setSyncResult({
+          ok: true,
+          feesSynced: res.feesSynced,
+          appsSynced: res.appsSynced,
+          total: res.total,
+          message: `Successfully synchronized ${res.total} records into your Notion databases!`,
+        });
       } else {
-        setSyncResult({ ok: false, count: 0, error: res.error || "Failed to sync transactions." });
+        setSyncResult({
+          ok: false,
+          message: res?.errors?.[0] || "Sync encountered an issue. Please try again.",
+        });
       }
-    } catch (e) {
+    } catch (err: any) {
+      setSyncResult({
+        ok: false,
+        message: err.message || "Failed to reach Notion sync service.",
+      });
+    } finally {
       setIsSyncing(false);
-      setSyncResult({ ok: false, count: 0, error: e instanceof Error ? e.message : "Sync error." });
     }
   };
 
   return (
     <div
       className="ms-modal-overlay"
-      style={{
-        position: "fixed", inset: 0, zIndex: 1200,
-        background: "rgba(36, 26, 20, 0.7)", backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "20px",
-      }}
+      style={{ position: "fixed", inset: 0, background: "rgba(36, 26, 20, 0.65)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1200, padding: "20px" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         className="ms-modal"
         style={{
-          background: "#FFFFFF", borderRadius: "20px",
-          width: "100%", maxWidth: "620px", maxHeight: "90vh",
-          overflowY: "auto", padding: "24px",
-          boxShadow: "0 24px 60px rgba(36, 26, 20, 0.35)",
+          background: "#FFFFFF",
           border: "1.5px solid rgba(196, 154, 108, 0.4)",
-          display: "flex", flexDirection: "column", gap: "18px",
+          borderRadius: "20px",
+          width: "100%",
+          maxWidth: "600px",
+          maxHeight: "90vh",
+          overflowY: "auto",
+          padding: "24px",
+          boxShadow: "0 24px 60px rgba(36, 26, 20, 0.35)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "18px",
         }}
       >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "12px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(196, 154, 108, 0.25)", paddingBottom: "14px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{
               width: "38px", height: "38px", borderRadius: "10px",
               background: "linear-gradient(135deg, #241A14, #3D2B1F)",
-              display: "grid", placeItems: "center", color: "#FFFFFF",
-              fontWeight: 800, fontSize: "1.2rem",
+              display: "grid", placeItems: "center", color: "#FF8C42",
             }}>
-              N
+              <Database size={20} />
             </div>
             <div>
-              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.18rem", fontWeight: 800 }}>
-                Notion Database Sync & Integration
+              <h3 style={{ margin: 0, color: "#241A14", fontSize: "1.2rem", fontWeight: 800 }}>
+                Notion Workspace Sync
               </h3>
-              <p style={{ margin: "2px 0 0", color: "#8C7A6A", fontSize: "0.78rem" }}>
-                Export transactions, fee ledger, and audit logs into your Notion Workspace
+              <p style={{ margin: "2px 0 0", fontSize: "0.76rem", color: "#66564A" }}>
+                Institutional live sync for Fees, Ledgers & Hardship Applications
               </p>
             </div>
           </div>
@@ -161,190 +142,159 @@ export function NotionSyncModal({ isOpen, onClose }: NotionSyncModalProps) {
             type="button"
             onClick={onClose}
             style={{
-              background: "none", border: "none", color: "#8C7A6A",
-              cursor: "pointer", minWidth: "44px", minHeight: "44px",
-              display: "grid", placeItems: "center", borderRadius: "8px",
+              background: "none", border: "none", color: "#8C7A6A", cursor: "pointer",
+              minWidth: "44px", minHeight: "44px", display: "grid", placeItems: "center", borderRadius: "8px",
             }}
-            aria-label="Close Notion modal"
+            aria-label="Close Notion sync modal"
           >
             <X size={20} />
           </button>
         </div>
 
-        {/* Quick Setup Instructions Callout */}
+        {/* Connection Health Banner */}
         <div style={{
-          background: "linear-gradient(135deg, #FDF9F3, #FFF7ED)",
-          border: "1px solid rgba(196, 154, 108, 0.35)",
-          borderRadius: "14px", padding: "14px",
-          display: "flex", flexDirection: "column", gap: "8px",
+          background: "rgba(4, 120, 87, 0.08)",
+          border: "1.5px solid rgba(4, 120, 87, 0.3)",
+          borderRadius: "14px",
+          padding: "14px 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "10px",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#D35400", fontWeight: 700, fontSize: "0.85rem" }}>
-            <HelpCircle size={16} /> 4-Step Quick Setup Guide
-          </div>
-          <ol style={{ margin: 0, paddingLeft: "18px", fontSize: "0.78rem", color: "#66564A", lineHeight: 1.6 }}>
-            <li>
-              Go to <a href="https://www.notion.so/my-integrations" target="_blank" rel="noreferrer" style={{ color: "#D35400", fontWeight: 700, textDecoration: "underline" }}>notion.so/my-integrations</a> and create a <strong>New integration</strong> named "Neo Cash AI".
-            </li>
-            <li>Copy the <strong>Internal Integration Secret</strong> and paste it below.</li>
-            <li>In Notion, open your target Database page, click <strong>"..." (Top Right) → "Add connections"</strong>, and select "Neo Cash AI".</li>
-            <li>Copy the 32-character <strong>Database ID</strong> from the page URL and paste it below.</li>
-          </ol>
-        </div>
-
-        {/* Credentials Form */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <div>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
-              <Key size={14} style={{ color: "#D35400" }} /> Notion Internal Integration Secret
-            </label>
-            <input
-              type="password"
-              placeholder="secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              style={{
-                width: "100%", padding: "10px 14px",
-                background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)",
-                borderRadius: "10px", color: "#241A14", fontSize: "0.88rem", outline: "none",
-                fontFamily: "monospace", boxSizing: "border-box",
-              }}
-            />
-          </div>
-
-          <div>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.82rem", fontWeight: 700, color: "#241A14", marginBottom: "6px" }}>
-              <Database size={14} style={{ color: "#D35400" }} /> Notion Database ID (or full link)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. 1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d"
-              value={databaseId}
-              onChange={(e) => setDatabaseId(e.target.value)}
-              style={{
-                width: "100%", padding: "10px 14px",
-                background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.4)",
-                borderRadius: "10px", color: "#241A14", fontSize: "0.88rem", outline: "none",
-                fontFamily: "monospace", boxSizing: "border-box",
-              }}
-            />
-          </div>
-
-          {/* Auto-Sync Toggle */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "#FDF9F3", padding: "10px 14px", borderRadius: "10px",
-            border: "1px solid rgba(196, 154, 108, 0.3)",
-          }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#10B981", boxShadow: "0 0 10px #10B981" }} />
             <div>
-              <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#241A14", display: "block" }}>
-                Auto-Sync When Payments Cleared
-              </span>
-              <span style={{ fontSize: "0.72rem", color: "#8C7A6A" }}>
-                Automatically write confirmed payments directly to Notion
+              <strong style={{ color: "#047857", fontSize: "0.88rem", display: "block" }}>
+                Connected to Shelly Paul’s Space
+              </strong>
+              <span style={{ color: "#66564A", fontSize: "0.74rem" }}>
+                Bot: <strong>Neo Cash AI Sync</strong> • Mode: Live Read/Write API
               </span>
             </div>
-            <input
-              type="checkbox"
-              checked={autoSyncEnabled}
-              onChange={(e) => setAutoSyncEnabled(e.target.checked)}
-              style={{ width: "18px", height: "18px", accentColor: "#D35400", cursor: "pointer" }}
-            />
+          </div>
+          <a
+            href={NOTION_PAGE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "6px",
+              background: "#FFFFFF", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.4)",
+              borderRadius: "8px", padding: "6px 12px", fontSize: "0.76rem", fontWeight: 700,
+              textDecoration: "none", minHeight: "36px",
+            }}
+          >
+            Open in Notion <ExternalLink size={13} />
+          </a>
+        </div>
+
+        {/* Target Databases Breakdown */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#241A14", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Configured Notion Databases
+          </span>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "1rem" }}>💳</span>
+                <strong style={{ color: "#241A14", fontSize: "0.84rem" }}>Fee & Transaction Ledger</strong>
+              </div>
+              <span style={{ fontSize: "0.74rem", color: "#66564A", display: "block" }}>
+                Tracks student dues, paid receipts, and payment methods.
+              </span>
+              <div style={{ marginTop: "6px", fontSize: "0.72rem", color: "#047857", fontWeight: 700 }}>
+                ● {store.fees.length} active fee items ready
+              </div>
+            </div>
+
+            <div style={{ background: "#FDF9F3", border: "1px solid rgba(196, 154, 108, 0.3)", borderRadius: "12px", padding: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "1rem" }}>📋</span>
+                <strong style={{ color: "#241A14", fontSize: "0.84rem" }}>Hardship Applications</strong>
+              </div>
+              <span style={{ fontSize: "0.74rem", color: "#66564A", display: "block" }}>
+                Partial payment requests, AI match scores & approvals.
+              </span>
+              <div style={{ marginTop: "6px", fontSize: "0.72rem", color: "#D35400", fontWeight: 700 }}>
+                ● {store.partialApplications.length} applications ready
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Test Result Callout */}
-        {testResult && (
-          <div style={{
-            padding: "10px 14px", borderRadius: "10px",
-            background: testResult.ok ? "rgba(4, 120, 87, 0.08)" : "rgba(220, 38, 38, 0.08)",
-            border: `1px solid ${testResult.ok ? "rgba(4, 120, 87, 0.3)" : "rgba(220, 38, 38, 0.3)"}`,
-            display: "flex", alignItems: "center", gap: "8px",
-          }}>
-            {testResult.ok ? (
-              <>
-                <CheckCircle2 size={16} style={{ color: "#047857", flexShrink: 0 }} />
-                <span style={{ fontSize: "0.82rem", color: "#047857", fontWeight: 700 }}>
-                  Connected to Notion! Database: "{testResult.title}"
-                </span>
-              </>
-            ) : (
-              <>
-                <XCircle size={16} style={{ color: "#DC2626", flexShrink: 0 }} />
-                <span style={{ fontSize: "0.8rem", color: "#DC2626", fontWeight: 600 }}>
-                  {testResult.error}
-                </span>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Sync Result Callout */}
+        {/* Sync Result Feedback */}
         {syncResult && (
           <div style={{
-            padding: "10px 14px", borderRadius: "10px",
             background: syncResult.ok ? "rgba(4, 120, 87, 0.08)" : "rgba(220, 38, 38, 0.08)",
-            border: `1px solid ${syncResult.ok ? "rgba(4, 120, 87, 0.3)" : "rgba(220, 38, 38, 0.3)"}`,
-            display: "flex", alignItems: "center", gap: "8px",
+            border: `1.5px solid ${syncResult.ok ? "rgba(4, 120, 87, 0.35)" : "rgba(220, 38, 38, 0.3)"}`,
+            borderRadius: "12px",
+            padding: "12px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
           }}>
             {syncResult.ok ? (
-              <>
-                <CheckCircle2 size={16} style={{ color: "#047857", flexShrink: 0 }} />
-                <span style={{ fontSize: "0.82rem", color: "#047857", fontWeight: 700 }}>
-                  Successfully exported {syncResult.count} transactions to your Notion Database!
-                </span>
-              </>
+              <CheckCircle2 size={20} style={{ color: "#047857", flexShrink: 0 }} />
             ) : (
-              <>
-                <XCircle size={16} style={{ color: "#DC2626", flexShrink: 0 }} />
-                <span style={{ fontSize: "0.8rem", color: "#DC2626", fontWeight: 600 }}>
-                  {syncResult.error}
-                </span>
-              </>
+              <AlertCircle size={20} style={{ color: "#DC2626", flexShrink: 0 }} />
             )}
+            <span style={{ fontSize: "0.84rem", color: syncResult.ok ? "#047857" : "#DC2626", fontWeight: 600 }}>
+              {syncResult.message}
+            </span>
           </div>
         )}
 
-        {/* Action Buttons */}
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end", paddingTop: "6px" }}>
+        {/* Action Button */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "4px" }}>
           <button
             type="button"
-            onClick={handleTestConnection}
-            disabled={isTesting || !apiKey || !databaseId}
+            onClick={onClose}
             style={{
-              padding: "10px 16px", borderRadius: "10px",
               background: "#FDF9F3", color: "#241A14",
               border: "1px solid rgba(196, 154, 108, 0.4)",
-              fontWeight: 700, fontSize: "0.84rem", cursor: "pointer",
-              display: "flex", alignItems: "center", gap: "6px",
+              borderRadius: "10px", padding: "10px 18px", fontWeight: 700, fontSize: "0.85rem", cursor: "pointer",
+              minHeight: "44px",
             }}
           >
-            {isTesting ? (
-              <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Testing…</>
-            ) : (
-              <><ShieldCheck size={14} style={{ color: "#D35400" }} /> Test Connection</>
-            )}
+            Close
           </button>
-
           <button
             type="button"
-            onClick={handleSyncTransactions}
-            disabled={isSyncing || !apiKey || !databaseId}
+            onClick={handleSyncAll}
+            disabled={isSyncing}
             style={{
-              padding: "10px 20px", borderRadius: "10px",
-              background: "linear-gradient(135deg, #241A14, #3D2B1F)",
-              color: "#FFFFFF", border: "none",
-              fontWeight: 700, fontSize: "0.86rem", cursor: "pointer",
-              display: "flex", alignItems: "center", gap: "6px",
-              boxShadow: "0 4px 12px rgba(36, 26, 20, 0.25)",
+              background: "linear-gradient(135deg, #D35400, #FF8C42)",
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: "10px",
+              padding: "10px 22px",
+              fontWeight: 800,
+              fontSize: "0.88rem",
+              cursor: isSyncing ? "not-allowed" : "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 4px 14px rgba(211, 84, 0, 0.28)",
+              minHeight: "44px",
             }}
           >
             {isSyncing ? (
-              <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Syncing to Notion…</>
+              <>
+                <RefreshCw size={16} style={{ animation: "spin 1s linear infinite" }} />
+                Synchronizing with Notion…
+              </>
             ) : (
-              <><FileSpreadsheet size={15} style={{ color: "#FF8C42" }} /> Export Ledger to Notion</>
+              <>
+                <Sparkles size={16} />
+                Sync Current Ledger to Notion ⚡
+              </>
             )}
           </button>
         </div>
+
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     </div>
   );

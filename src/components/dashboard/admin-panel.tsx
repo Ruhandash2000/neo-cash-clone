@@ -18,7 +18,7 @@ import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
   CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy, Bell, Zap,
-  Eye, Edit3, UserCheck, CreditCard, History, Wallet, Calendar, Award, Mail, Phone, Shield, CheckSquare, Layers, Activity, UserX, ChevronRight, Download, PhoneCall, AlertCircle, Database
+  Eye, Edit3, UserCheck, CreditCard, History, Wallet, Calendar, Award, Mail, Phone, Shield, CheckSquare, Layers, Activity, UserX, ChevronRight, Download, PhoneCall, AlertCircle
 } from "lucide-react";
 import { AdminAnalyticsDashboard } from "@/components/dashboard/admin-analytics-dashboard";
 import { NotionSyncModal } from "@/components/integrations/notion-sync-modal";
@@ -31,7 +31,6 @@ export function AdminPanel({
   setActiveTab: (tab: string) => void;
 }) {
   const [store, actions] = useNeoStore();
-  const [showNotionModal, setShowNotionModal] = useState(false);
 
   // Student directory search & 6-Dimension Multi-Filters (Phase 12)
   const [studentSearch, setStudentSearch] = useState("");
@@ -57,6 +56,7 @@ export function AdminPanel({
 
   // Add New Student Modal State
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [showNotionSyncModal, setShowNotionSyncModal] = useState(false);
   const [addName, setAddName] = useState("");
   const [addStudentId, setAddStudentId] = useState("");
   const [addDept, setAddDept] = useState("CSE");
@@ -1356,6 +1356,13 @@ export function AdminPanel({
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 type="button"
+                onClick={() => setShowNotionSyncModal(true)}
+                style={{ background: "#FFF7E6", color: "#D35400", border: "1.5px solid rgba(211, 84, 0, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px rgba(211, 84, 0, 0.12)" }}
+              >
+                <Zap size={16} color="#D35400" /> Notion Sync ⚡
+              </button>
+              <button
+                type="button"
                 className="ms-btn-primary"
                 onClick={() => setActiveTab("bulk")}
                 style={{ background: "#D35400", color: "#FFFFFF", padding: "10px 18px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "6px" }}
@@ -1451,6 +1458,14 @@ export function AdminPanel({
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
               <button
                 type="button"
+                onClick={() => setShowNotionSyncModal(true)}
+                style={{ background: "#FFF7E6", color: "#D35400", border: "1.5px solid rgba(211, 84, 0, 0.35)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <Zap size={18} /> Notion Live Sync ⚡
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setActiveTab("bulk")}
                 style={{ background: "#FDF9F3", color: "#D35400", border: "1px solid rgba(211, 84, 0, 0.3)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
               >
@@ -1479,14 +1494,6 @@ export function AdminPanel({
                 style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
               >
                 <ShieldCheck size={18} /> Partial Payment Queue 📋
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowNotionModal(true)}
-                style={{ background: "#241A14", color: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.2)" }}
-              >
-                <Database size={18} style={{ color: "#FF8C42" }} /> Notion Database Sync ⚡
               </button>
             </div>
           </div>
@@ -4900,8 +4907,11 @@ export function AdminPanel({
         </div>
       )}
 
-      {/* NOTION SYNC & INTEGRATION MODAL */}
-      <NotionSyncModal isOpen={showNotionModal} onClose={() => setShowNotionModal(false)} />
+      {/* NOTION LIVE SYNC MODAL */}
+      <NotionSyncModal
+        isOpen={showNotionSyncModal}
+        onClose={() => setShowNotionSyncModal(false)}
+      />
 
     </div>
   );

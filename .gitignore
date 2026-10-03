@@ -19,6 +19,7 @@ scratch/
 *.local
 .env
 .env.*
+!.env.example
 
 # Wrangler / Cloudflare
 .wrangler/

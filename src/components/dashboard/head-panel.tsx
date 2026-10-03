@@ -15,7 +15,7 @@ import { formatTaka } from "@/components/design-system/tokens";
 import {
   Trophy, ShieldCheck, CheckCircle2, XCircle, AlertCircle, FileText,
   TrendingUp, Users, DollarSign, Building2, X, Sparkles, Filter,
-  Search, Eye, AlertTriangle, Clock, Layers, Lock, ArrowUpRight, RefreshCw, Send, Database
+  Search, Eye, AlertTriangle, Clock, Layers, Lock, ArrowUpRight, RefreshCw, Send, Zap
 } from "lucide-react";
 import { NotionSyncModal } from "@/components/integrations/notion-sync-modal";
 
@@ -27,10 +27,10 @@ export function HeadPanel({
   setActiveTab: (tab: string) => void;
 }) {
   const [store, actions] = useNeoStore();
-  const [showNotionModal, setShowNotionModal] = useState(false);
 
   // Selected application for Executive Sign-Off Modal
   const [execApp, setExecApp] = useState<PartialApplication | null>(null);
+  const [showNotionSyncModal, setShowNotionSyncModal] = useState(false);
   const [approvedAmountInput, setApprovedAmountInput] = useState<number>(10000);
   const [newDeadlineInput, setNewDeadlineInput] = useState<string>("2026-11-15");
   const [headNotesInput, setHeadNotesInput] = useState<string>("");
@@ -113,13 +113,13 @@ export function HeadPanel({
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "10px" }}>
               <button
                 type="button"
-                onClick={() => setShowNotionModal(true)}
-                style={{ background: "#241A14", color: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.2)" }}
+                onClick={() => setShowNotionSyncModal(true)}
+                style={{ background: "#FFF7E6", color: "#D35400", border: "1.5px solid rgba(211, 84, 0, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px rgba(211, 84, 0, 0.12)" }}
               >
-                <Database size={18} style={{ color: "#FF8C42" }} /> Notion Sync ⚡
+                <Zap size={16} color="#D35400" /> Notion Sync ⚡
               </button>
               <button
                 type="button"
@@ -1650,8 +1650,11 @@ export function HeadPanel({
         </div>
       )}
 
-      {/* NOTION SYNC MODAL */}
-      <NotionSyncModal isOpen={showNotionModal} onClose={() => setShowNotionModal(false)} />
+      {/* NOTION LIVE SYNC MODAL */}
+      <NotionSyncModal
+        isOpen={showNotionSyncModal}
+        onClose={() => setShowNotionSyncModal(false)}
+      />
 
     </div>
   );
