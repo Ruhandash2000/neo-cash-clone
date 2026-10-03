@@ -15,8 +15,9 @@ import { formatTaka } from "@/components/design-system/tokens";
 import {
   Trophy, ShieldCheck, CheckCircle2, XCircle, AlertCircle, FileText,
   TrendingUp, Users, DollarSign, Building2, X, Sparkles, Filter,
-  Search, Eye, AlertTriangle, Clock, Layers, Lock, ArrowUpRight, RefreshCw, Send
+  Search, Eye, AlertTriangle, Clock, Layers, Lock, ArrowUpRight, RefreshCw, Send, Database
 } from "lucide-react";
+import { NotionSyncModal } from "@/components/integrations/notion-sync-modal";
 
 export function HeadPanel({
   activeTab,
@@ -26,6 +27,7 @@ export function HeadPanel({
   setActiveTab: (tab: string) => void;
 }) {
   const [store, actions] = useNeoStore();
+  const [showNotionModal, setShowNotionModal] = useState(false);
 
   // Selected application for Executive Sign-Off Modal
   const [execApp, setExecApp] = useState<PartialApplication | null>(null);
@@ -111,7 +113,14 @@ export function HeadPanel({
               </p>
             </div>
 
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <button
+                type="button"
+                onClick={() => setShowNotionModal(true)}
+                style={{ background: "#241A14", color: "#FFFFFF", border: "1.5px solid rgba(196, 154, 108, 0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 800, display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.2)" }}
+              >
+                <Database size={18} style={{ color: "#FF8C42" }} /> Notion Sync ⚡
+              </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("trophy")}
@@ -1640,6 +1649,9 @@ export function HeadPanel({
           </div>
         </div>
       )}
+
+      {/* NOTION SYNC MODAL */}
+      <NotionSyncModal isOpen={showNotionModal} onClose={() => setShowNotionModal(false)} />
 
     </div>
   );

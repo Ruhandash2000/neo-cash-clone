@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Admin Panel Component — Refined Institutional Operations Center
  * 
  * Visual System & Hierarchy Guidelines:
@@ -18,9 +18,10 @@ import { formatTaka } from "@/components/design-system/tokens";
 import {
   Users, DollarSign, FileSpreadsheet, ShieldCheck, AlertTriangle, ArrowRight,
   CheckCircle2, XCircle, Search, Filter, Plus, Upload, FileText, Check, Clock, RefreshCw, X, Sparkles, MessageSquare, Send, CornerDownRight, LifeBuoy, Bell, Zap,
-  Eye, Edit3, UserCheck, CreditCard, History, Wallet, Calendar, Award, Mail, Phone, Shield, CheckSquare, Layers, Activity, UserX, ChevronRight, Download, PhoneCall, AlertCircle
+  Eye, Edit3, UserCheck, CreditCard, History, Wallet, Calendar, Award, Mail, Phone, Shield, CheckSquare, Layers, Activity, UserX, ChevronRight, Download, PhoneCall, AlertCircle, Database
 } from "lucide-react";
 import { AdminAnalyticsDashboard } from "@/components/dashboard/admin-analytics-dashboard";
+import { NotionSyncModal } from "@/components/integrations/notion-sync-modal";
 
 export function AdminPanel({
   activeTab,
@@ -30,6 +31,7 @@ export function AdminPanel({
   setActiveTab: (tab: string) => void;
 }) {
   const [store, actions] = useNeoStore();
+  const [showNotionModal, setShowNotionModal] = useState(false);
 
   // Student directory search & 6-Dimension Multi-Filters (Phase 12)
   const [studentSearch, setStudentSearch] = useState("");
@@ -1477,6 +1479,14 @@ export function AdminPanel({
                 style={{ background: "#FDF9F3", color: "#241A14", border: "1px solid rgba(196, 154, 108, 0.3)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
               >
                 <ShieldCheck size={18} /> Partial Payment Queue 📋
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowNotionModal(true)}
+                style={{ background: "#241A14", color: "#FFFFFF", border: "1px solid rgba(196, 154, 108, 0.4)", padding: "12px 16px", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 2px 8px rgba(36, 26, 20, 0.2)" }}
+              >
+                <Database size={18} style={{ color: "#FF8C42" }} /> Notion Database Sync ⚡
               </button>
             </div>
           </div>
@@ -4889,6 +4899,9 @@ export function AdminPanel({
           </div>
         </div>
       )}
+
+      {/* NOTION SYNC & INTEGRATION MODAL */}
+      <NotionSyncModal isOpen={showNotionModal} onClose={() => setShowNotionModal(false)} />
 
     </div>
   );
