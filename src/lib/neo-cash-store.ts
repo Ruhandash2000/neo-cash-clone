@@ -1742,6 +1742,37 @@ export const storeActions = {
     return this.payFee(feeId, "SSLCommerz", customAmount);
   },
 
+  /** Mark all notifications as read */
+  markAllNotificationsRead() {
+    currentState.notifications = currentState.notifications.map(n => ({ ...n, read: true }));
+    saveState();
+  },
+
+  /** Mark a single notification as read */
+  markNotificationRead(id: string) {
+    const idx = currentState.notifications.findIndex(n => n.id === id);
+    if (idx !== -1) {
+      const notif = currentState.notifications[idx];
+      if (notif) notif.read = true;
+      saveState();
+    }
+  },
+
+  /** Add a notification visible to the notification bell */
+  addNotification(notif: { title: string; message: string; type: NotificationItem["type"]; category?: NotificationItem["category"] }) {
+    const entry: NotificationItem = {
+      id:      "notif-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+      title:   notif.title,
+      message: notif.message,
+      date:    "Just now",
+      type:    notif.type,
+      read:    false,
+    };
+    if (notif.category !== undefined) entry.category = notif.category;
+    currentState.notifications.unshift(entry);
+    saveState();
+  },
+
   /** Process full or partial payment of a fee */
   payFee(feeId: string, method: string, customAmount?: number) {
     const feeIndex = currentState.fees.findIndex((f) => f.id === feeId);
@@ -2292,10 +2323,7 @@ export const storeActions = {
     saveState();
   },
 
-  markAllNotificationsRead() {
-    currentState.notifications.forEach((n) => (n.read = true));
-    saveState();
-  },
+  // markAllNotificationsRead is defined above (line ~1746)
 
     createEscalation(subject: string, initialUserMessage: string) {
     const ticketId = "ESC-" + Math.floor(1000 + Math.random() * 9000);

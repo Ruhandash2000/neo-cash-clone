@@ -397,12 +397,45 @@ export function StudentPanel({
         ? `🎉 Auto-approved! Biometric signature verified at ${verScore.toFixed(0)}% (≥90% Auto-Approval threshold met)${demoTag}. Partial payment of ৳${Number(partialRequestedAmount).toLocaleString()} unlocked!`
         : `✅ Submitted!${reviewTag} Biometric signature verified at ${verScore.toFixed(0)}%. Admin & Head notified for clearance.${demoTag}`;
 
+      // ── Fire notification chain to admin / head / student ─────────────────
+      const studentName = store.studentProfile.name || "Student";
+      const feeTitle    = selectedPartialFee.title || "Tuition Fee";
+      const amtStr      = Number(partialRequestedAmount).toLocaleString("en-BD");
+
+      // Admin notification
+      actions.addNotification({
+        title:    `📋 Partial Payment Request — ${studentName}`,
+        message:  `${studentName} applied for partial payment of ৳${amtStr} for "${feeTitle}". AI signature score: ${verScore.toFixed(0)}%. ${isAutoApproved ? "Auto-approved ✅ — awaiting head confirmation." : "Requires your review before forwarding to head."}`,
+        type:     isAutoApproved ? "success" : "warning",
+        category: "application",
+      });
+
+      // Head notification (only when auto-approved — otherwise admin must forward)
+      if (isAutoApproved) {
+        actions.addNotification({
+          title:    `✅ Forward to Head — Partial Payment Approved`,
+          message:  `${studentName}'s partial payment of ৳${amtStr} for "${feeTitle}" is auto-approved (score ${verScore.toFixed(0)}%). Please confirm to release payment access for the student.`,
+          type:     "info",
+          category: "application",
+        });
+      }
+
+      // Student self-notification
+      actions.addNotification({
+        title:    isAutoApproved ? "🎉 Your Partial Payment Was Auto-Approved!" : "✅ Application Submitted",
+        message:  isAutoApproved
+          ? `Your partial payment of ৳${amtStr} for "${feeTitle}" was auto-approved. Once the head confirms, you will be able to pay the reduced amount.`
+          : `Your partial payment application for ৳${amtStr} was submitted. You will be notified here once admin reviews and approves it.`,
+        type:     isAutoApproved ? "success" : "info",
+        category: "application",
+      });
+
       setPartialSubmitMsg({ ok: true, text: msg });
       setPartialReason("");
       setAiScanResult(null);
       setDocVerificationResult(null);
 
-      setTimeout(() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); }, 3000);
+      setTimeout(() => { setSelectedPartialFee(null); setPartialSubmitMsg(null); }, 4000);
     } else {
       setPartialSubmitMsg({ ok: false, text: "Failed to submit. Please try again." });
     }

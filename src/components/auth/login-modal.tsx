@@ -7,6 +7,7 @@ import { useNeoStore } from "@/lib/neo-cash-store";
 import { enrollBiometric, signInWithBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "./biometric-panel";
 import { StudentVerificationFlow } from "@/components/verification/student-verification-flow";
+import purpleLogo from "@/assets/neo-purple-logo.png";
 
 /** View modes for the authentication modal dialog */
 type View = "login" | "biometric" | "forgot" | "signup";
@@ -353,15 +354,19 @@ export function LoginModal({
               alignItems: "center", justifyContent: "center",
               height: "100%", padding: "40px 32px", gap: "28px",
             }}>
-              {/* Logo mark */}
+              {/* Logo mark — real Neo logo with glow */}
               <div style={{
-                width: "72px", height: "72px", borderRadius: "20px",
-                background: "linear-gradient(135deg, #7C3AED, #059669)",
+                width: "88px", height: "88px",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: "0 0 40px rgba(124,58,237,0.5)",
+                filter: "drop-shadow(0 0 24px rgba(124,58,237,0.8))",
                 animation: "authLogo 3s ease-in-out infinite",
-                fontSize: "32px", fontWeight: 900, color: "#fff",
-              }}>N</div>
+              }}>
+                <img
+                  src={purpleLogo}
+                  alt="Neo Cash AI"
+                  style={{ width: "88px", height: "88px", objectFit: "contain" }}
+                />
+              </div>
 
               <div style={{ textAlign: "center" }}>
                 <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
@@ -420,7 +425,7 @@ export function LoginModal({
               @keyframes authOrb1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-20px) scale(1.1)} }
               @keyframes authOrb2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-15px,15px) scale(1.05)} }
               @keyframes authOrb3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(10px,-10px)} 66%{transform:translate(-10px,5px)} }
-              @keyframes authLogo { 0%,100%{transform:scale(1) rotate(0deg);box-shadow:0 0 40px rgba(124,58,237,0.5)} 50%{transform:scale(1.05) rotate(2deg);box-shadow:0 0 60px rgba(124,58,237,0.7)} }
+              @keyframes authLogo { 0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px rgba(124,58,237,0.7))} 50%{transform:scale(1.06);filter:drop-shadow(0 0 36px rgba(124,58,237,1))} }
               @keyframes authCard1 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
               @keyframes authCard2 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
               @keyframes authCard3 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
