@@ -11,7 +11,7 @@
  * For now: accessible as a POST-able server fn at /api/payment/ipn
  */
 import { createServerFn } from "@tanstack/react-start";
-import { handleIPNValidation } from "@/lib/sslcommerz.functions";
+import { handleIPNValidation } from "@/lib/sslcommerz-ipn.server";
 
 export const ipnHandler = createServerFn({ method: "POST" })
   .validator((data: unknown) => {
