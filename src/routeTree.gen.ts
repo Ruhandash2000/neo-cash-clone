@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as InstitutionSetupRouteImport } from './routes/institution-setup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as VerifyStudentRouteImport } from './routes/verify-student'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as ApiPaymentCancelRouteImport } from './routes/api/payment/cancel'
 import { Route as ApiPaymentFailRouteImport } from './routes/api/payment/fail'
 import { Route as ApiPaymentSuccessRouteImport } from './routes/api/payment/success'
@@ -26,6 +29,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstitutionSetupRoute = InstitutionSetupRouteImport.update({
+  id: '/institution-setup',
+  path: '/institution-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -43,9 +51,19 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyStudentRoute = VerifyStudentRouteImport.update({
+  id: '/verify-student',
+  path: '/verify-student',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPaymentCancelRoute = ApiPaymentCancelRouteImport.update({
@@ -66,20 +84,26 @@ const ApiPaymentSuccessRoute = ApiPaymentSuccessRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/institution-setup': typeof InstitutionSetupRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-student': typeof VerifyStudentRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/api/payment/cancel': typeof ApiPaymentCancelRoute
   '/api/payment/fail': typeof ApiPaymentFailRoute
   '/api/payment/success': typeof ApiPaymentSuccessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/institution-setup': typeof InstitutionSetupRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-student': typeof VerifyStudentRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/api/payment/cancel': typeof ApiPaymentCancelRoute
   '/api/payment/fail': typeof ApiPaymentFailRoute
   '/api/payment/success': typeof ApiPaymentSuccessRoute
@@ -88,10 +112,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/institution-setup': typeof InstitutionSetupRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/signup': typeof SignupRoute
+  '/verify-student': typeof VerifyStudentRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/api/payment/cancel': typeof ApiPaymentCancelRoute
   '/api/payment/fail': typeof ApiPaymentFailRoute
   '/api/payment/success': typeof ApiPaymentSuccessRoute
@@ -100,20 +127,26 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/institution-setup'
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/verify-student'
     | '/dashboard'
+    | '/profile'
     | '/api/payment/cancel'
     | '/api/payment/fail'
     | '/api/payment/success'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/institution-setup'
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/verify-student'
     | '/dashboard'
+    | '/profile'
     | '/api/payment/cancel'
     | '/api/payment/fail'
     | '/api/payment/success'
@@ -121,10 +154,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/institution-setup'
     | '/login'
     | '/reset-password'
     | '/signup'
+    | '/verify-student'
     | '/_authenticated/dashboard'
+    | '/_authenticated/profile'
     | '/api/payment/cancel'
     | '/api/payment/fail'
     | '/api/payment/success'
@@ -133,9 +169,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  InstitutionSetupRoute: typeof InstitutionSetupRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SignupRoute: typeof SignupRoute
+  VerifyStudentRoute: typeof VerifyStudentRoute
   ApiPaymentCancelRoute: typeof ApiPaymentCancelRoute
   ApiPaymentFailRoute: typeof ApiPaymentFailRoute
   ApiPaymentSuccessRoute: typeof ApiPaymentSuccessRoute
@@ -155,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/institution-setup': {
+      id: '/institution-setup'
+      path: '/institution-setup'
+      fullPath: '/institution-setup'
+      preLoaderRoute: typeof InstitutionSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -178,11 +223,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-student': {
+      id: '/verify-student'
+      path: '/verify-student'
+      fullPath: '/verify-student'
+      preLoaderRoute: typeof VerifyStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/payment/cancel': {
@@ -211,10 +270,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -223,9 +284,11 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  InstitutionSetupRoute: InstitutionSetupRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SignupRoute: SignupRoute,
+  VerifyStudentRoute: VerifyStudentRoute,
   ApiPaymentCancelRoute: ApiPaymentCancelRoute,
   ApiPaymentFailRoute: ApiPaymentFailRoute,
   ApiPaymentSuccessRoute: ApiPaymentSuccessRoute,

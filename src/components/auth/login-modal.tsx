@@ -248,7 +248,8 @@ export function LoginModal({
     setStatus({ tone: "info", message: "Connecting to Google..." });
     setBusy(true);
     try {
-      const redirectUrl = window.location.origin + window.location.pathname;
+      // After Google OAuth, redirect to institution setup for new users
+      const redirectUrl = `${window.location.origin}/institution-setup`;
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
