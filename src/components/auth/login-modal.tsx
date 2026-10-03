@@ -7,8 +7,6 @@ import { useNeoStore } from "@/lib/neo-cash-store";
 import { enrollBiometric, signInWithBiometric } from "@/lib/biometrics";
 import { BiometricPanel } from "./biometric-panel";
 import { StudentVerificationFlow } from "@/components/verification/student-verification-flow";
-import skeletonArt from "@/assets/skeleton-illustration.png";
-import signupArt from "@/assets/signup-skeleton-illustration.png";
 
 /** View modes for the authentication modal dialog */
 type View = "login" | "biometric" | "forgot" | "signup";
@@ -325,14 +323,109 @@ export function LoginModal({
         </button>
 
         {!isBiometricView && (
-          <aside className="auth-art">
-            <img
-              src={view === "signup" ? signupArt : skeletonArt}
-              alt="Skeleton illustration"
-              loading="lazy"
-              width={1024}
-              height={1024}
-            />
+          <aside className="auth-art" style={{ position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #1a0533 0%, #0f172a 50%, #052e16 100%)" }}>
+            {/* Animated background orbs */}
+            <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+              <div style={{
+                position: "absolute", top: "10%", left: "15%",
+                width: "220px", height: "220px", borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%)",
+                animation: "authOrb1 6s ease-in-out infinite",
+              }} />
+              <div style={{
+                position: "absolute", bottom: "15%", right: "10%",
+                width: "180px", height: "180px", borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(5,150,105,0.3) 0%, transparent 70%)",
+                animation: "authOrb2 8s ease-in-out infinite",
+              }} />
+              <div style={{
+                position: "absolute", top: "50%", right: "25%",
+                width: "120px", height: "120px", borderRadius: "50%",
+                background: "radial-gradient(circle, rgba(211,84,0,0.2) 0%, transparent 70%)",
+                animation: "authOrb3 10s ease-in-out infinite",
+              }} />
+            </div>
+
+            {/* Central content */}
+            <div style={{
+              position: "relative", zIndex: 1,
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center",
+              height: "100%", padding: "40px 32px", gap: "28px",
+            }}>
+              {/* Logo mark */}
+              <div style={{
+                width: "72px", height: "72px", borderRadius: "20px",
+                background: "linear-gradient(135deg, #7C3AED, #059669)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 0 40px rgba(124,58,237,0.5)",
+                animation: "authLogo 3s ease-in-out infinite",
+                fontSize: "32px", fontWeight: 900, color: "#fff",
+              }}>N</div>
+
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                  Neo Cash AI
+                </div>
+                <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.55)", marginTop: "6px", lineHeight: 1.5 }}>
+                  Smart financial management<br />for students & institutions
+                </div>
+              </div>
+
+              {/* Floating stat cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "240px" }}>
+                {[
+                  { icon: "💳", label: "Fee Payments", value: "Instant & Secure", color: "#7C3AED" },
+                  { icon: "🏦", label: "Neo Wallet", value: "৳12,450 Available", color: "#059669" },
+                  { icon: "📊", label: "AI Analytics", value: "Real-time Insights", color: "#D35400" },
+                ].map((card, i) => (
+                  <div key={card.label} style={{
+                    background: "rgba(255,255,255,0.07)",
+                    backdropFilter: "blur(12px)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: "12px", padding: "12px 14px",
+                    display: "flex", alignItems: "center", gap: "12px",
+                    animation: `authCard${i + 1} 0.5s ease ${i * 0.1}s both`,
+                    boxShadow: `0 0 16px ${card.color}22`,
+                  }}>
+                    <span style={{ fontSize: "20px" }}>{card.icon}</span>
+                    <div>
+                      <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.45)", letterSpacing: "0.05em", textTransform: "uppercase" }}>{card.label}</div>
+                      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff", marginTop: "1px" }}>{card.value}</div>
+                    </div>
+                    <div style={{
+                      marginLeft: "auto", width: "6px", height: "6px",
+                      borderRadius: "50%", background: card.color,
+                      boxShadow: `0 0 8px ${card.color}`,
+                      animation: "authPing 2s ease infinite",
+                    }} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom badge */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "999px", padding: "6px 14px",
+                fontSize: "0.72rem", color: "rgba(255,255,255,0.5)",
+              }}>
+                <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#10B981", boxShadow: "0 0 6px #10B981" }} />
+                {view === "signup" ? "Create your Neo Cash account" : "Secure login with encryption"}
+              </div>
+            </div>
+
+            <style>{`
+              @keyframes authOrb1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-20px) scale(1.1)} }
+              @keyframes authOrb2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-15px,15px) scale(1.05)} }
+              @keyframes authOrb3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(10px,-10px)} 66%{transform:translate(-10px,5px)} }
+              @keyframes authLogo { 0%,100%{transform:scale(1) rotate(0deg);box-shadow:0 0 40px rgba(124,58,237,0.5)} 50%{transform:scale(1.05) rotate(2deg);box-shadow:0 0 60px rgba(124,58,237,0.7)} }
+              @keyframes authCard1 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
+              @keyframes authCard2 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
+              @keyframes authCard3 { from{opacity:0;transform:translateX(-16px)} to{opacity:1;transform:translateX(0)} }
+              @keyframes authPing { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+            `}</style>
           </aside>
         )}
 

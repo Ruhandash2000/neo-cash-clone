@@ -643,6 +643,128 @@ export function DashboardShell({
         <ReceiptModal transaction={receiptTxn} onClose={() => setReceiptTxn(null)} />
       )}
 
+
+      {/* ════════════════════════════════════════════════════════════════
+          MOBILE BOTTOM NAV BAR (hidden on ≥768px)
+          Android 18-inspired: pill indicator, haptic icons, role-colored
+          ════════════════════════════════════════════════════════════════ */}
+      <nav className="mobile-bottom-nav" style={{
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        height: "64px",
+        background: "#FFFFFF",
+        borderTop: "1px solid rgba(0,0,0,0.08)",
+        display: "flex",
+        alignItems: "stretch",
+        zIndex: 200,
+        boxShadow: "0 -2px 16px rgba(0,0,0,0.06)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      }}>
+        {navItems.slice(0, 4).map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveTab(item.id)}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "3px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "6px 4px 4px",
+                position: "relative",
+                transition: "all 0.15s",
+              }}
+            >
+              {/* Active pill indicator */}
+              {isActive && (
+                <div style={{
+                  position: "absolute",
+                  top: "6px",
+                  width: "32px",
+                  height: "28px",
+                  background: ROLE_COLORS[store.role],
+                  borderRadius: "14px",
+                  zIndex: 0,
+                  transition: "all 0.2s ease",
+                }} />
+              )}
+              <div style={{
+                position: "relative", zIndex: 1,
+                color: isActive ? ROLE_TEXT[store.role] : "#9CA3AF",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "color 0.15s",
+                transform: isActive ? "scale(1.1)" : "scale(1)",
+              }}>
+                {item.icon}
+                {/* Badge */}
+                {(item.badge ?? 0) > 0 && (
+                  <div style={{
+                    position: "absolute", top: "-4px", right: "-5px",
+                    background: "#EF4444", color: "#FFF",
+                    fontSize: "0.5rem", fontWeight: 800,
+                    width: "14px", height: "14px",
+                    borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    border: "1.5px solid #FFF",
+                  }}>{item.badge}</div>
+                )}
+              </div>
+              <span style={{
+                fontSize: "0.62rem",
+                fontWeight: isActive ? 700 : 400,
+                color: isActive ? ROLE_TEXT[store.role] : "#9CA3AF",
+                transition: "color 0.15s",
+                lineHeight: 1,
+              }}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Profile tab — always last */}
+        <button
+          type="button"
+          onClick={() => setShowProfile(true)}
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "3px",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "6px 4px 4px",
+          }}
+        >
+          {/* Profile avatar circle */}
+          <div style={{
+            width: "24px", height: "24px", borderRadius: "50%",
+            background: ROLE_COLORS[store.role],
+            border: `1.5px solid ${ROLE_TEXT[store.role]}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            overflow: "hidden",
+          }}>
+            {avatarSrc ? (
+              <img src={avatarSrc} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <span style={{ fontSize: "0.65rem", fontWeight: 800, color: ROLE_TEXT[store.role] }}>
+                {(displayName ?? "U")[0]?.toUpperCase()}
+              </span>
+            )}
+          </div>
+          <span style={{ fontSize: "0.62rem", fontWeight: 400, color: "#9CA3AF", lineHeight: 1 }}>Me</span>
+        </button>
+      </nav>
+
       <FloatingAI />
 
       <style>{`

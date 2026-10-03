@@ -1755,11 +1755,13 @@ export const storeActions = {
       return { ok: false, error: "Insufficient wallet balance." };
     }
 
-    // Deduct balance
-    if (method.includes("Wallet")) {
+    // Deduct balance — wallet payments deduct locally; SSLCommerz charged externally
+    const isWalletPayment = method.toLowerCase().includes("wallet");
+    if (isWalletPayment) {
       currentState.balances.walletBalance -= payAmount;
+      currentState.balances.availableBalance -= payAmount;
     }
-    currentState.balances.availableBalance -= payAmount;
+    // Always reduce totalDue and count paidThisMonth
     currentState.balances.totalDue = Math.max(0, currentState.balances.totalDue - payAmount);
     currentState.balances.paidThisMonth += payAmount;
 
